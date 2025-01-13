@@ -21,3 +21,20 @@ function trimWhitespace(input) {
   }
   return input;
 }
+
+function replaceSlashesWithDashes(input) {
+    return input.replace(/\//g, "_");
+}
+
+function getCurrentHour() {
+  const now = new Date();
+  return now.getHours(); // Returns the hour (0-23) in 24-hour format
+}
+
+// Returns the day of the week for today
+function getCurrentDayOfWeek() {
+  const daysOfWeek = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
+  const today = new Date();
+  const dayOfWeek = daysOfWeek[today.getDay()]; // getDay() returns 0 for Sunday, 1 for Monday, etc.
+  return dayOfWeek;
+}

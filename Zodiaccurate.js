@@ -8,7 +8,8 @@ function runZodiaccurate() {
   var name = "";
 
   // Pull UUIDs from exec_time table for the current hour
-  const uuidArr = getUUIDDataFromExecTimeTable(6) || []; //change to curr_hour
+  const timezones = getTimezonesAt6AM();
+  const uuidArr = getUUIDDataFromExecTimeTable(timezones) || [];
   console.log("UUID Array:", uuidArr);
 
    uuidArr.forEach((entry) => {
@@ -25,12 +26,7 @@ function runZodiaccurate() {
           Logger.log(`Zodiac data for UUID ${uuid}: ${JSON.stringify(zodiacData)}`);
           sendDailyEmailWithMailerSend(name, email, zodiacData);
         }
-
     });
-}
-
-function runNightlyChatGPT(){
-
 }
 
 

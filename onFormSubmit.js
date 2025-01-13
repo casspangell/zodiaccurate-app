@@ -6,8 +6,8 @@ function onFormSubmitHandler(e) {
   let name = "";
   let email = "";
   let timezone = "";
-  let exec_time = "";
   var timezoneJson = {};
+  var userData = {};
   
   // Check if the user already exists in Firebase
   const user = doesUserExist(uuid);
@@ -23,20 +23,21 @@ function onFormSubmitHandler(e) {
 
       if (question === "name") {
         timezoneJson["name"] = answer;
+        userData["name"] = answer;
         name = answer;
       } 
       
       if (question === "email") {
         timezoneJson["email"] = answer;
+        userData["email"] = answer;
         email = answer;
       } 
       
       if (question === "your current location") {
         timezone = getTimeZoneFromLocation(answer);
+        jsonData["timezone"] = timezone;
+        userData["timezone"] = replaceSlashesWithDashes(timezone);
         console.log("updating timezone ", timezone);
-        exec_time = calculateExecutionTimeInChicago(answer);
-        timezoneJson["timezone"] = timezone;
-        console.log("Exec_time = ", exec_time);
       }
 
       jsonData[question] = answer;
@@ -59,12 +60,11 @@ function onFormSubmitHandler(e) {
     jsonData["trial-date-start"] = new Date();
     jsonData["trial"] = "true";
 
+
     itemResponses.forEach(item => {
       const question = item.getItem().getTitle().toLowerCase().trim();
       const answer = item.getResponse();
-
       Logger.log(`Question: ${question}, Answer: ${answer}`);
-
     });
 
     // Save zodiac data to Firebase
@@ -75,8 +75,8 @@ function onFormSubmitHandler(e) {
       welcomeChatGPT(uuid);
     }
   }
-
-    // Save exec_time to Firebase
-    saveTimezoneToFirebase(exec_time, uuid, timezoneJson);
-
+  
+    const formattedTimezone = replaceSlashesWithDashes(timezone);
+    updateExecTimeTable(uuid, formattedTimezone);
+    saveUserToUserTableFirebase(uuid, userData);
 }
