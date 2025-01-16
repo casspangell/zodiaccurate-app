@@ -76,7 +76,7 @@ function getChatGPTResponse(instructions, uuid) {
 function getChatInstructions(jsonSinglePersonData, uuid) {
   console.log("GET CHAT INSTRUCTIONS");
     const modifiers = getRandomModifiers();
-    // const getWeekData = getThreeDaysDataFromFirebase(uuid);
+    const getWeekData = getThreeDaysDataFromFirebase(uuid);
 
     const prompt = `
         Here is user data: ${JSON.stringify(jsonSinglePersonData)}

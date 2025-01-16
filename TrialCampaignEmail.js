@@ -1,22 +1,12 @@
-/**
- * Sends a personalized daily horoscope email to a user using MailerSend.
- * - Generates an HTML email based on the provided daily horoscope data (`prompt`).
- * - Sends the email using the MailerSend API.
- *
- * @param {string} name - The recipient's name to personalize the email.
- * @param {string} email - The recipient's email address.
- * @param {Object} prompt - An object containing the daily horoscope data with the following fields:
- *   - `overview` (string): Overview section of the horoscope.
- *   - `career_and_finances` (string): Career and finances section.
- *   - `relationships` (string): Relationships section.
- *   - `parenting_guidance` (string): Parenting guidance section.
- *   - `health` (string): Health section.
- *   - `personal_guidance` (string): Personal guidance section.
- *   - `local_weather` (string): Local weather forecast.
- * @returns {void}
- */
-function sendDailyEmailWithMailerSend(name, email, prompt) {
+function sendTrialCampaignEmailWithMailerSend2(name, email, prompt, day) {
+  // Simulate sending an email
+  console.log(`Sending email for day ${day} to ${name} (${email})`);
+  console.log("Email content:", prompt);
+}
+
+function sendTrialCampaignEmailWithMailerSend(name, email, prompt, day) {
   const mailerSendUrl = "https://api.mailersend.com/v1/email";
+  console.log(`Sending email for day ${day} to ${name} (${email})`);
   console.log("SENDING DAILY GUIDANCE EMAIL ", prompt);
 
   // Generate HTML content dynamically using the `prompt` object
@@ -78,33 +68,11 @@ function sendDailyEmailWithMailerSend(name, email, prompt) {
         <div class="content">
             <h3>${new Date().toDateString()}</h3>
 
-            ${prompt.overview ? `
-            <h2>Overview</h2>
-            <p>${prompt.overview}</p>` : ''}
-
-            ${prompt.career_and_finances ? `
-            <h2>Career and Finances</h2>
-            <p>${prompt.career_and_finances}</p>` : ''}
-
-            ${prompt.relationships ? `
-            <h2>Relationships</h2>
-            <p>${prompt.relationships}</p>` : ''}
-
-            ${prompt.parenting_guidance ? `
-            <h2>Parenting Guidance</h2>
-            <p>${prompt.parenting_guidance}</p>` : ''}
-
-            ${prompt.health ? `
-            <h2>Health</h2>
-            <p>${prompt.health}</p>` : ''}
-
-            ${prompt.personal_guidance ? `
-            <h2>Personal Guidance</h2>
-            <p>${prompt.personal_guidance}</p>` : ''}
-
-            ${prompt.local_weather ? `
-            <h2>Local Weather</h2>
-            <p>${prompt.local_weather}</p>` : ''}
+            ${prompt ? `
+            <h2>Email Campaign Header</h2>
+            Dear ${name},<br/>
+            <p>${prompt}</p>` : ''}
+            <p>Blessings,<br>The Zodiaccurate Team</p>
         </div>
         <div class="footer">
             <p>&copy; 2025 Zodiaccurate. All rights reserved.</p>
@@ -129,7 +97,7 @@ function sendDailyEmailWithMailerSend(name, email, prompt) {
         name: name || "Valued Seeker",
       },
     ],
-    subject: "Your Daily Guidance",
+    subject: "Zodiaccurate Trial Subscription",
     html: emailHtml, // Use the formatted HTML content
   };
 

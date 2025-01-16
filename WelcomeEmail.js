@@ -1,3 +1,13 @@
+/**
+ * Sends a personalized welcome email with daily horoscope guidance using MailerSend.
+ * - Generates an HTML email with the user's horoscope data.
+ * - Sends the email via the MailerSend API.
+ *
+ * @param {string} name - The recipient's name to personalize the email.
+ * @param {string} email - The recipient's email address.
+ * @param {string} prompt - The JSON string containing the horoscope data, which is parsed and formatted for the email.
+ * @returns {void}
+ */
 function sendWelcomeEmailWithMailerSend(name, email, prompt) {
   const mailerSendUrl = "https://api.mailersend.com/v1/email";
   console.log("SENDING WELCOME EMAIL");

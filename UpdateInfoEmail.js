@@ -1,3 +1,12 @@
+/**
+ * Sends an email notification to a user informing them that their information has been updated.
+ * - Generates a personalized HTML email with updated information acknowledgment.
+ * - Sends the email using the MailerSend API.
+ *
+ * @param {string} name - The recipient's name for personalization in the email.
+ * @param {string} email - The recipient's email address where the notification will be sent.
+ * @returns {void}
+ */
 function sendUpdateInfoWithMailerSend(name, email) {
   console.log("name: ", name, " email: ", email);
   const mailerSendUrl = "https://api.mailersend.com/v1/email";

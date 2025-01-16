@@ -1,3 +1,11 @@
+/**
+ * Retrieves the time zone ID for a given location using the Google Maps Geocoding and Time Zone APIs.
+ * - Geocodes the location to retrieve latitude and longitude.
+ * - Fetches the time zone ID for the geocoded coordinates.
+ *
+ * @param {string} location - The location name or address to resolve.
+ * @returns {string|null} - The time zone ID (e.g., "America/New_York") if successful, or null if an error occurs.
+ */
 function getTimeZoneFromLocation(location) {
   console.log("Getting timezone from location: ", location);
   try {
@@ -29,6 +37,13 @@ function getTimeZoneFromLocation(location) {
   }
 }
 
+/**
+ * Returns a list of time zone IDs for English-speaking countries and regions.
+ * - Includes major English-speaking countries like the United States, United Kingdom, Canada, Australia, and others.
+ * - Provides coverage for additional regions with English as an official language.
+ *
+ * @returns {string[]} - An array of time zone IDs (e.g., "America/New_York").
+ */
 function getEnglishSpeakingCountryTimezones() {
   return [
     // United States
@@ -105,6 +120,7 @@ function getTimezonesAt6AM() {
   formattedTimezones = matchingTimezones.map((timezone) => replaceSlashesWithDashes(timezone)); //match db formatting
 
   Logger.log(`Timezones with local hour ${formattedTargetHour}: ${JSON.stringify(formattedTimezones)}`);
+  return "Indian_Mauritius"; //TODO REMOVE
   return formattedTimezones;
 }
 

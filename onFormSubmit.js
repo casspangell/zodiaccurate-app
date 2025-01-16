@@ -1,5 +1,18 @@
+/**
+ * Handles form submissions from Google Forms.
+ * - Retrieves and processes responses from the submitted form.
+ * - Determines if the user already exists in the system.
+ * - Updates or creates a new entry in Firebase based on user existence.
+ * - Updates the exec_time table and user table in Firebase.
+ * - Sends emails for updates or new user welcomes.
+ *
+ * @param {Object} e - The event object from the form submission, containing the response data.
+ * @property {Object} e.response - The form response object.
+ * @property {Function} e.response.getEditResponseUrl - Retrieves the URL for editing the response.
+ * @property {Function} e.response.getItemResponses - Retrieves the submitted responses.
+ * @returns {void}
+ */
 function onFormSubmitHandler(e) {
-
   // Get the edit response URL and UUID for this specific submission
   const responseUrl = e.response.getEditResponseUrl();
   const uuid = responseUrl.split("edit2=")[1];

@@ -1,3 +1,13 @@
+/**
+ * Prepares and sends a personalized welcome email to a user using ChatGPT-generated content.
+ * - Fetches user data from Firebase.
+ * - Generates a ChatGPT prompt and retrieves a response.
+ * - Sends a welcome email to the user using the MailerSend API.
+ *
+ * @async
+ * @param {string} uuid - The unique identifier for the user.
+ * @returns {Promise<void>} - A promise that resolves when the process is complete.
+ */
 async function welcomeChatGPT(uuid) {
     console.log("PREPARE WELCOME CHATGPT");
 
@@ -14,6 +24,7 @@ async function welcomeChatGPT(uuid) {
         const { name, email } = jsonSinglePersonData;
 
         sendWelcomeEmailWithMailerSend(name, email, JSON.stringify(chatGPTResponse));
+        setUpEmailCampaign(jsonSinglePersonData,uuid,name,email);
 
         console.log("Email sent successfully.");
       } else {
@@ -24,8 +35,18 @@ async function welcomeChatGPT(uuid) {
     }
 }
 
-// Function to fetch ChatGPT API response
+/**
+ * Fetches a response from the ChatGPT API based on the provided instructions.
+ * - Constructs a payload with the user's data and ChatGPT instructions.
+ * - Sends a request to the ChatGPT API and parses the response.
+ * - Saves the response to Firebase if valid.
+ *
+ * @param {string} instructions - The ChatGPT prompt containing user data and instructions.
+ * @param {string} uuid - The unique identifier for the user.
+ * @returns {Object|null} - The parsed response data if successful, or null on failure.
+ */
 function getChatGPTResponse(instructions, uuid) {
+  
     console.log("GET CHAT RESPONSE");
     const url = 'https://api.openai.com/v1/chat/completions';
 
@@ -72,15 +93,24 @@ function getChatGPTResponse(instructions, uuid) {
         }
 }
 
-// Function to construct ChatGPT instructions
+/**
+ * Constructs a ChatGPT prompt using user data and modifiers.
+ * - Retrieves random modifiers and three days of prior data for context.
+ * - Builds a detailed prompt to generate a personalized daily horoscope.
+ *
+ * @param {Object} jsonSinglePersonData - The user data object containing relevant information.
+ * @param {string} uuid - The unique identifier for the user.
+ * @returns {string} - A formatted prompt string for ChatGPT.
+ */
 function getChatInstructions(jsonSinglePersonData, uuid) {
   console.log("GET CHAT INSTRUCTIONS");
     const modifiers = getRandomModifiers();
     const getWeekData = getThreeDaysDataFromFirebase(uuid);
+    const getCampainData = getChatEmailCampaignInstructions();
 
     const prompt = `
         Here is user data: ${JSON.stringify(jsonSinglePersonData)}
-        Your task is to create a daily, personalized horoscope for this person, incorporating astrological insights and practical advice. Focus on these sections and generate a CSV file containing the following columns and data:
+        Your task is to create a daily, personalized horoscope for this person, incorporating astrological insights and practical advice. Focus on these sections and  generate a CSV file containing the following columns and data:. One containing the following columns and data:
         - Overview: Emotional, mental, and spiritual insights (${modifiers.overview})
         - Career and Finances: Strategies for growth (${modifiers.careerAndFinances})
         - Relationships: Emotional connections (${modifiers.relationships})
@@ -88,7 +118,9 @@ function getChatInstructions(jsonSinglePersonData, uuid) {
         - Health: Holistic well-being (${modifiers.health})
         - Personal Guidance: Introspective advice (${modifiers.personalGuidance})
         - Local Weather: Brief forecast.
-        Avoid repetition, technical terms, and ensure uniqueness each day. Use the previous day’s data for reference: ${getWeekData}.
+        Avoid repetition, technical terms, and ensure uniqueness each day. Use the previous day's data for reference: ${getWeekData}.
+
+        The second CSV file: ${getCampainData}
     `;
 
     return prompt.trim();

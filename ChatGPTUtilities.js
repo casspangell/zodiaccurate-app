@@ -1,4 +1,13 @@
-// Function to construct ChatGPT instructions
+/**
+ * Constructs a ChatGPT prompt using user data and random modifiers.
+ * - The prompt instructs ChatGPT to generate a personalized daily horoscope.
+ * - Incorporates sections like Overview, Career, Relationships, etc., with unique modifiers.
+ * - Emphasizes CSV formatting with snake_case column headers.
+ *
+ * @param {Object} jsonSinglePersonData - The user data object containing relevant information such as name, location, and personal attributes.
+ * @param {string} uuid - The unique identifier for the user.
+ * @returns {string} - A formatted string containing the ChatGPT prompt.
+ */
 function getChatInstructions(jsonSinglePersonData, uuid) {
     console.log("getChatInstructions uuid ", uuid);
 
