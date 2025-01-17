@@ -51,3 +51,27 @@ function getCurrentDayOfWeek() {
   const dayOfWeek = daysOfWeek[today.getDay()]; // getDay() returns 0 for Sunday, 1 for Monday, etc.
   return dayOfWeek;
 }
+
+function findKeyValue(obj, targetKey) {
+  let result = null;
+
+  function traverse(currentObj) {
+    for (const key in currentObj) {
+      if (key === targetKey) {
+        result = currentObj[key];
+        return;
+      }
+      if (typeof currentObj[key] === 'object' && currentObj[key] !== null) {
+        traverse(currentObj[key]);
+      }
+    }
+  }
+
+  traverse(obj);
+  return result;
+}
+
+function getCopyright() {
+  const currentYear = new Date().getFullYear();
+  return `&copy; ${currentYear} Zodiaccurate. All rights reserved.`;
+}

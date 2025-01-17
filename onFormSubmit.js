@@ -21,6 +21,8 @@ function onFormSubmitHandler(e) {
   let timezone = "";
   var timezoneJson = {};
   var userData = {};
+
+  userData["editURL"] = responseUrl;
   
   // Check if the user already exists in Firebase
   const user = doesUserExist(uuid);
@@ -72,7 +74,6 @@ function onFormSubmitHandler(e) {
     Logger.log("New Form Submission Detected.");
     jsonData["trial-date-start"] = new Date();
     jsonData["trial"] = "true";
-
 
     itemResponses.forEach(item => {
       const question = item.getItem().getTitle().toLowerCase().trim();

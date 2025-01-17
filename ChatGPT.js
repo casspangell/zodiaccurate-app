@@ -1,41 +1,4 @@
 /**
- * Prepares and sends a personalized welcome email to a user using ChatGPT-generated content.
- * - Fetches user data from Firebase.
- * - Generates a ChatGPT prompt and retrieves a response.
- * - Sends a welcome email to the user using the MailerSend API.
- *
- * @async
- * @param {string} uuid - The unique identifier for the user.
- * @returns {Promise<void>} - A promise that resolves when the process is complete.
- */
-async function welcomeChatGPT(uuid) {
-    console.log("PREPARE WELCOME CHATGPT");
-
-    // Fetch user data
-    var jsonSinglePersonData = {};
-    jsonSinglePersonData = getUserDataFromFirebase(uuid);
-
-    // Generate ChatGPT prompt
-    const prompt = getChatInstructions(jsonSinglePersonData, uuid);
-
-    try {
-      if(uuid) {
-        const chatGPTResponse = await getChatGPTResponse(prompt, uuid);
-        const { name, email } = jsonSinglePersonData;
-
-        sendWelcomeEmailWithMailerSend(name, email, JSON.stringify(chatGPTResponse));
-        setUpEmailCampaign(jsonSinglePersonData,uuid,name,email);
-
-        console.log("Email sent successfully.");
-      } else {
-        console.error("UUID is null or undefined")
-      }
-    } catch (error) {
-        console.error("An error occurred:", error);
-    }
-}
-
-/**
  * Fetches a response from the ChatGPT API based on the provided instructions.
  * - Constructs a payload with the user's data and ChatGPT instructions.
  * - Sends a request to the ChatGPT API and parses the response.
@@ -106,7 +69,7 @@ function getChatInstructions(jsonSinglePersonData, uuid) {
   console.log("GET CHAT INSTRUCTIONS");
     const modifiers = getRandomModifiers();
     const getWeekData = getThreeDaysDataFromFirebase(uuid);
-    const getCampainData = getChatEmailCampaignInstructions();
+    const getCampaignData = getChatEmailCampaignInstructions();
 
     const prompt = `
         Here is user data: ${JSON.stringify(jsonSinglePersonData)}
@@ -120,7 +83,7 @@ function getChatInstructions(jsonSinglePersonData, uuid) {
         - Local Weather: Brief forecast.
         Avoid repetition, technical terms, and ensure uniqueness each day. Use the previous day's data for reference: ${getWeekData}.
 
-        The second CSV file: ${getCampainData}
+        The second CSV file: ${getCampaignData}
     `;
 
     return prompt.trim();

@@ -8,12 +8,11 @@
  * @param {string} prompt - The JSON string containing the horoscope data, which is parsed and formatted for the email.
  * @returns {void}
  */
-function sendWelcomeEmailWithMailerSend(name, email, prompt) {
+function sendWelcomeEmailWithMailerSend(clientName, editResponseUrl, email) {
   const mailerSendUrl = "https://api.mailersend.com/v1/email";
   console.log("SENDING WELCOME EMAIL");
-
-const inputJson = JSON.parse(prompt)[0];
-const parsedModel = parseHoroscopeJson(inputJson);
+const copyright = getCopyright();
+stripeLink = "www.google.com"; //TODO CHANGE
 
 // Generate HTML content dynamically
 const emailHtml = `
@@ -72,38 +71,18 @@ const emailHtml = `
             <img src="https://taohealinggroup.com/zodiaccurate/zodiaccurate_logo.png" alt="Zodiaccurate Daily Guidance">
         </div>
         <div class="content">
-            <h3>${new Date().toDateString()}</h3>
-
-            ${parsedModel.overview ? `
-            <h2>Overview</h2>
-            <p>${parsedModel.overview}</p>` : ''}
-
-            ${parsedModel.careerAndFinances ? `
-            <h2>Career and Finances</h2>
-            <p>${parsedModel.careerAndFinances}</p>` : ''}
-
-            ${parsedModel.relationships ? `
-            <h2>Relationships</h2>
-            <p>${parsedModel.relationships}</p>` : ''}
-
-            ${parsedModel.parentingGuidance ? `
-            <h2>Parenting Guidance</h2>
-            <p>${parsedModel.parentingGuidance}</p>` : ''}
-
-            ${parsedModel.health ? `
-            <h2>Health</h2>
-            <p>${parsedModel.health}</p>` : ''}
-
-            ${parsedModel.personalGuidance ? `
-            <h2>Personal Guidance</h2>
-            <p>${parsedModel.personalGuidance}</p>` : ''}
-
-            ${parsedModel.localWeather ? `
-            <h2>Local Weather</h2>
-            <p>${parsedModel.localWeather}</p>` : ''}
+            <p>Hi ${clientName},</p>
+            <p>Welcome to Zodiaccurate! We're thrilled that you've decided to join our community.</p>
+            <p>Every day at 6 AM, you'll receive a personalized astrological reading tailored specifically to the details you've shared with us. Our goal is to provide you with insights that not only assist you to better navigate guide your daily decisions but also align that guidance with your personal life conditions, struggles and successes!<br></p>
+            <p>If you ever need to update your Zodiaccurate “current life” information, you can easily do so by <a href="${editResponseUrl}">Clicking Here</a><br></p>
+            <p>We look forward to being a part of your challenging, miraculous , creative, life.<br><br></p>
+            <p>Best regards,<br/>
+            Your Zodiaccurate Team<br></p>
+            <p>You can change your CC information or cancel anytime via this <a href="${stripeLink}">Link</a></p>
+            <p>If you have any questions, please contact us at support@zodiaccurate.com</p>
         </div>
         <div class="footer">
-            <p>&copy; 2024 Zodiaccurate. All rights reserved.</p>
+            <p>${copyright}</p>
         </div>
     </div>
 </body>
@@ -118,15 +97,15 @@ console.log(emailHtml);
   const emailData = {
     from: {
       email: "dailyguidance@zodiaccurate.com",
-      name: "Daily Guidance",
+      name: "Welcome to Zodiaccurate",
     },
     to: [
       {
         email: email, // Recipient's email
-        name: name || "Valued Seeker",
+        name: clientName || "Valued Seeker",
       },
     ],
-    subject: "Your Daily Guidance",
+    subject: "Life is easier when you can see it coming!",
     html: emailHtml, // Use the formatted HTML content
   };
 
