@@ -7,12 +7,14 @@ async function welcomeChatGPT(uuid) {
 
     // Generate ChatGPT prompt
     const prompt = getChatInstructions(jsonSinglePersonData, uuid);
+    const userData = getUserDataFromUserTableFirebase(uuid);
 
     try {
       if(uuid) {
         const zodiaccurateData = await getChatGPTResponse(prompt, uuid);
-        const editUrl = findKeyValue(jsonSinglePersonData, "editURL");
+        const editUrl = findKeyValue(userData, "editURL");
         const { name, email } = jsonSinglePersonData;
+        console.log("EDITURL: ", editUrl);
       console.log("welcomechat zodiac pull", zodiaccurateData);
       await Promise.all([
         sendWelcomeEmailWithMailerSend(name, editUrl, email),
