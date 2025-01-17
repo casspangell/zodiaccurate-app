@@ -284,6 +284,7 @@ function getUserDataFromUserTableFirebase(uuid) {
  * @returns {Object|null} - The user data if found, otherwise null.
  */
 function getUserDataFromFirebase(uuid) {
+  uuid = "2_ABaOnudBnBkwqlqnMUV9qS7zBUYoqPWaz1UyPeMW7GYOD2bPl2ZLYvQJ0UdU28kSvXtp_ZU";
     console.log("GETTING USER DATA FROM FIREBASE: ", uuid);
 
     const firebaseUrl = `${FIREBASE_URL}/responses/${uuid}.json?auth=${FIREBASE_API_KEY}`;

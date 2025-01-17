@@ -16,13 +16,13 @@ function getChatInstructions(jsonSinglePersonData, uuid) {
     const prompt = `
         Here is user data: ${JSON.stringify(jsonSinglePersonData)}
         Your task is to create a daily, personalized horoscope for this person, incorporating astrological insights and practical advice. Focus on these sections and generate a CSV file containing the following columns and data:
-        - Overview: Emotional, mental, and spiritual insights (${modifiers.overview})
-        - Career and Finances: Strategies for growth (${modifiers.careerAndFinances})
-        - Relationships: Emotional connections (${modifiers.relationships})
-        - Parenting Guidance: Support tailored to children (${modifiers.parentingGuidance})
-        - Health: Holistic well-being (${modifiers.health})
-        - Personal Guidance: Introspective advice (${modifiers.personalGuidance})
-        - Local Weather: Brief forecast.
+        - overview: Emotional, mental, and spiritual insights (${modifiers.overview})
+        - career_and_finances: Strategies for growth (${modifiers.careerAndFinances})
+        - relationships: Emotional connections (${modifiers.relationships})
+        - parenting_guidance: Support tailored to children (${modifiers.parentingGuidance})
+        - health: Holistic well-being (${modifiers.health})
+        - personal_guidance: Introspective advice (${modifiers.personalGuidance})
+        - local_weather: Brief forecast.
         Format the columns of the csv with snake case formatting
     `;
 

@@ -1,12 +1,13 @@
 function parseHoroscopeJson(jsonData) {
+  const normalizedData = normalizeKeys(jsonData);
   const model = {
-    overview: jsonData.overview || null,
-    careerAndFinances: jsonData.career_and_finances || null,
-    relationships: jsonData.relationships || null,
-    parentingGuidance: jsonData.parenting_guidance || null,
-    health: jsonData.health || null,
-    personalGuidance: jsonData.personal_guidance || null,
-    localWeather: jsonData.local_weather || null,
+    overview: normalizedData.overview || null,
+    careerAndFinances: normalizedData.career_and_finances || null,
+    relationships: normalizedData.relationships || null,
+    parentingGuidance: normalizedData.parenting_guidance || null,
+    health: normalizedData.health || null,
+    personalGuidance: normalizedData.personal_guidance || null,
+    localWeather: normalizedData.local_weather || null,
   };
 
   return model;

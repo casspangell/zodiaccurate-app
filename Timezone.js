@@ -103,11 +103,32 @@ function getEnglishSpeakingCountryTimezones() {
   ];
 }
 
-function getTimezonesAt6AM() {
+// function getTimezonesAt6AM() {
+//   const timezones = getEnglishSpeakingCountryTimezones();
+//   const now = new Date();
+
+//   targetHour = 6;
+//   // Ensure the target hour is a valid 24-hour format string
+//   const formattedTargetHour = String(targetHour).padStart(2, "0");
+
+//   // Filter timezones where the local hour matches the targeted hour
+//   const matchingTimezones = timezones.filter((timezone) => {
+//     const localHour = Utilities.formatDate(now, timezone, "HH");
+//     return localHour === formattedTargetHour;
+//   });
+
+//   formattedTimezones = matchingTimezones.map((timezone) => replaceSlashesWithDashes(timezone)); //match db formatting
+
+//   Logger.log(`Timezones with local hour ${formattedTargetHour}: ${JSON.stringify(formattedTimezones)}`);
+//   return "Indian_Mauritius"; //TODO REMOVE
+//   return formattedTimezones;
+// }
+
+function getTimezonesAtTime(time) {
   const timezones = getEnglishSpeakingCountryTimezones();
   const now = new Date();
 
-  targetHour = 6;
+  targetHour = time;
   // Ensure the target hour is a valid 24-hour format string
   const formattedTargetHour = String(targetHour).padStart(2, "0");
 
@@ -120,7 +141,7 @@ function getTimezonesAt6AM() {
   formattedTimezones = matchingTimezones.map((timezone) => replaceSlashesWithDashes(timezone)); //match db formatting
 
   Logger.log(`Timezones with local hour ${formattedTargetHour}: ${JSON.stringify(formattedTimezones)}`);
-  return "Indian_Mauritius"; //TODO REMOVE
+  // return "Indian_Mauritius"; //TODO REMOVE
   return formattedTimezones;
 }
 

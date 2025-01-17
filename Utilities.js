@@ -5,6 +5,19 @@ function formatKey(input) {
     .replace(/^-+|-+$/g, ''); // Remove leading or trailing hyphens
 }
 
+function normalizeKeys(inputJson) {
+  const normalizedJson = {};
+
+  for (const key in inputJson) {
+    // Normalize the key: lowercase, replace spaces with underscores, trim
+    const normalizedKey = key.toLowerCase().replace(/\s+/g, '_').trim();
+    // Assign the value to the normalized key in the new object
+    normalizedJson[normalizedKey] = inputJson[key];
+  }
+
+  return normalizedJson;
+}
+
 function sanitizeKeys(data) {
   const sanitizedObject = {};
   Object.keys(data).forEach(key => {

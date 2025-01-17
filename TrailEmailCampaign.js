@@ -10,15 +10,26 @@ function getChatEmailCampaignInstructions(jsonSinglePersonData) {
 
     const prompt = `
         Here is user data: ${JSON.stringify(jsonSinglePersonData)}
-        Your task is to create a 4 day personalized email campaign for this person, incorporating astrological insights to help the user decide to subscribe to our services for Day 3, 5, 7, and 9 into the trial program. Add a timestamp of today's date. Focus on these sections and  generate a CSV file containing the following columns and data:. One containing the following columns and data:
-        - Email_One
-        - Email_Two
-        - Email_Three
-        - Email_Four
-        - Campaign_Date
-        - Name
-        - Email
-        Avoid repetition, technical terms, and ensure uniqueness each day. Only provide the middle part of the email without names or signatures. Identify key benefits they've likely experienced (e.g., “You've gained clarity on family dynamics this week”). Highlight specific themes or benefits that align with their trial experience. Reference their unique journey, progress, or challenges. Make it engaging and relevant to their trial experience. Use a friendly and encouraging tone to prompt action. Keep the tone conversational, positive, and motivating. Tailor the language to reflect the user's unique journey during the trial period.
+Your task is to create a 4-day personalized email campaign for this person, incorporating astrological insights to help the user decide to subscribe to our services on Days 3, 5, 7, and 9 into their trial program. Add a timestamp of today's date.
+
+Focus on these sections and generate a CSV file containing the following columns and data:
+- Subject_1
+- Email_1
+- Subject_2
+- Email_2
+- Subject_3
+- Email_3
+- Subject_4
+- Email_4
+- Campaign_Date
+- Name
+- Email
+
+Expand the main body of each email by including:
+- Personalized details such as the user’s name, family member names, occupation, or specific data from their profile.
+- Relatable examples and stories tied directly to their personal goals, stressors, or experiences during the trial period (e.g., their role as a spiritual healer or their goal of work-life balance).
+- Astrological insights relevant to their trial period, aligned with their birth data.
+- Emotionally compelling calls to action that emphasize how subscribing will address their unique needs and goals.
     `;
 
     return prompt.trim();
@@ -40,7 +51,7 @@ function getChatGPTEmailCampaignResponse(instructions, uuid) {
             },
             {
                 "role": "user",
-                "content": "Your task is to create a 4 day email campaign for Zodiaccurate. Analyze the user's data below from their trial period. Your task is to generate a personalized email campaign in CSV format. Always provide the CSV content enclosed in a markdown code block with the csv tag (e.g., csv \"Column1\",\"Column2\",\"Column3\" \"Value1\",\"Value2\",\"Value3\" ). The first row must contain column headers, and subsequent rows must contain corresponding values. Do not include any text or explanation outside the markdown block. Ensure all values are properly quoted (e.g., \"Value\"), especially if they contain commas, line breaks, or special characters. Example format: csv \"Email_One\",\"Email_Two\",\"Email_Three\",\"Email_Four\", \"Date\", \"Name\", \"Email\". Ensure the format is consistent and adheres strictly to these guidelines."
+                "content": "Create personalized and unique subject lines for each email that reflect the email content and are engaging. Make the emails deeply engaging, personal, and relevant to the user’s journey. Avoid repetition and technical jargon. Keep the tone conversational and friendly. Provide the CSV content enclosed in a markdown code block with the csv tag (e.g., csv \"Column1\",\"Column2\",\"Column3\" \"Value1\",\"Value2\",\"Value3\" ). The first row must contain column headers, and subsequent rows must contain corresponding values. Do not include any text or explanation outside the markdown block. Ensure all values are properly quoted (e.g., \"Value\"), especially if they contain commas, line breaks, or special characters. Example format: csv \"Subject_1\",\"Email_1\",\"Subject_2\",\"Email_2\",\"Subject_3\",\"Email_3\",\"Subject_4\",\"Email_4\",\"Campaign_Date\",\"Name\",\"Email\"."
             },
             {
                 "role": "user",
