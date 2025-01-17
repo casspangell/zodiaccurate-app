@@ -117,7 +117,7 @@ async function sendWelcomeEmailWithMailerSend(clientName, editResponseUrl, email
   return await sendEmail(mailerSendUrl, emailData);
 }
 
-async function sendDailyEmailWithMailerSend(clientName, email, prompt) {
+async function sendDailyEmailWithMailerSend(clientName, email, prompt, uuid) {
   console.log("sendDailyEmailWithMailerSend");
 
   if (!clientName || !email || !prompt) {
@@ -128,6 +128,7 @@ async function sendDailyEmailWithMailerSend(clientName, email, prompt) {
   const dailyPrompt = Array.isArray(prompt) ? prompt[0] : prompt;
 
   const mailerSendUrl = "https://api.mailersend.com/v1/email";
+  const formattedDate = formatDateForUser(uuid);
 
   const emailHtml = `
   <!DOCTYPE html>
@@ -185,7 +186,7 @@ async function sendDailyEmailWithMailerSend(clientName, email, prompt) {
               <img src="https://taohealinggroup.com/zodiaccurate/zodiaccurate_logo.png" alt="Zodiaccurate Daily Guidance">
           </div>
           <div class="content">
-              <h3>${new Date().toDateString()}</h3>
+              <h3>${formattedDate}</h3>
 
               ${dailyPrompt.overview ? `
               <h2>Overview</h2>

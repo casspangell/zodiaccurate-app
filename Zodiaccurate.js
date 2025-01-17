@@ -36,7 +36,7 @@ function runZodiaccurate() {
       console.log(`Zodiac data for UUID ${uuid}: ${JSON.stringify(zodiacData, null, 2)}`);
       
       // Uncomment this to send the daily email
-      sendDailyEmailWithMailerSend(name, email, zodiacData);
+      sendDailyEmailWithMailerSend(name, email, zodiacData, uuid);
     }
   });
 

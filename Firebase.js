@@ -242,6 +242,35 @@ function doesUserExist(uuid) {
     }
 }
 
+function getUserTimezone(uuid) {
+    console.log("FETCHING USER TIMEZONE FOR UUID: ", uuid);
+    const firebaseUrl = `${FIREBASE_URL}/users/${uuid}/timezone.json?auth=${FIREBASE_API_KEY}`;
+
+    const options = {
+        method: "get",
+        headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${FIREBASE_API_KEY}`
+        }
+    };
+
+    try {
+        const response = UrlFetchApp.fetch(firebaseUrl, { ...options, muteHttpExceptions: true });
+        const timezone = JSON.parse(response.getContentText());
+
+        if (!timezone) {
+            Logger.log("No timezone found for UUID: " + uuid);
+            return null;
+        }
+
+        console.log("User's timezone: ", timezone);
+        return timezone; // Return the timezone
+    } catch (e) {
+        Logger.log("Error retrieving timezone for UUID " + uuid + ": " + e.message);
+        return null;
+    }
+}
+
 /**
  * Retrieves user data from the Firebase USERS table for a specific UUID.
  *

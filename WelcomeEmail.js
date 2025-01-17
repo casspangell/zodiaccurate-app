@@ -8,10 +8,11 @@
  * @param {string} prompt - The JSON string containing the horoscope data, which is parsed and formatted for the email.
  * @returns {void}
  */
-function sendWelcomeEmailWithMailerSend(clientName, editResponseUrl, email) {
+function sendWelcomeEmailWithMailerSend(clientName, editResponseUrl, email, uuid) {
   const mailerSendUrl = "https://api.mailersend.com/v1/email";
   console.log("SENDING WELCOME EMAIL");
 const copyright = getCopyright();
+
 stripeLink = "www.google.com"; //TODO CHANGE
 
 // Generate HTML content dynamically
