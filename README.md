@@ -20,8 +20,8 @@ This project uses **GitHub** for version control and **Google Apps Script** for 
 Clone this repository to your local machine:
 
 ```bash
-git clone https://github.com/casspangell/zodiaccurate.git
-cd zodiaccurate
+git clone https://github.com/casspangell/zodiaccurate-app.git
+cd zodiaccurate-app
 ```
 
 ### 2. Install `clasp`
