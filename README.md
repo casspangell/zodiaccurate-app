@@ -1,4 +1,3 @@
-ee
 # Zodiaccurate Project
 
 This project uses **GitHub** for version control and **Google Apps Script** for backend automation, managed via **clasp**. The project also uses **GitHub Actions** to deploy the code to Google Apps Script manually.
