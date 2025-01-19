@@ -214,6 +214,9 @@ async function sendDailyEmailWithMailerSend(clientName, email, prompt, uuid) {
               <h2>Local Weather</h2>
               <p>${dailyPrompt.local_weather}</p>` : ''}
           </div>
+          <div class="footer">
+              <p>${COPYRIGHT}</p>
+          </div>
       </div>
   </body>
   </html>
@@ -309,9 +312,9 @@ async function sendUpdateInfoWithMailerSend(name, email) {
             <p>Continue to walk your path with courage and curiosity. The stars are watching, and they shine brightly upon you.</p>
             <p>Blessings,<br>The Zodiaccurate Team</p>
         </div>
-        <div class="footer">
-            <p>&copy; 2024 Zodiaccurate. All rights reserved.</p>
-        </div>
+          <div class="footer">
+              <p>${COPYRIGHT}</p>
+          </div>
     </div>
 </body>
 </html>
@@ -418,9 +421,9 @@ async function sendTrialCampaignEmailWithMailerSend(name, email, prompt, subject
             <p>${prompt}</p>` : ''}
             <p>Blessings,<br>The Zodiaccurate Team</p>
         </div>
-        <div class="footer">
-            <p>&copy; 2025 Zodiaccurate. All rights reserved.</p>
-        </div>
+          <div class="footer">
+              <p>${COPYRIGHT}</p>
+          </div>
     </div>
 </body>
 </html>
@@ -436,12 +439,12 @@ console.log("Email: ", email, " Name: ", name, " Subject: ", subject);
     },
     to: [
       {
-        email: email, // Recipient's email
+        email: email,
         name: name || "Valued Seeker",
       },
     ],
     subject: subject,
-    html: emailHtml, // Use the formatted HTML content
+    html: emailHtml,
   };
 
   try {
@@ -452,3 +455,4 @@ console.log("Email: ", email, " Name: ", name, " Subject: ", subject);
     throw error;
   }
 }
+
