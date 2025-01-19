@@ -56,6 +56,7 @@ function onFormSubmitHandler(e) {
 
   // Check if the user already exists in Firebase
   const user = doesUserExist(uuid);
+  const userSaveResult = saveUserToUserTableFirebase(uuid, userData);
 
   if (user !== false) {
     // Handle existing user update
@@ -79,11 +80,11 @@ function onFormSubmitHandler(e) {
     //   const answer = item.getResponse();
     // });
 
-    // Save zodiac data to Firebase
+    const userSaveResult = saveUserToUserTableFirebase(uuid, userData);
     const saveResult = pushEntryToFirebase(jsonData, uuid);
 
     // Ensure dependent actions only execute after Firebase has successfully saved the data
-    if (saveResult) {
+    if (saveResult && userSaveResult) {
       welcomeChatGPT(jsonData, uuid);
       setUpEmailCampaign(jsonData, uuid, name, email);
       sendWelcomeEmailWithMailerSend(uuid, name, responseUrl, email);
@@ -92,5 +93,5 @@ function onFormSubmitHandler(e) {
   
     const formattedTimezone = replaceSlashesWithDashes(timezone);
     updateExecTimeTable(uuid, formattedTimezone);
-    saveUserToUserTableFirebase(uuid, userData);
+
 }
