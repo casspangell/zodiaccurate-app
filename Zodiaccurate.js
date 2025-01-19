@@ -93,7 +93,7 @@ async function nightlyChatGPT(uuid, userData) {
  * @returns {Object|null} - An object containing UUIDs as keys and user data as values, or null if no data is found.
  */
 function fetchUUIDsForTimezone() {
-  const timezones = getTimezonesAt6AM();
+  const timezones = getTimezonesAtTime(6);
   console.log("Timezones at 6 AM:", JSON.stringify(timezones, null, 2));
 
   // Fetch user data for these timezones
