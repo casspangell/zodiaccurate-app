@@ -10,7 +10,7 @@
  */
 function getChatGPTResponse(instructions, uuid) {
   
-    console.log("GET CHAT RESPONSE-----!!!");
+    console.log("GET CHAT RESPONSE");
     const url = 'https://api.openai.com/v1/chat/completions';
 
     const payload = {
