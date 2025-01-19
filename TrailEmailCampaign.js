@@ -1,18 +1,5 @@
 async function setUpEmailCampaign(jsonSinglePersonData, uuid, name, email) {
     console.log("PREPARE EMAIL CAMPAIGN CHATGPT");
-<<<<<<< HEAD
-    // Generate ChatGPT prompt
-    const prompt = getChatEmailCampaignInstructions(jsonSinglePersonData, name, email);
-    const chatGPTResponse = await getChatGPTEmailCampaignResponse(prompt, uuid);
-}
-
-function getChatEmailCampaignInstructions(jsonSinglePersonData) {
-  console.log("GET CHAT CAMPAIGN INSTRUCTIONS");
-
-    const prompt = `
-        Here is user data: ${JSON.stringify(jsonSinglePersonData)}
-Your task is to create a 4-day personalized email campaign for this person, incorporating astrological insights to help the user decide to subscribe to our services on Days 3, 5, 7, and 9 into their trial program. Add a timestamp of today's date.
-=======
 
     try {
         // Generate ChatGPT prompt
@@ -32,7 +19,6 @@ function getChatEmailCampaignInstructions(uuid, jsonSinglePersonData) {
     const prompt = `
         Here is user data: ${JSON.stringify(jsonSinglePersonData)}, Campaign_Date = ${campaignDate}, Server_Date = ${Date().serverDate}. Our company is Zodiaccurate. If you wish to use this name, place it as the Zodiaccurate Team or Zodiaccurate.
 Your task is to create a 4-day personalized email campaign for this person, incorporating astrological insights to help the user decide to subscribe to our services on Days 3, 5, 7, and 9 into their trial program. Add a timestamp of today's date. Do not add [Dear User] or [From Zodiaccurate]. The email needs to bait the user into subscribing for the app. Use predictions on how using this unique astrology app will enhance their overall life, wellness, and wellbeing. Incorporate what you would be used in an astrology prediction into their life to enhance their metaphysical outlook.
->>>>>>> master
 
 Focus on these sections and generate a CSV file containing the following columns and data:
 - Subject_1
@@ -44,19 +30,12 @@ Focus on these sections and generate a CSV file containing the following columns
 - Subject_4
 - Email_4
 - Campaign_Date
-<<<<<<< HEAD
-=======
 - Server_Date
->>>>>>> master
 - Name
 - Email
 
 Expand the main body of each email by including:
-<<<<<<< HEAD
-- Personalized details such as the user’s name, family member names, occupation, or specific data from their profile.
-=======
 - Personalized details such as the user's name, family member names, occupation, or specific data from their profile.
->>>>>>> master
 - Relatable examples and stories tied directly to their personal goals, stressors, or experiences during the trial period (e.g., their role as a spiritual healer or their goal of work-life balance).
 - Astrological insights relevant to their trial period, aligned with their birth data.
 - Emotionally compelling calls to action that emphasize how subscribing will address their unique needs and goals.
@@ -113,56 +92,11 @@ function getChatGPTEmailCampaignResponse(instructions, uuid) {
 }
 
 function sendEmailCampaign() {
-<<<<<<< HEAD
-=======
   // Retrieve the data from the trial_campaign table
->>>>>>> master
   const jsonData = getUUIDDataFromTrialCampaignTable();
 
   // Parse the JSON data
   const data = typeof jsonData === "string" ? JSON.parse(jsonData) : jsonData;
-<<<<<<< HEAD
-  const mainKey = Object.keys(data)[0];
-  const emailData = data[mainKey];
-  const { Campaign_Date, Name, Email, Email_One, Email_Two, Email_Three, Email_Four } = emailData;
-
-  // Check if the date is 3, 5, 7, or 9 days from today
-  const inputDate = new Date(Campaign_Date);
-  const today = new Date();
-  const differenceInTime = inputDate.getTime() - today.getTime(); // Difference in milliseconds
-  const differenceInDays = Math.round(differenceInTime / (1000 * 60 * 60 * 24)); // Convert to days
-
-  // Map the day difference to the appropriate email
-  const emails = {
-    3: Email_One,
-    5: Email_Two,
-    7: Email_Three,
-    9: Email_Four,
-  };
-
-  // Check if the day difference is valid
-  if ([3, 5, 7, 9].includes(differenceInDays)) {
-    const emailContent = emails[differenceInDays];
-    const day = differenceInDays;
-
-    // Call the email sending function
-    sendTrialCampaignEmailWithMailerSend(Name, Email, emailContent, day);
-  } else {
-    console.log("No email to send today.");
-  }
-
-  return {
-    mainKey,
-    Date,
-    Email_One,
-    Email_Two,
-    Email_Three,
-    Email_Four,
-    differenceInDays,
-  };
-}
-
-=======
 
   // Get the current date
   const today = new Date();
@@ -224,4 +158,3 @@ function sendEmailCampaign() {
 
 
 
->>>>>>> master
