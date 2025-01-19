@@ -27,7 +27,6 @@ async function sendWelcomeEmailWithMailerSend(clientName, editResponseUrl, email
     throw new Error("Missing required parameters for welcome email.");
   }
 
-  const mailerSendUrl = "https://api.mailersend.com/v1/email";
   const stripeLink = "www.google.com"; // TODO: Update this link
 
   const emailHtml = `
@@ -114,7 +113,7 @@ async function sendWelcomeEmailWithMailerSend(clientName, editResponseUrl, email
     html: emailHtml,
   };
 
-  return await sendEmail(mailerSendUrl, emailData);
+  return await sendEmail(MAILER_SEND_URL, emailData);
 }
 
 async function sendDailyEmailWithMailerSend(clientName, email, prompt, uuid) {
@@ -127,7 +126,6 @@ async function sendDailyEmailWithMailerSend(clientName, email, prompt, uuid) {
   // Handle the case where prompt is an array
   const dailyPrompt = Array.isArray(prompt) ? prompt[0] : prompt;
 
-  const mailerSendUrl = "https://api.mailersend.com/v1/email";
   const formattedDate = formatDateForUser(uuid);
 
   const emailHtml = `
@@ -231,7 +229,7 @@ async function sendDailyEmailWithMailerSend(clientName, email, prompt, uuid) {
     html: emailHtml,
   };
 
-  return await sendEmail(mailerSendUrl, emailData);
+  return await sendEmail(MAILER_SEND_URL, emailData);
 }
 
 /**
@@ -246,7 +244,6 @@ async function sendDailyEmailWithMailerSend(clientName, email, prompt, uuid) {
 async function sendUpdateInfoWithMailerSend(name, email) {
   console.log("Sending updated info email to:", name, email);
 
-  const mailerSendUrl = "https://api.mailersend.com/v1/email";
 
   // HTML email content
   const emailHtml = `
@@ -337,7 +334,7 @@ async function sendUpdateInfoWithMailerSend(name, email) {
   };
 
   try {
-    const response = await sendEmail(mailerSendUrl, emailData);
+    const response = await sendEmail(MAILER_SEND_URL, emailData);
     console.log("Update email sent successfully:", response.getContentText());
   } catch (error) {
     console.error("Failed to send update info email:", error.message);
@@ -356,10 +353,8 @@ async function sendUpdateInfoWithMailerSend(name, email) {
  * @param {number} day - The current day of the trial campaign.
  * @returns {Promise<void>} - Resolves if the email is sent successfully, otherwise throws an error.
  */
-async function sendTrialCampaignEmailWithMailerSend(name, email, prompt, day) {
+async function sendTrialCampaignEmailWithMailerSend(name, email, prompt, subject, day) {
   console.log(`Sending email for day ${day} to ${name} (${email})`);
-  const formattedDate = formatDateForUser(uuid);
-  const mailerSendUrl = "https://api.mailersend.com/v1/email";
 
   // Generate HTML content dynamically using the `prompt` object
   const emailHtml = `
@@ -418,11 +413,8 @@ async function sendTrialCampaignEmailWithMailerSend(name, email, prompt, day) {
             <img src="https://taohealinggroup.com/zodiaccurate/zodiaccurate_logo.png" alt="Zodiaccurate Daily Guidance">
         </div>
         <div class="content">
-            <h3>${formattedDate}</h3>
-
             ${prompt ? `
-            <h2>Email Campaign Day ${day}</h2>
-            Dear ${name},<br/>
+            <h2>Zodiaccurate Trial Day ${day}</h2>
             <p>${prompt}</p>` : ''}
             <p>Blessings,<br>The Zodiaccurate Team</p>
         </div>
@@ -434,6 +426,8 @@ async function sendTrialCampaignEmailWithMailerSend(name, email, prompt, day) {
 </html>
 `;
 
+console.log("Trial Email Content ", emailHtml);
+console.log("Email: ", email, " Name: ", name, " Subject: ", subject);
   // Email payload
   const emailData = {
     from: {
@@ -446,16 +440,15 @@ async function sendTrialCampaignEmailWithMailerSend(name, email, prompt, day) {
         name: name || "Valued Seeker",
       },
     ],
-    subject: `Zodiaccurate Trial - Day ${day}`,
+    subject: subject,
     html: emailHtml, // Use the formatted HTML content
   };
 
   try {
-    const response = await sendEmail(mailerSendUrl, emailData);
+    const response = await sendEmail(MAILER_SEND_URL, emailData);
     console.log(`Trial campaign email for day ${day} sent successfully:`, response.getContentText());
   } catch (error) {
     console.error(`Failed to send trial campaign email for day ${day}:`, error.message);
     throw error;
   }
 }
-

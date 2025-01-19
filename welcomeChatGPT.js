@@ -1,9 +1,9 @@
-async function welcomeChatGPT(uuid) {
+async function welcomeChatGPT(jsonSinglePersonData, uuid) {
     console.log("PREPARE WELCOME CHATGPT");
 
-    // Fetch user data
-    var jsonSinglePersonData = {};
-    jsonSinglePersonData = getUserDataFromFirebase(uuid);
+    // // Fetch user data
+    // var jsonSinglePersonData = {};
+    // jsonSinglePersonData = getUserDataFromFirebase(uuid);
 
     // Generate ChatGPT prompt
     const prompt = getChatInstructions(jsonSinglePersonData, uuid);
@@ -15,7 +15,7 @@ async function welcomeChatGPT(uuid) {
         const editUrl = findKeyValue(userData, "editURL");
         const { name, email } = jsonSinglePersonData;
         console.log("EDITURL: ", editUrl);
-      console.log("welcomechat zodiac pull", zodiaccurateData);
+        console.log("welcomechat zodiac pull", zodiaccurateData);
       await Promise.all([
         sendWelcomeEmailWithMailerSend(name, editUrl, email),
         sendDailyEmailWithMailerSend(name, email, zodiaccurateData, uuid)
