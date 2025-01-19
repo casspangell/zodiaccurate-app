@@ -1,5 +1,6 @@
 async function setUpEmailCampaign(jsonSinglePersonData, uuid, name, email) {
     console.log("PREPARE EMAIL CAMPAIGN CHATGPT");
+<<<<<<< HEAD
     // Generate ChatGPT prompt
     const prompt = getChatEmailCampaignInstructions(jsonSinglePersonData, name, email);
     const chatGPTResponse = await getChatGPTEmailCampaignResponse(prompt, uuid);
@@ -11,6 +12,27 @@ function getChatEmailCampaignInstructions(jsonSinglePersonData) {
     const prompt = `
         Here is user data: ${JSON.stringify(jsonSinglePersonData)}
 Your task is to create a 4-day personalized email campaign for this person, incorporating astrological insights to help the user decide to subscribe to our services on Days 3, 5, 7, and 9 into their trial program. Add a timestamp of today's date.
+=======
+
+    try {
+        // Generate ChatGPT prompt
+        const prompt = getChatEmailCampaignInstructions(uuid, jsonSinglePersonData);
+        await getChatGPTEmailCampaignResponse(prompt, uuid);
+        console.log("Trial email campaign setup successfully.");
+    } catch (error) {
+        console.error("Error setting up trial email campaign:", error.message);
+    }
+}
+
+
+function getChatEmailCampaignInstructions(uuid, jsonSinglePersonData) {
+  console.log("GET CHAT CAMPAIGN INSTRUCTIONS");
+  const campaignDate = formatDateForUser(uuid);
+  const serverDate = new Date();
+    const prompt = `
+        Here is user data: ${JSON.stringify(jsonSinglePersonData)}, Campaign_Date = ${campaignDate}, Server_Date = ${Date().serverDate}. Our company is Zodiaccurate. If you wish to use this name, place it as the Zodiaccurate Team or Zodiaccurate.
+Your task is to create a 4-day personalized email campaign for this person, incorporating astrological insights to help the user decide to subscribe to our services on Days 3, 5, 7, and 9 into their trial program. Add a timestamp of today's date. Do not add [Dear User] or [From Zodiaccurate]. The email needs to bait the user into subscribing for the app. Use predictions on how using this unique astrology app will enhance their overall life, wellness, and wellbeing. Incorporate what you would be used in an astrology prediction into their life to enhance their metaphysical outlook.
+>>>>>>> master
 
 Focus on these sections and generate a CSV file containing the following columns and data:
 - Subject_1
@@ -22,11 +44,19 @@ Focus on these sections and generate a CSV file containing the following columns
 - Subject_4
 - Email_4
 - Campaign_Date
+<<<<<<< HEAD
+=======
+- Server_Date
+>>>>>>> master
 - Name
 - Email
 
 Expand the main body of each email by including:
+<<<<<<< HEAD
 - Personalized details such as the user’s name, family member names, occupation, or specific data from their profile.
+=======
+- Personalized details such as the user's name, family member names, occupation, or specific data from their profile.
+>>>>>>> master
 - Relatable examples and stories tied directly to their personal goals, stressors, or experiences during the trial period (e.g., their role as a spiritual healer or their goal of work-life balance).
 - Astrological insights relevant to their trial period, aligned with their birth data.
 - Emotionally compelling calls to action that emphasize how subscribing will address their unique needs and goals.
@@ -83,10 +113,15 @@ function getChatGPTEmailCampaignResponse(instructions, uuid) {
 }
 
 function sendEmailCampaign() {
+<<<<<<< HEAD
+=======
+  // Retrieve the data from the trial_campaign table
+>>>>>>> master
   const jsonData = getUUIDDataFromTrialCampaignTable();
 
   // Parse the JSON data
   const data = typeof jsonData === "string" ? JSON.parse(jsonData) : jsonData;
+<<<<<<< HEAD
   const mainKey = Object.keys(data)[0];
   const emailData = data[mainKey];
   const { Campaign_Date, Name, Email, Email_One, Email_Two, Email_Three, Email_Four } = emailData;
@@ -127,3 +162,66 @@ function sendEmailCampaign() {
   };
 }
 
+=======
+
+  // Get the current date
+  const today = new Date();
+
+  // Iterate over each UUID in the data
+  Object.keys(data).forEach((uuid) => {
+    const emailData = data[uuid];
+    const {
+      Campaign_Date,
+      Name,
+      Email,
+      Email_1,
+      Email_2,
+      Email_3,
+      Email_4,
+      Subject_1,
+      Subject_2,
+      Subject_3,
+      Subject_4
+    } = emailData;
+
+    console.log("TRIAL EMAIL DATA: ", JSON.stringify(emailData));
+    // Calculate the difference in days between Campaign_Date and today
+    const campaignDate = new Date(Campaign_Date);
+    const differenceInDays = Math.floor((today - campaignDate) / (1000 * 60 * 60 * 24));
+
+    const emails = {
+      3: Email_1,
+      5: Email_2,
+      7: Email_3,
+      9: Email_4,
+    };
+
+    const subjects = {
+      3: Subject_1,
+      5: Subject_2,
+      7: Subject_3,
+      9: Subject_4,
+    };
+
+    // Check if the day difference matches an email trigger
+    if (emails[differenceInDays]) {
+      const emailContent = emails[differenceInDays];
+      const subject = subjects[differenceInDays];
+      const day = differenceInDays;
+      console.log("emailContent ", emailContent);
+      console.log("subjectContent ", subject);
+
+      // Call the email sending function with subject
+      sendTrialCampaignEmailWithMailerSend(Name, Email, emailContent, subject, day);
+    } else if (differenceInDays > 9) {
+      deleteUUIDFromTrialCampaignTable(uuid);
+      console.log(`UUID ${uuid} deleted from the table as it is beyond 9 days.`);
+    } else {
+      console.log(`No email to send today for ${Name} (${Email}).`);
+    }
+  });
+}
+
+
+
+>>>>>>> master

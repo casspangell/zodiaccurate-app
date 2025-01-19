@@ -10,27 +10,27 @@ async function nightlyChatCPTPrepare() {
 }
 
 function fetchUUIDsForTimezone() {
-  // Step 1: Get all timezones where it's 6 AM
-  const timezones = getTimezonesAt6AM();
+  // Get all timezones where it's 6 AM
+  const timezones = getTimezonesAtTime(6);
   console.log("Timezones at 6 AM:", JSON.stringify(timezones, null, 2));
 
-  // Step 2: Fetch user data for these timezones
+  // Fetch user data for these timezones
   const users = getUUIDDataFromExecTimeTable(timezones);
   console.log("User Data:", JSON.stringify(users, null, 2));
 
-  // Step 3: Process and store user UUIDs if data exists
+  // Process and store user UUIDs if data exists
   if (users && Array.isArray(users)) {
-    const jsonData = {}; // Initialize jsonData object
+    const jsonData = {};
     users.forEach((user) => {
       if (user.uuid) {
-        jsonData[user.uuid] = user; // Map user UUID to user data
+        jsonData[user.uuid] = user;
       }
     });
 
     console.log("Processed JSON Data:", JSON.stringify(jsonData, null, 2));
-    return jsonData; // Return the processed data if needed
+    return jsonData;
   } else {
     console.log("No users found for the given timezones.");
-    return null; // Return null if no users are found
+    return null;
   }
 }

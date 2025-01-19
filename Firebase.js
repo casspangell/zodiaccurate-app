@@ -60,6 +60,7 @@ function saveUserToUserTableFirebase(uuid, jsonData) {
 
 function saveEmailCampaignToFirebase(jsonData, uuid) {
       Logger.log("PUSHING EMAIL CAMPAIGN TO FIREBASE...", JSON.stringify(jsonData));
+
     const firebaseUrl = `${FIREBASE_URL}/trial_campaign/${uuid}.json?auth=${FIREBASE_API_KEY}`;
     const options = {
         method: "patch",
@@ -109,7 +110,7 @@ function getEmailCampaignFromFirebase(uuid) {
             return null;
         }
 
-        Logger.log("USER DATA: " + JSON.stringify(userData, null, 2));
+        // Logger.log("USER DATA: " + JSON.stringify(userData, null, 2));
         return userData;
     } catch (e) {
         Logger.log("Error retrieving data for UUID " + uuid + ": " + e.message);
@@ -218,7 +219,7 @@ function saveTimezoneToFirebase(timezone, uuid, jsonData) {
  */
 function doesUserExist(uuid) {
     console.log("CHECKING IF USER EXISTS: ", uuid);
-    const firebaseUrl = `${FIREBASE_URL}/responses/${uuid}.json?auth=${FIREBASE_API_KEY}`;
+    const firebaseUrl = `${FIREBASE_URL}/users/${uuid}.json?auth=${FIREBASE_API_KEY}`;
 
     const options = {
         method: "get",
@@ -413,6 +414,33 @@ function getUUIDDataFromTrialCampaignTable() {
         return []; // Return an empty array on error
     }
 }
+
+function deleteUUIDFromTrialCampaignTable(uuid) {
+  console.log(`Deleting UUID: ${uuid} from the trial_campaign table.`);
+
+  const firebaseUrl = `${FIREBASE_URL}/trial_campaign/${uuid}.json?auth=${FIREBASE_API_KEY}`;
+
+  const options = {
+    method: "delete",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${FIREBASE_API_KEY}`,
+    },
+    muteHttpExceptions: true, // Avoid throwing errors for non-200 responses
+  };
+
+  try {
+    const response = UrlFetchApp.fetch(firebaseUrl, options);
+    if (response.getResponseCode() === 200) {
+      console.log(`UUID ${uuid} successfully deleted.`);
+    } else {
+      console.error(`Failed to delete UUID ${uuid}: ${response.getContentText()}`);
+    }
+  } catch (error) {
+    console.error(`Error deleting UUID ${uuid}: ${error.message}`);
+  }
+}
+
 
 /**
  * Saves a sanitized horoscope entry to the Firebase zodiac table for a specific UUID and day of the week.

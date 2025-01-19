@@ -23,9 +23,6 @@ function onFormSubmitHandler(e) {
   var userData = {};
 
   userData["editURL"] = responseUrl;
-  
-  // Check if the user already exists in Firebase
-  const user = doesUserExist(uuid);
 
   // Get the responses for the current submission
   const itemResponses = e.response.getItemResponses();
@@ -34,7 +31,6 @@ function onFormSubmitHandler(e) {
   for (const itemResponse of itemResponses) {
       const question = itemResponse.getItem().getTitle().toLowerCase();
       const answer = itemResponse.getResponse();
-      console.log(question, " ", answer);
 
       if (question === "name") {
         timezoneJson["name"] = answer;
@@ -52,13 +48,17 @@ function onFormSubmitHandler(e) {
         timezone = getTimeZoneFromLocation(answer);
         jsonData["timezone"] = timezone;
         userData["timezone"] = replaceSlashesWithDashes(timezone);
-        console.log("updating timezone ", timezone);
+        console.log("Updating Timezone ", timezone);
       }
 
       jsonData[question] = answer;
     }
 
-  if (user) {
+  // Check if the user already exists in Firebase
+  const user = doesUserExist(uuid);
+  const userSaveResult = saveUserToUserTableFirebase(uuid, userData);
+
+  if (user !== false) {
     // Handle existing user update
     Logger.log("User exists in system. Updating entry."); 
 
@@ -75,22 +75,23 @@ function onFormSubmitHandler(e) {
     jsonData["trial-date-start"] = new Date();
     jsonData["trial"] = "true";
 
-    itemResponses.forEach(item => {
-      const question = item.getItem().getTitle().toLowerCase().trim();
-      const answer = item.getResponse();
-      Logger.log(`Question: ${question}, Answer: ${answer}`);
-    });
+    // itemResponses.forEach(item => {
+    //   const question = item.getItem().getTitle().toLowerCase().trim();
+    //   const answer = item.getResponse();
+    // });
 
-    // Save zodiac data to Firebase
+    const userSaveResult = saveUserToUserTableFirebase(uuid, userData);
     const saveResult = pushEntryToFirebase(jsonData, uuid);
 
     // Ensure dependent actions only execute after Firebase has successfully saved the data
-    if (saveResult) {
-      welcomeChatGPT(uuid);
+    if (saveResult && userSaveResult) {
+      welcomeChatGPT(jsonData, uuid);
+      setUpEmailCampaign(jsonData, uuid, name, email);
+      sendWelcomeEmailWithMailerSend(uuid, name, responseUrl, email);
     }
   }
   
     const formattedTimezone = replaceSlashesWithDashes(timezone);
     updateExecTimeTable(uuid, formattedTimezone);
-    saveUserToUserTableFirebase(uuid, userData);
+
 }
