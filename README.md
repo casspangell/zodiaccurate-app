@@ -97,6 +97,27 @@ This will sync any changes from Google Apps Script into your local project direc
 
 ---
 
+## Updating Firebase Functions
+
+The Firebase project ID for this project is `zodiaccurate-e9aaf`. Project Console: [Firebase Console](https://console.firebase.google.com/project/zodiaccurate-e9aaf/overview).
+
+### Steps to Update Firebase Functions
+
+1. Make adjustments to your Firebase function code as needed.
+2. Run the build command to prepare the changes:
+
+   ```bash
+   npm run build
+   ```
+
+3. Deploy the updated functions to Firebase:
+
+   ```bash
+   firebase deploy --only functions
+   ```
+
+---
+
 ## Troubleshooting
 
 - **Missing Credentials**: If you see issues related to credentials during deployment, make sure your `credentials.json` file is properly configured and accessible.
@@ -122,4 +143,3 @@ This will sync any changes from Google Apps Script into your local project direc
   - Navigate to the **Actions** tab in your repository.
   - Select the **Deploy to Google Apps Script** workflow.
   - Click **Run workflow**.
-
