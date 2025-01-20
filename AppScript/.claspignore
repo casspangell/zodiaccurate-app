@@ -1,0 +1,20 @@
+# Exclude node_modules and dependency files
+**/node_modules/**
+package.json
+package-lock.json
+
+# Exclude Firebase configuration and other unrelated files
+firebase.json
+.firebaserc
+
+# Exclude other directories and files that are irrelevant
+.idea/
+functions/
+publickey
+publickey.pub
+.DS_Store
+
+# Allow only relevant Apps Script files
+!*.gs
+!*.js
+!appsscript.json

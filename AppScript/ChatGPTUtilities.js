@@ -1,32 +1,88 @@
+
 /**
- * Constructs a ChatGPT prompt using user data and random modifiers.
- * - The prompt instructs ChatGPT to generate a personalized daily horoscope.
- * - Incorporates sections like Overview, Career, Relationships, etc., with unique modifiers.
- * - Emphasizes CSV formatting with snake_case column headers.
+ * Constructs a ChatGPT prompt using user data and modifiers.
+ * - Retrieves random modifiers and three days of prior data for context.
+ * - Builds a detailed prompt to generate a personalized daily horoscope.
  *
- * @param {Object} jsonSinglePersonData - The user data object containing relevant information such as name, location, and personal attributes.
+ * @param {Object} jsonSinglePersonData - The user data object containing relevant information.
  * @param {string} uuid - The unique identifier for the user.
- * @returns {string} - A formatted string containing the ChatGPT prompt.
+ * @returns {string} - A formatted prompt string for ChatGPT.
  */
 function getChatInstructions(jsonSinglePersonData, uuid) {
-    console.log("getChatInstructions uuid ", uuid);
-
+  console.log("GET CHAT INSTRUCTIONS");
     const modifiers = getRandomModifiers();
+    const getWeekData = getThreeDaysDataFromFirebase(uuid);
 
     const prompt = `
         Here is user data: ${JSON.stringify(jsonSinglePersonData)}
-        Your task is to create a daily, personalized horoscope for this person, incorporating astrological insights and practical advice. Focus on these sections and generate a CSV file containing the following columns and data:
-        - overview: Emotional, mental, and spiritual insights (${modifiers.overview})
-        - career_and_finances: Strategies for growth (${modifiers.careerAndFinances})
-        - relationships: Emotional connections (${modifiers.relationships})
-        - parenting_guidance: Support tailored to children (${modifiers.parentingGuidance})
-        - health: Holistic well-being (${modifiers.health})
-        - personal_guidance: Introspective advice (${modifiers.personalGuidance})
-        - local_weather: Brief forecast.
-        Format the columns of the csv with snake case formatting
+        Your task is to create a daily, personalized horoscope for this person, incorporating astrological insights and practical advice. Focus on these sections and  generate a CSV file containing the following columns and data:. One containing the following columns and data:
+        - Overview: Emotional, mental, and spiritual insights, including specific examples of challenges the person may face and practical ways to address them. (${modifiers.overview})
+        - Career and Finances: Strategies for professional and financial growth. Include specific small but meaningful steps the person can take, phrased in an empowering and open-ended tone to encourage autonomy. (${modifiers.careerAndFinances})
+        - Relationships: Emotional connections and advice for strengthening bonds. (${modifiers.relationships})
+        - Parenting Guidance: Support tailored to the user’s child if they have children, offering actionable suggestions for nurturing and engagement. (${modifiers.parentingGuidance}). Don't include this section if the user does not have a child.
+        - Health: Holistic well-being with practical health tips aligned with the person’s lifestyle and goals. (${modifiers.health})
+        - Personal Guidance: Introspective advice for self-improvement and emotional balance. Include suggestions for reflection and small changes aligned with the user’s values and aspirations. (${modifiers.personalGuidance})
+        - Local Weather: Brief forecast.
+        Avoid repetition, technical terms, and ensure uniqueness each day. Use the previous day's data for reference: ${getWeekData}.
+        The output should include thoughtful, actionable advice based on the person’s astrological sign, planetary influences, and personal data while being empathetic and encouraging. Avoid being overly directive, and instead suggest options that empower the individual to take their own steps forward. Avoid repetition, technical terms, and ensure uniqueness each day. Use the previous day's data for reference: ${getWeekData}. Astrological predictions tailored to the user’s chart, offering insights on upcoming opportunities, challenges, or planetary influences that may affect key areas of their life.
     `;
 
     return prompt.trim();
+}
+
+/**
+ * Fetches a response from the ChatGPT API based on the provided instructions.
+ * - Constructs a payload with the user's data and ChatGPT instructions.
+ * - Sends a request to the ChatGPT API and parses the response.
+ * - Saves the response to Firebase if valid.
+ *
+ * @param {string} instructions - The ChatGPT prompt containing user data and instructions.
+ * @param {string} uuid - The unique identifier for the user.
+ * @returns {Object|null} - The parsed response data if successful, or null on failure.
+ */
+function getChatGPTResponse(instructions, uuid) {
+  
+    const url = 'https://api.openai.com/v1/chat/completions';
+
+    const payload = {
+        "model": "gpt-4-turbo",
+        "max_tokens": 3000,
+        "temperature": 1.0,
+        "messages": [
+            {
+                "role": "system",
+                "content": "You are a highly knowledgeable and empathetic astrologer and personal guide."
+            },
+            {
+                "role": "user",
+                "content": "You are a highly knowledgeable and empathetic astrologer and personal guide. Your task is to generate a personalized daily horoscope in CSV format based on the provided data. Always provide the CSV content enclosed in a markdown code block with the csv tag (e.g., csv \"Column1\",\"Column2\",\"Column3\" \"Value1\",\"Value2\",\"Value3\" ). The first row must contain column headers, and subsequent rows must contain corresponding values. Do not include any text or explanation outside the markdown block. Ensure all values are properly quoted (e.g., \"Value\"), especially if they contain commas, line breaks, or special characters. Example format: csv \"Overview\",\"Career and Finances\",\"Relationships\",\"Parenting Guidance\",\"Health\",\"Personal Guidance\",\"Local Weather\" \"Today's insights...\",\"Career advice...\",\"Relationship advice...\",\"Parenting guidance...\",\"Health tips...\",\"Personal advice...\",\"Local weather forecast...\" . Ensure the format is consistent and adheres strictly to these guidelines."
+            },
+            {
+                "role": "user",
+                "content": instructions
+            }
+        ]
+    };
+
+    const options = {
+        "method": "post",
+        "headers": {
+            "Authorization": "Bearer " + CHAT_GPT_KEY,
+            "Content-Type": "application/json"
+        },
+        "payload": JSON.stringify(payload)
+    };
+
+    const response = UrlFetchApp.fetch(url, options);
+    const jsonResponse = JSON.parse(response.getContentText());
+
+    const responseData = parseResponseToJson(jsonResponse);
+
+    if (responseData && responseData.length > 0) {
+      return responseData;
+    } else {
+        console.log("Unexpected API response structure: " + JSON.stringify(responseData));
+    }
 }
 
 function getRandomModifiers() {

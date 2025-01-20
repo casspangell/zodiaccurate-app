@@ -12,11 +12,10 @@
  */
 function parseResponseToJson(responseData) {
     try {
-        // Step 1: Extract the "content" field
+        // Extract the "content" field
         var content = responseData.choices[0].message.content;
-        Logger.log("CONTENT: " + content);
 
-        // Step 2: Extract the CSV portion from the markdown block
+        // Extract the CSV portion from the markdown block
         var csvMatch = content.match(/```csv\n([\s\S]*?)\n```/);
         if (!csvMatch || csvMatch.length < 2) {
             Logger.log("CSV data not found in the response.");
@@ -25,7 +24,7 @@ function parseResponseToJson(responseData) {
 
         var csvContent = csvMatch[1]; // Extract the actual CSV content
 
-        // Step 3: Parse the CSV content using Utilities.parseCsv
+        // Parse the CSV content using Utilities.parseCsv
         var rows = Utilities.parseCsv(csvContent);
 
         if (rows.length < 2) {
@@ -33,7 +32,7 @@ function parseResponseToJson(responseData) {
             return null;
         }
 
-        // Step 4: Extract headers and rows
+        // Extract headers and rows
         var headers = rows[0]; // First row as headers
         var jsonData = [];
 
@@ -48,7 +47,7 @@ function parseResponseToJson(responseData) {
             jsonData.push(rowObject);
         }
 
-        // Step 5: Log the parsed JSON data
+        // Log the parsed JSON data
         Logger.log("Parsed JSON Data:");
         Logger.log(JSON.stringify(jsonData, null, 2));
 
