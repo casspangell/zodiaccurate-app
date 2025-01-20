@@ -10,13 +10,12 @@ async function sendEmail(apiUrl, emailData) {
 
   try {
     const response = await UrlFetchApp.fetch(apiUrl, options);
-    console.log("Email sent successfully:", response.getContentText());
+    console.log("Email API Response Code:", response.getResponseCode());
+    console.log("Email API Response Body:", response.getContentText());
     return response;
   } catch (error) {
-    console.error("Error sending email:", error.message, {
-      apiUrl,
-      emailData,
-    });
+    console.error("Error sending email:", error.message);
+    console.error("Request Options:", JSON.stringify(options, null, 2));
     throw error;
   }
 }
@@ -117,15 +116,15 @@ async function sendWelcomeEmailWithMailerSend(clientName, editResponseUrl, email
 }
 
 async function sendDailyEmailWithMailerSend(clientName, email, prompt, uuid) {
-  console.log("sendDailyEmailWithMailerSend");
+  console.log("sendDailyEmailWithMailerSend clientName ", clientName," email ", email, " prompt ", prompt, " uuid ", uuid);
 
   if (!clientName || !email || !prompt) {
     throw new Error("Missing required parameters for daily email.");
   }
 
   // Handle the case where prompt is an array
-  const dailyPrompt = Array.isArray(prompt) ? prompt[0] : prompt;
-
+  const dailyPrompt = transformKeysToLowerCaseWithUnderscores(prompt);
+  console.log("Daily prompt: ", dailyPrompt);
   const formattedDate = formatDateForUser(uuid);
 
   const emailHtml = `
@@ -231,7 +230,7 @@ async function sendDailyEmailWithMailerSend(clientName, email, prompt, uuid) {
     subject: "Zodiaccurate Daily Guidance",
     html: emailHtml,
   };
-
+console.log("EMAIL: ",emailHtml);
   return await sendEmail(MAILER_SEND_URL, emailData);
 }
 

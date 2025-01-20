@@ -6,6 +6,8 @@ const FORM_ID = PropertiesService.getScriptProperties().getProperty("FORM_ID");
 const GOOGLE_MAPS_API_KEY = PropertiesService.getScriptProperties().getProperty("GOOGLE_MAPS_API_KEY");
 const COPYRIGHT = `&copy; ${new Date().getFullYear()} Zodiaccurate. All rights reserved.`;
 const MAILER_SEND_URL = "https://api.mailersend.com/v1/email";
+const GITHUB_ACCESS_TOKEN = PropertiesService.getScriptProperties().getProperty("GITHUB_ACCESS_TOKEN");
+const STRIPE_WEBHOOK_SECRET = PropertiesService.getScriptProperties().getProperty("STRIPE_WEBHOOK_SECRET");
 
 const TEST_USER = "2_ABaOnudBnBkwqlqnMUV9qS7zBUYoqPWaz1UyPeMW7GYOD2bPl2ZLYvQJ0UdU28kSvXtp_ZU";
 const TEST_USER_DATA = {

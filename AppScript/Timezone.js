@@ -103,27 +103,6 @@ function getEnglishSpeakingCountryTimezones() {
   ];
 }
 
-// function getTimezonesAt6AM() {
-//   const timezones = getEnglishSpeakingCountryTimezones();
-//   const now = new Date();
-
-//   targetHour = 6;
-//   // Ensure the target hour is a valid 24-hour format string
-//   const formattedTargetHour = String(targetHour).padStart(2, "0");
-
-//   // Filter timezones where the local hour matches the targeted hour
-//   const matchingTimezones = timezones.filter((timezone) => {
-//     const localHour = Utilities.formatDate(now, timezone, "HH");
-//     return localHour === formattedTargetHour;
-//   });
-
-//   formattedTimezones = matchingTimezones.map((timezone) => replaceSlashesWithDashes(timezone)); //match db formatting
-
-//   Logger.log(`Timezones with local hour ${formattedTargetHour}: ${JSON.stringify(formattedTimezones)}`);
-//   return "Indian_Mauritius"; //TODO REMOVE
-//   return formattedTimezones;
-// }
-
 function getTimezonesAtTime(time) {
   const timezones = getEnglishSpeakingCountryTimezones();
   const now = new Date();
@@ -141,8 +120,42 @@ function getTimezonesAtTime(time) {
   formattedTimezones = matchingTimezones.map((timezone) => replaceSlashesWithDashes(timezone)); //match db formatting
 
   Logger.log(`Timezones with local hour ${formattedTargetHour}: ${JSON.stringify(formattedTimezones)}`);
-  // return "Indian_Mauritius"; //TODO REMOVE
-  return formattedTimezones;
+  return "Australia_Brisbane"; //TODO REMOVE
+  // return formattedTimezones;
+}
+
+/**
+ * Fetches UUIDs and their associated user data for the specified timezones.
+ * - Retrieves timezones from integer time.
+ * - Fetches UUIDs from the exec_time table for those timezones.
+ * - Retrieves user data for each UUID and organizes it into a JSON object.
+ *
+ * @returns {Object|null} - An object containing UUIDs as keys and user data as values, or null if no data is found.
+ */
+function fetchUUIDsForTimezone(time) {
+  const timezones = getTimezonesAtTime(time);
+  console.log("Timezones at 6 AM:", JSON.stringify(timezones, null, 2));
+
+  if (Object.keys(timezones).length !== 0) {
+  // Fetch user data for these timezones
+  const uuids = getUUIDDataFromExecTimeTable(timezones);
+  console.log("UUIDs for Timezone:", JSON.stringify(uuids, null, 2));
+
+    // Process and store user UUIDs if data exists
+    if (uuids) {
+      const jsonData = {};
+      uuids.forEach((uuid) => {
+          const userData = getUserDataFromFirebase(uuids);
+          jsonData[uuid] = userData; 
+      });
+
+      return jsonData;
+    } else {
+      console.log("No users found for the given timezones.");
+      return null;
+    }
+  }
+
 }
 
 

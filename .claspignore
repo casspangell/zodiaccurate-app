@@ -1,6 +1,17 @@
+# Ignore node_modules and dependency files
 node_modules/
-.git/
-.clasp.json
+package.json
+package-lock.json
+
+# Exclude Firebase configuration and unrelated files
+firebase.json
+.firebaserc
+.idea/
+functions/
 .DS_Store
-publickey
-publickey.pub
+
+# Allow only these Apps Script files
+!*.gs
+!*.js
+!appsscript.json
+

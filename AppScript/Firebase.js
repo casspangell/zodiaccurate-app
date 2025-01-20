@@ -85,7 +85,6 @@ function saveEmailCampaignToFirebase(jsonData, uuid) {
 function getEmailCampaignFromFirebase(uuid) {
       console.log("GETTING USER DATA FROM FIREBASE: ", uuid);
     const firebaseUrl = `${FIREBASE_URL}/trial_campaign/${uuid}.json?auth=${FIREBASE_API_KEY}`;
-    console.log("Firebase URL: ", firebaseUrl);
 
     const options = {
         method: "get",
@@ -317,7 +316,6 @@ function getUserDataFromFirebase(uuid) {
     console.log("GETTING USER DATA FROM FIREBASE: ", uuid);
 
     const firebaseUrl = `${FIREBASE_URL}/responses/${uuid}.json?auth=${FIREBASE_API_KEY}`;
-    console.log("Firebase URL: ", firebaseUrl);
 
     const options = {
         method: "get",
@@ -342,7 +340,7 @@ function getUserDataFromFirebase(uuid) {
             return null;
         }
 
-        Logger.log("USER DATA: " + JSON.stringify(userData, null, 2));
+        // Logger.log("USER DATA: " + JSON.stringify(userData, null, 2));
         return userData;
     } catch (e) {
         Logger.log("Error retrieving data for UUID " + uuid + ": " + e.message);
@@ -391,7 +389,7 @@ function getUUIDDataFromExecTimeTable(timezone) {
 }
 
 function getUUIDDataFromTrialCampaignTable() {
-    console.log(`getUUIDDataFromTrialCampaignTable`);
+    console.log(`getting UUIDs from TrialCampaignTable`);
     const firebaseUrl = `${FIREBASE_URL}/trial_campaign/.json?auth=${FIREBASE_API_KEY}`;
 
     const options = {
@@ -449,32 +447,39 @@ function deleteUUIDFromTrialCampaignTable(uuid) {
  * @param {string} uuid - The unique identifier for the user.
  * @returns {void}
  */
-function saveHoroscopeToFirebase(jsonData, uuid) {
+function saveHoroscopeToFirebase(jsonData, uuid, tomorrow) {
+  const daysOfWeek = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
+  const today = new Date();
 
-    const sanitizedData = sanitizeKeys(jsonData);
+  // Determine the day of the week
+  const dayOfWeek = tomorrow || daysOfWeek[today.getDay()];
 
-    Logger.log("SAVING HOROSCROPE TO FIREBASE: " + JSON.stringify(sanitizedData));
+  // Early exit if `dayOfWeek` is undefined
+  if (!dayOfWeek) {
+    Logger.log("Invalid dayOfWeek. Skipping Firebase save.");
+    return;
+  }
 
-    const daysOfWeek = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
-    const today = new Date();
-    const dayOfWeek = daysOfWeek[today.getDay()];
-    const firebaseUrl = `${FIREBASE_URL}/zodiac/${uuid}/${dayOfWeek}.json?auth=${FIREBASE_API_KEY}`;
+  const sanitizedData = sanitizeKeys(jsonData);
 
-    Logger.log("Saving horoscope for " + dayOfWeek + " to URL: " + firebaseUrl);
+  const firebaseUrl = `${FIREBASE_URL}/zodiac/${uuid}/${dayOfWeek}.json?auth=${FIREBASE_API_KEY}`;
+  console.log("Firebase URL:", firebaseUrl);
 
-    const options = {
-        method: "put",
-        contentType: "application/json",
-        payload: JSON.stringify(sanitizedData[0])
-    };
+  const options = {
+    method: "put",
+    contentType: "application/json",
+    payload: JSON.stringify(sanitizedData[0]),
+    muteHttpExceptions: true, // Moved here to make the options object self-contained
+  };
 
-    try {
-        const response = UrlFetchApp.fetch(firebaseUrl, { ...options, muteHttpExceptions: true });
-        Logger.log("Horoscope saved to Firebase: " + response.getContentText());
-    } catch (e) {
-        Logger.log("Error saving horoscope to Firebase: " + e.message);
-    }
+  try {
+    const response = UrlFetchApp.fetch(firebaseUrl, options);
+    Logger.log(`Horoscope saved to Firebase at ${firebaseUrl}`);
+  } catch (e) {
+    Logger.log(`Error saving horoscope to Firebase: ${e.message}`);
+  }
 }
+
 
 /**
  * Retrieves zodiac data for today from the Firebase zodiac table for a specific UUID.
@@ -483,9 +488,9 @@ function saveHoroscopeToFirebase(jsonData, uuid) {
  * @returns {Object|null} - The zodiac data for today if found, otherwise null.
  */
 function getZodiacDataForToday(uuid) {
+    console.log("Getting zodiac data for today");
   // Firebase URL to the zodiac table using the provided UUID
   const url = `${FIREBASE_URL}/zodiac/${uuid}.json?auth=${FIREBASE_API_KEY}`;
-  console.log(url);
   try {
 
     const response = UrlFetchApp.fetch(url);
@@ -508,6 +513,33 @@ function getZodiacDataForToday(uuid) {
   }
 }
 
+function getZodiacDataForTomorrow(uuid) {
+    uuid = TEST_USER;
+  console.log("Getting zodiac data for tomorrow");
+  // Firebase URL to the zodiac table using the provided UUID
+  const url = `${FIREBASE_URL}/zodiac/${uuid}.json?auth=${FIREBASE_API_KEY}`;
+  try {
+    const response = UrlFetchApp.fetch(url);
+    const data = JSON.parse(response.getContentText());
+
+    // Get tomorrow's day of the week
+    const tomorrow = getTomorrowDay();
+
+    // Check if tomorrow's data exists in the response
+    if (data && data[tomorrow]) {
+      Logger.log(`Data for ${tomorrow}: ${JSON.stringify(data[tomorrow])}`);
+      return data[tomorrow];
+    } else {
+      Logger.log(`No data found for ${tomorrow} for UUID: ${uuid}`);
+      return null;
+    }
+  } catch (error) {
+    Logger.log(`Error fetching data for UUID ${uuid}: ${error}`);
+    return null;
+  }
+}
+
+
 /**
  * Retrieves zodiac data for the last three days from the Firebase zodiac table for a specific UUID.
  *
@@ -515,8 +547,7 @@ function getZodiacDataForToday(uuid) {
  * @returns {Object|null} - An object containing data for the last three days if found, otherwise null.
  */
 function getThreeDaysDataFromFirebase(uuid) {
-    console.log("getThreeDaysDataFromFirebase: " + uuid);
-    console.log(`${FIREBASE_URL}/zodiac/${uuid}.json`);
+    console.log("getThreeDaysDataFromFirebase");
     const firebaseUrl = `${FIREBASE_URL}/zodiac/${uuid}.json?auth=${FIREBASE_API_KEY}`;
 
     const options = {
@@ -553,7 +584,7 @@ function getThreeDaysDataFromFirebase(uuid) {
 
             return daysOfTheWeekData;
         } else {
-            Logger.log("No data found for UUID: " + uuid);
+            Logger.log("No three days days found for UUID: " + uuid);
             return null;
         }
     } catch (e) {

@@ -28,6 +28,46 @@ function sanitizeKeys(data) {
   return sanitizedObject;
 }
 
+function transformKeysToLowerCaseWithUnderscores(inputJson) {
+  console.log("Original Input Data:", JSON.stringify(inputJson, null, 2));
+
+  if (Array.isArray(inputJson)) {
+    // Transform each object in the array
+    const transformedArray = inputJson.map(item => {
+      const transformedItem = {};
+      for (const key in item) {
+        const transformedKey = key
+          .toLowerCase()
+          .replace(/\s+/g, '_')   // Replace spaces with underscores
+          .replace(/[^a-z0-9_]/g, ''); // Remove non-alphanumeric characters except underscores
+
+        transformedItem[transformedKey] = item[key];
+      }
+      return transformedItem;
+    });
+    console.log("Transformed Array Data:", JSON.stringify(transformedArray, null, 2));
+    return transformedArray;
+  } else if (typeof inputJson === 'object' && inputJson !== null) {
+    // Transform a single object
+    const transformedObject = {};
+    for (const key in inputJson) {
+      const transformedKey = key
+        .toLowerCase()
+        .replace(/\s+/g, '_')   // Replace spaces with underscores
+        .replace(/[^a-z0-9_]/g, ''); // Remove non-alphanumeric characters except underscores
+
+      transformedObject[transformedKey] = inputJson[key];
+    }
+    console.log("Transformed Object Data:", JSON.stringify(transformedObject, null, 2));
+    return transformedObject;
+  } else {
+    // Return the input as-is for unsupported types
+    return inputJson;
+  }
+}
+
+
+
 function trimWhitespace(input) {
   if (typeof input === "string") {
     return input.trim();
@@ -71,6 +111,16 @@ function findKeyValue(obj, targetKey) {
   return result;
 }
 
+function getTomorrowDay() {
+  const today = new Date();
+  const daysOfWeek = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
+  
+  const tomorrowDay = daysOfWeek[(today.getDay() + 1) % 7];
+  
+  return tomorrowDay;
+}
+
+
 function getCopyright() {
   const currentYear = new Date().getFullYear();
   return `&copy; ${currentYear} Zodiaccurate. All rights reserved.`;
@@ -83,7 +133,6 @@ function getCopyright() {
  * @returns {string} - A formatted date string based on the user's timezone and locale.
  */
 function formatDateForUser(uuid) {
-  console.log("Formatting date for user with UUID: ", uuid);
 
   // Retrieve the user's timezone from Firebase
   let timeZoneId = getUserTimezone(uuid);
@@ -91,8 +140,6 @@ function formatDateForUser(uuid) {
   if (!timeZoneId) {
     throw new Error("Could not retrieve timezone for user with UUID: " + uuid);
   }
-
-  console.log("Raw User's timezone: ", timeZoneId);
 
   // Replace underscores with slashes to ensure compatibility with Intl.DateTimeFormat
   timeZoneId = timeZoneId.replace(/_/g, "/");
@@ -128,9 +175,17 @@ function formatDateForUser(uuid) {
   });
 
   const formattedDate = formatter.format(now);
-  console.log(`Formatted date for user (${uuid}): ${formattedDate}`);
 
   return formattedDate;
 }
+
+function getTomorrowDay() {
+  const today = new Date();
+  const daysOfWeek = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
+  const tomorrowDay = daysOfWeek[(today.getDay() + 1) % 7];
+  console.log("Returning tomorrow: ", tomorrowDay);
+  return tomorrowDay;
+}
+
 
 
