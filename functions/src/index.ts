@@ -57,6 +57,15 @@ export const webhookHandler = onRequest(async (request, response) => {
 	switch (event.type) {
 	  case "checkout.session.completed":
 	    logger.info("Checkout session completed:", event.data.object);
+	    const session = event.data.object as any;
+
+        // Extract name and email
+        const name = session.customer_details?.name;
+        const email = session.customer_details?.email;
+
+        logger.info("Customer Name:", name);
+        logger.info("Customer Email:", email);
+
 	    break;
 	  default:
 	    logger.info(`Unhandled event type: ${event.type}`);
