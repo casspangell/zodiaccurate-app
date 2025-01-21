@@ -2,6 +2,8 @@
   "functions": [
     {
       "source": "functions",
+      "raw_request": true,
+      "runtime": "nodejs16",
       "codebase": "default",
       "ignore": [
         "node_modules",
