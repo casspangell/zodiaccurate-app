@@ -89,11 +89,24 @@ This action will automatically use `clasp` to push your latest code from GitHub 
 
 If you make changes directly in the Google Apps Script Editor, you can pull those changes into your local environment using `clasp`:
 
-```bash
-clasp pull
-```
+## Useful Commands
 
-This will sync any changes from Google Apps Script into your local project directory.
+- **Pull latest code from Google Apps Script**:
+
+  ```bash
+  clasp pull
+  ```
+
+- **Push local changes to Google Apps Script**:
+
+  ```bash
+  clasp push
+  ```
+
+- **Deploy manually using GitHub Actions**:
+  - Navigate to the **Actions** tab in your repository.
+  - Select the **Deploy to Google Apps Script** workflow.
+  - Click **Run workflow**.
 
 ---
 
@@ -118,28 +131,23 @@ The Firebase project ID for this project is `zodiaccurate-e9aaf`. Project Consol
 
 ---
 
+## Stripe CLI
+
+The Stripe CLI is a command-line tool designed to streamline Stripe development and testing workflows. It allows developers to trigger test events, forward webhook requests to local or remote servers, and manage Stripe resources directly from the terminal.
+
+To run the CLI:
+```bash
+stripe listen --forward-to https://webhookhandler-feti3ggk7q-uc.a.run.app
+```
+
+To send a trigger:
+```bash
+stripe trigger checkout.session.completed
+```
+
 ## Troubleshooting
 
 - **Missing Credentials**: If you see issues related to credentials during deployment, make sure your `credentials.json` file is properly configured and accessible.
 - **Google OAuth Verification**: If you encounter warnings about app verification, remember that only approved test users can access the app while it's in development.
 
----
-
-## Useful Commands
-
-- **Pull latest code from Google Apps Script**:
-
-  ```bash
-  clasp pull
-  ```
-
-- **Push local changes to Google Apps Script**:
-
-  ```bash
-  clasp push
-  ```
-
-- **Deploy manually using GitHub Actions**:
-  - Navigate to the **Actions** tab in your repository.
-  - Select the **Deploy to Google Apps Script** workflow.
-  - Click **Run workflow**.
+-

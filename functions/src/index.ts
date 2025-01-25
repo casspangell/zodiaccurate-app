@@ -2,6 +2,7 @@ import { onRequest } from "firebase-functions/v2/https";
 import * as logger from "firebase-functions/logger";
 import * as stripe from "stripe";
 import { SecretManagerServiceClient } from "@google-cloud/secret-manager";
+import axios from "axios";
 
 const client = new SecretManagerServiceClient();
 let stripeInstance: stripe.Stripe | null = null;
@@ -19,13 +20,17 @@ async function getSecret(secretName: string): Promise<string> {
 }
 
 // Webhook Handler
-export const webhookHandler = onRequest(async (request, response) => {
+export const webhookHandler = onRequest(
+
+  { rawBody: true } as any, // Cast to bypass type issues
+
+  async (request, response) => {
   try {
     const stripeSecret = await getSecret("stripe_secret");
     const webhookSecret = await getSecret("stripe_webhook_secret");
 
-    logger.info("Headers received:", request.headers);
-	logger.info("Raw body received:", request.rawBody);
+    logger.info("HELLO Headers received:", request.headers);
+    logger.info("Raw body received:", request.rawBody);
 
     // Initialize Stripe instance
     if (!stripeInstance) {
@@ -37,9 +42,9 @@ export const webhookHandler = onRequest(async (request, response) => {
     // Verify Stripe webhook signature
     const sig = request.headers["stripe-signature"];
     if (!sig) {
-  logger.error("Headers received without stripe-signature:", request.headers);
-  response.status(400).send("Webhook Error: Missing stripe-signature header");
-  return;
+      logger.error("Headers received without stripe-signature:", request.headers);
+      response.status(400).send("Webhook Error: Missing stripe-signature header");
+      return;
     }
 
     let event;
@@ -53,23 +58,39 @@ export const webhookHandler = onRequest(async (request, response) => {
       return;
     }
 
+    logger.info("Event Type:", event.type);
+
     // Handle Stripe events
-	switch (event.type) {
-	  case "checkout.session.completed":
-	    logger.info("Checkout session completed:", event.data.object);
-	    const session = event.data.object as any;
+    switch (event.type) {
+      case "checkout.session.completed":
+        const session = event.data.object as any;
 
         // Extract name and email
         const name = session.customer_details?.name;
         const email = session.customer_details?.email;
 
-        logger.info("Customer Name:", name);
-        logger.info("Customer Email:", email);
+        if (name && email) {
 
-	    break;
-	  default:
-	    logger.info(`Unhandled event type: ${event.type}`);
-	}
+          // Call Apps Script function
+          const appScriptUrl = "https://script.google.com/macros/s/AKfycbw7fkLCQ4ulXMjpOEhpGeEhdYhSkDekR34dDwJe1sIKb9X01RuVD7CCGlGb9Iu_jQpPfw/exec";
+          try {
+            const appScriptResponse = await axios.post(appScriptUrl, {
+              functionName: "handleStripeWebhook",
+              parameters: { name, email },
+            });
+            logger.info("Apps Script response:", appScriptResponse.data);
+          } catch (err: any) {
+            logger.error("Error calling Apps Script:", err.message);
+          }
+        } else {
+          logger.warn("Name or email missing in the Stripe event.");
+        }
+
+        break;
+
+      default:
+        logger.info(`Unhandled event type: ${event.type}`);
+    }
 
     // Respond to Stripe
     response.status(200).send("Webhook received");
