@@ -2,9 +2,9 @@
   "functions": [
     {
       "source": "functions",
-      "raw_request": true,
-      "runtime": "nodejs16",
+      "runtime": "nodejs18",
       "codebase": "default",
+      "platform": "gcfv2",
       "ignore": [
         "node_modules",
         ".git",
