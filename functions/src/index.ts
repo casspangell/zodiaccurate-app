@@ -12,6 +12,7 @@ async function getSecret(secretName: string): Promise<string> {
   const [version] = await client.accessSecretVersion({
     name: `projects/zodiaccurate-e9aaf/secrets/${secretName}/versions/latest`,
   });
+  // console.log(secretName, ": ", version.payload?.data?.toString());
   const payload = version.payload?.data?.toString().trim(); // Remove whitespace
   if (!payload) {
     throw new Error(`Secret ${secretName} not found`);
@@ -25,11 +26,16 @@ export const webhookHandler = onRequest(
   { rawBody: true } as any, // Cast to bypass type issues
 
   async (request, response) => {
+
+  const appScriptUrl = "https://script.google.com/macros/s/AKfycby8MfCXlv4iOobBHr1C_n9KIHKJs5zLr8NFS0KTTldAdEI3VO1BEndx7uzntVqwHAf2nw/exec";
+
   try {
     const stripeSecret = await getSecret("stripe_secret");
     const webhookSecret = await getSecret("stripe_webhook_secret");
+    // const sharedSecret = await getSecret("shared_secret");
 
-    logger.info("HELLO Headers received:", request.headers);
+    // logger.info("SHARED SECRET:", sharedSecret);
+    logger.info("Headers received:", request.headers);
     logger.info("Raw body received:", request.rawBody);
 
     // Initialize Stripe instance
@@ -68,16 +74,15 @@ export const webhookHandler = onRequest(
         // Extract name and email
         const name = session.customer_details?.name;
         const email = session.customer_details?.email;
-
+          logger.info("AppScriptUrl: ", appScriptUrl);
+          logger.info("Name: ", name, " email: ", email);
         if (name && email) {
-
           // Call Apps Script function
-          const appScriptUrl = "https://script.google.com/macros/s/AKfycbw7fkLCQ4ulXMjpOEhpGeEhdYhSkDekR34dDwJe1sIKb9X01RuVD7CCGlGb9Iu_jQpPfw/exec";
           try {
-            const appScriptResponse = await axios.post(appScriptUrl, {
-              functionName: "handleStripeWebhook",
-              parameters: { name, email },
-            });
+              const appScriptResponse = await axios.post(appScriptUrl, {
+                functionName: "handleStripeWebhook",
+                parameters: { name, email }
+              });
             logger.info("Apps Script response:", appScriptResponse.data);
           } catch (err: any) {
             logger.error("Error calling Apps Script:", err.message);

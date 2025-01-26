@@ -47,29 +47,41 @@
 
 function doPost(e) {
   try {
-    Logger.log('doPost function started. Request parameters: ', JSON.stringify(e));
-    Logger.log('Data processed successfully:', JSON.stringify(processedData));
+    console.log("Incoming request:", JSON.stringify(e));
+
+    // Ensure postData exists
+    if (!e.postData || !e.postData.contents) {
+      console.error("Missing postData or contents in the request.");
+      return ContentService.createTextOutput("Error: Missing postData").setMimeType(ContentService.MimeType.TEXT);
+    }
+
+    const data = JSON.parse(e.postData.contents);
+    console.log("Parsed request data:", data);
+
+    // Process the request (e.g., send an email)
     sendEmail();
-    return ContentService.createTextOutput(JSON.stringify({result: "success", data: processedData})).setMimeType(ContentService.MimeType.JSON);
-  } catch (error) {
-    Logger.log('Error in doPost function:', error);
-    return ContentService.createTextOutput(JSON.stringify({ result: "error", error: error.message })).setMimeType(ContentService.MimeType.JSON);
+    return ContentService.createTextOutput("Success").setMimeType(ContentService.MimeType.TEXT);
+  } catch (err) {
+    console.error("Error processing request:", err.message);
+    return ContentService.createTextOutput(`Internal server error: ${err.message}`).setMimeType(ContentService.MimeType.TEXT);
   }
 }
 
-function doGet(e) {
-  return ContentService.createTextOutput("This is the response for a GET request.");
+function doGet() {
+  return ContentService.createTextOutput('Hello, world!');
 }
 
 function sendEmail() {
-  // Set the recipient, subject, and body of the email
-  const recipient = "casspangell@gmail.com"; // Replace with the recipient's email
-  const subject = "Test Email from Apps Script";
-  const body = "Hello! This is a test email sent using Google Apps Script.";
+  try {
+    const recipient = "casspangell@gmail.com";
+    const subject = "Test Email from Apps Script";
+    const body = "Hello! This is a test email sent using Google Apps Script.";
 
-  // Send the email
-  GmailApp.sendEmail(recipient, subject, body);
-
-  // Log the email was sent successfully
-  Logger.log(`Email sent to ${recipient}`);
+    GmailApp.sendEmail(recipient, subject, body);
+    console.log(`Email sent to ${recipient}`);
+  } catch (err) {
+    console.error("Error sending email:", err.message);
+    throw err;
+  }
 }
+
