@@ -8,6 +8,7 @@ const COPYRIGHT = `&copy; ${new Date().getFullYear()} Zodiaccurate. All rights r
 const MAILER_SEND_URL = "https://api.mailersend.com/v1/email";
 const GITHUB_ACCESS_TOKEN = PropertiesService.getScriptProperties().getProperty("GITHUB_ACCESS_TOKEN");
 const STRIPE_WEBHOOK_SECRET = PropertiesService.getScriptProperties().getProperty("STRIPE_WEBHOOK_SECRET");
+const SHARED_SECRET = PropertiesService.getScriptProperties().getProperty("SHARED_SECRET");
 
 const TEST_USER = "2_ABaOnudBnBkwqlqnMUV9qS7zBUYoqPWaz1UyPeMW7GYOD2bPl2ZLYvQJ0UdU28kSvXtp_ZU";
 const TEST_USER_DATA = {
