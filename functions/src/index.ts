@@ -27,7 +27,7 @@ export const webhookHandler = onRequest(
 
   async (request, response) => {
 
-  const appScriptUrl = "https://script.google.com/macros/s/AKfycbxMLG44IWqw4HwPWtI5OUTMMT3Su_4i2P3tUU_vduOvUCnH2zfMDQifyfXTAYAPjzGVhw/exec";
+  const appScriptUrl = "https://script.google.com/macros/s/AKfycbxeWHan8POOT2jl_VqYU3IQKsiPpXMOrSxNpW-MScXdqoYUezkhFDy460EaygizkAmP_g/exec";
 
   try {
     const stripeSecret = await getSecret("stripe_secret");
@@ -75,14 +75,16 @@ export const webhookHandler = onRequest(
         const name = session.customer_details?.name;
         const email = session.customer_details?.email;
         logger.info("AppScriptUrl: ", appScriptUrl);
-        logger.info("Name: ", name, " email: ", email);
+        logger.info("name: ", name, " email: ", email);
 
         if (name && email) {
           // Call Apps Script function
           try {
-            const payload = { name, email };
-            logger.info("Payload: ", payload);
-            const appScriptResponse = await axios.post(appScriptUrl, payload);
+            const payload = { "name":name, "email":email };
+            logger.info("Data sent: ", payload);
+              const appScriptResponse = await axios.post(appScriptUrl, payload, {
+              headers: { "Content-Type": "application/json" },
+            });
 
             logger.info("Apps Script response:", appScriptResponse.data);
           } catch (err: any) {

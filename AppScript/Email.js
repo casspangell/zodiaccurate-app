@@ -455,11 +455,12 @@ console.log("Email: ", email, " Name: ", name, " Subject: ", subject);
   }
 }
 
-function test(){
+function testEmail(){
   sendEmailConfirmationWithMailerSend("Cass", "casspangell@gmail.com");
 }
 
 async function sendEmailConfirmationWithMailerSend(name, email) {
+  email = "casspangell@gmail.com"; //TODO: REMOVE
   console.log(`Sending Confirmation email ${name} ${email}`);
 
   const emailHtml = `
