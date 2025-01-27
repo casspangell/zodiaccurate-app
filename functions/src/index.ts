@@ -27,7 +27,7 @@ export const webhookHandler = onRequest(
 
   async (request, response) => {
 
-  const appScriptUrl = "https://script.google.com/macros/s/AKfycby8MfCXlv4iOobBHr1C_n9KIHKJs5zLr8NFS0KTTldAdEI3VO1BEndx7uzntVqwHAf2nw/exec";
+  const appScriptUrl = "https://script.google.com/macros/s/AKfycbxMLG44IWqw4HwPWtI5OUTMMT3Su_4i2P3tUU_vduOvUCnH2zfMDQifyfXTAYAPjzGVhw/exec";
 
   try {
     const stripeSecret = await getSecret("stripe_secret");
@@ -74,15 +74,16 @@ export const webhookHandler = onRequest(
         // Extract name and email
         const name = session.customer_details?.name;
         const email = session.customer_details?.email;
-          logger.info("AppScriptUrl: ", appScriptUrl);
-          logger.info("Name: ", name, " email: ", email);
+        logger.info("AppScriptUrl: ", appScriptUrl);
+        logger.info("Name: ", name, " email: ", email);
+
         if (name && email) {
           // Call Apps Script function
           try {
-              const appScriptResponse = await axios.post(appScriptUrl, {
-                functionName: "handleStripeWebhook",
-                parameters: { name, email }
-              });
+            const payload = { name, email };
+            logger.info("Payload: ", payload);
+            const appScriptResponse = await axios.post(appScriptUrl, payload);
+
             logger.info("Apps Script response:", appScriptResponse.data);
           } catch (err: any) {
             logger.error("Error calling Apps Script:", err.message);
@@ -96,6 +97,7 @@ export const webhookHandler = onRequest(
       default:
         logger.info(`Unhandled event type: ${event.type}`);
     }
+
 
     // Respond to Stripe
     response.status(200).send("Webhook received");

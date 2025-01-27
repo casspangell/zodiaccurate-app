@@ -455,3 +455,134 @@ console.log("Email: ", email, " Name: ", name, " Subject: ", subject);
   }
 }
 
+function test(){
+  sendEmailConfirmationWithMailerSend("Cass", "casspangell@gmail.com");
+}
+
+async function sendEmailConfirmationWithMailerSend(name, email) {
+  console.log(`Sending Confirmation email ${name} ${email}`);
+
+  const emailHtml = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f4f4f4;
+        }
+        .container {
+            width: 100%;
+            max-width: 600px;
+            margin: 20px auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .header img {
+            width: 100%;
+            height: auto;
+            border-radius: 8px 8px 0 0;
+            display: block;
+        }
+        .content {
+            padding: 20px;
+        }
+        h2 {
+            color: #2e6ca8;
+            margin-bottom: 10px;
+        }
+        p {
+            font-size: 14px;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+        .button-container {
+            text-align: center;
+            margin: 20px 0;
+        }
+        .button {
+            background-color: #fff;
+            color: #6a1b9a;
+            text-decoration: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            border: 2px solid #6a1b9a;
+            font-size: 16px;
+            display: inline-block;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+        .button:hover {
+            background-color: #6a1b9a;
+            color: #fff;
+            border-color: #6a1b9a;
+        }
+        .footer {
+            text-align: center;
+            padding: 20px;
+            background-color: #f4f4f4;
+            color: #777;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <img src="https://taohealinggroup.com/zodiaccurate/zodiaccurate_logo.png" alt="Zodiaccurate Daily Guidance">
+        </div>
+        <div class="content">
+            <p>Hi ${name},</p>
+            <p>Thank you for signing up with Zodiaccurate! We're thrilled to have you join our community.</p>
+            <p>Please confirm your email address to complete your registration and start receiving personalized astrological insights tailored to you.</p>
+            <div class="button-container">
+
+            <a href="https://us-central1-zodiaccurate-e9aaf.cloudfunctions.net/addTrialUser?email=${email}" class="button">Confirm Email</a>
+            </div>
+        </div>
+        <div class="footer">
+            <p>${COPYRIGHT}</p>
+            <p>If you have any questions, please contact us at <a href="mailto:support@zodiaccurate.com">support@zodiaccurate.com</a>.</p>
+        </div>
+    </div>
+</body>
+</html>
+`;
+
+console.log("Confirmation Email ", emailHtml);
+  // Email payload
+  const emailData = {
+    from: {
+      email: "support@zodiaccurate.com",
+      name: "Support",
+    },
+    to: [
+      {
+        email: email,
+        name: name || "Valued Seeker",
+      },
+    ],
+    subject: "Zodiaccurate Email Confirmation",
+    html: emailHtml,
+  };
+
+  try {
+    console.log("...sending... ");
+    const response = await sendEmail(MAILER_SEND_URL, emailData);
+    console.log(`Email confirmation email sent successfully:`, response.getContentText());
+    return response;
+  } catch (error) {
+    console.error(`Failed to send email confirmation email`, error.message);
+    throw error;
+  }
+}
+

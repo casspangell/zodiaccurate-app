@@ -305,6 +305,80 @@ function getUserDataFromUserTableFirebase(uuid) {
     }
 }
 
+function test()  {
+    getUserDataFromTrialUserTableFirebase("casspangell@gmail.com");
+}
+
+function saveTrialUserToFirebase(email) {
+    Logger.log("SAVING TRIAL USER ENTRY TO FIREBASE...", email);
+    var encodedEmail = email.replace(/@/g, "_at_").replace(/\./g, "_dot_");
+
+    const firebaseUrl = `${FIREBASE_URL}/trial_users/${encodedEmail}.json?auth=${FIREBASE_API_KEY}`;
+    console.log(firebaseUrl);
+    const today = new Date();
+
+    const userData = {
+        "date": today
+    };
+
+    const options = {
+        method: "put",
+        contentType: "application/json",
+        payload: JSON.stringify(userData),
+        headers: {
+            Authorization: `Bearer ${FIREBASE_API_KEY}`
+        }
+    };
+
+    try {
+        const response = UrlFetchApp.fetch(firebaseUrl, options);
+        Logger.log("Entry saved: " + response.getContentText());
+        return true;
+    } catch (e) {
+        Logger.log("Error saving entry to Firebase: " + e.message);
+        return false;
+    }
+}
+
+function getUserDataFromTrialUserTableFirebase(email) {
+    console.log("GETTING USER DATA FROM FIREBASE:", email);
+
+    const firebaseUrl = `${FIREBASE_URL}/users.json?auth=${FIREBASE_API_KEY}`;
+    console.log("Firebase URL:", firebaseUrl);
+
+    const options = {
+        method: "get",
+        headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${FIREBASE_API_KEY}`
+        }
+    };
+
+    try {
+        const response = UrlFetchApp.fetch(firebaseUrl, { ...options, muteHttpExceptions: true });
+        const userData = JSON.parse(response.getContentText());
+
+        if (!userData || typeof userData !== "object") {
+            Logger.log("No valid data returned for email:", email);
+            return null;
+        }
+
+        for (const uuid in userData) {
+            const user = userData[uuid];
+            if (user.email === email) {
+                Logger.log(`User found with email: ${email}`);
+                return true;
+            }
+        }
+
+        Logger.log(`No user found with email: ${email}`);
+        return false;
+    } catch (error) {
+        Logger.log(`Error retrieving data for email ${email}: ${error.message}`);
+        return null;
+    }
+}
+
 
 /**
  * Retrieves single user data from the Firebase RESPONSES table for a specific UUID.
