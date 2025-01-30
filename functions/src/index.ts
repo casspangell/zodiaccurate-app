@@ -27,7 +27,7 @@ export const webhookHandler = onRequest(
 
   async (request, response) => {
 
-  const appScriptUrl = "https://script.google.com/macros/s/AKfycbxeWHan8POOT2jl_VqYU3IQKsiPpXMOrSxNpW-MScXdqoYUezkhFDy460EaygizkAmP_g/exec";
+  const appScriptUrl = "https://script.google.com/macros/s/AKfycbx-hhRe3RIrqINGafWAfv_EyvGahpmEx6jyzoGD437nxvebDmRXbEUstDavhRRg-Xc9Rg/exec";
 
   try {
     const stripeSecret = await getSecret("stripe_secret");
@@ -75,12 +75,12 @@ export const webhookHandler = onRequest(
         const name = session.customer_details?.name;
         const email = session.customer_details?.email;
         logger.info("AppScriptUrl: ", appScriptUrl);
-        logger.info("name: ", name, " email: ", email);
+        logger.info("name: ", name, " email: ", email, " source: ","stripeWebhook");
 
         if (name && email) {
           // Call Apps Script function
           try {
-            const payload = { "name":name, "email":email };
+            const payload = { "name":name, "email":email, "source": "stripeWebhook" };
             logger.info("Data sent: ", payload);
               const appScriptResponse = await axios.post(appScriptUrl, payload, {
               headers: { "Content-Type": "application/json" },
@@ -109,3 +109,38 @@ export const webhookHandler = onRequest(
     response.status(500).send("Internal Server Error");
   }
 });
+
+export const handleEmailConfirmation = onRequest(
+  async (request, response) => {
+    const appScriptUrl = "https://script.google.com/macros/s/AKfycbx-hhRe3RIrqINGafWAfv_EyvGahpmEx6jyzoGD437nxvebDmRXbEUstDavhRRg-Xc9Rg/exec";
+
+    try {
+      const email = request.query.email as string;
+      const name = request.query.name as string;
+
+      if (!email || !name) {
+        logger.error("Missing email or name in the query parameters.");
+        response.status(400).send("Error: Missing email or name.");
+        return;
+      }
+
+      logger.info("Processing email confirmation for:", { name, email });
+
+      // Payload to send to Apps Script
+      const payload = { name, email, source: "emailConfirmation" };
+
+      // Call Apps Script
+      const appScriptResponse = await axios.post(appScriptUrl, payload, {
+        headers: { "Content-Type": "application/json" },
+      });
+
+      logger.info("Apps Script response:", appScriptResponse.data);
+
+      response.status(200).send(`Confirmation processed for ${email}.`);
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : "Unknown error";
+      logger.error("Error processing email confirmation:", errorMessage);
+      response.status(500).send("Internal Server Error");
+    }
+  }
+);

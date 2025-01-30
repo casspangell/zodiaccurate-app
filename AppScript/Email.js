@@ -461,7 +461,7 @@ function testEmail(){
 
 async function sendEmailConfirmationWithMailerSend(name, email) {
   email = "casspangell@gmail.com"; //TODO: REMOVE
-  console.log(`Sending Confirmation email ${name} ${email}`);
+  console.log("Sending Confirmation Email name: ", name, " email: ", email);
 
   const emailHtml = `
 <!DOCTYPE html>
@@ -547,7 +547,7 @@ async function sendEmailConfirmationWithMailerSend(name, email) {
             <p>Please confirm your email address to complete your registration and start receiving personalized astrological insights tailored to you.</p>
             <div class="button-container">
 
-            <a href="https://us-central1-zodiaccurate-e9aaf.cloudfunctions.net/addTrialUser?email=${email}" class="button">Confirm Email</a>
+            <a href="https://us-central1-zodiaccurate-e9aaf.cloudfunctions.net/handleEmailConfirmation?email=${email}&name=${name}" class="button">Confirm Email</a>
             </div>
         </div>
         <div class="footer">
