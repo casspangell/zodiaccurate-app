@@ -131,11 +131,10 @@ export const handleEmailConfirmation = onRequest(
 
       logger.info("Processing email confirmation for:", { name, email });
 
-
       // 🔹 Encode email for Firebase (Replace @ and . to prevent key errors)
       const encodedEmail = email.replace(/[@.]/g, "_");
+
       // 🔹 Check if the email exists in "trial_users" in Firebase
-      
       const trialUserRef = db.ref(`trial_users/${encodedEmail}`);
       const trialUserSnapshot = await trialUserRef.once("value");
       const trialUserData = trialUserSnapshot.val();
@@ -145,11 +144,44 @@ export const handleEmailConfirmation = onRequest(
       if (trialUserData) {
         logger.info("Trial user found:", trialUserData);
 
-        const addedDate = new Date(trialUserData.date).toLocaleDateString("en-US");
-        trialMessage = `<p>You started your trial on <strong>${addedDate}</strong>.</p>`;
+        const trialStartDate = new Date(trialUserData.date);
+        const currentDate = new Date();
+
+        // Calculate the difference in days between the trial start date and the current date
+        const diffInMilliseconds = currentDate.getTime() - trialStartDate.getTime();
+        const diffInDays = Math.floor(diffInMilliseconds / (1000 * 60 * 60 * 24)); // Convert milliseconds to days
+
+        if (diffInDays > 10) {
+          // Trial has expired
+          trialMessage = `<p>It seems your 10 day trial has expired.<br/>You activated your trial on <strong>${trialStartDate.toLocaleDateString(
+            "en-US"
+          )}</strong></p>
+          <div class="button-container">
+            <a href="https://www.google.com" class="button">Subscribe Now</a>
+          </div>`;
+        } else {
+          // Trial is still active
+          const daysLeft = 10 - diffInDays;
+          trialMessage = `<p>Your trial is still active! You started your trial on <strong>${trialStartDate.toLocaleDateString("en-US")}
+          </strong>.<br/>You have <strong>${daysLeft}</strong> day(s) left in your trial.</p>`;
+        }
       } else {
         logger.info("No trial record found for email:", email);
+
+        // Activate the trial if no record exists
+        const currentDate = new Date();
+        await trialUserRef.set({ email, date: currentDate.toISOString() });
+        logger.info("Trial user added to Firebase:", { email, date: currentDate });
+
+        // Notify the user of the trial activation
+        trialMessage = `<p>Your trial has been successfully activated as of <strong>${currentDate.toLocaleDateString(
+          "en-US"
+        )}</strong>.</p>
+        <div class="button-container">
+          <a href="https://zodiaccurate.com/about-you" class="button">Get Started</a>
+        </div>`;
       }
+
 
       // Payload to send to Apps Script
       const payload = { "name":name, "email":email, "source": "emailConfirmation" };
@@ -240,13 +272,16 @@ export const handleEmailConfirmation = onRequest(
                 </div>
                 <div class="content">
                     <h2>Thank you, ${name}!</h2>
-                    ${trialMessage}
                     <p>Your confirmation has been processed successfully.</p>
+                    ${trialMessage}
                 </div>
                 <div class="footer">
-                    <p>© 2025 Zodiaccurate. All rights reserved.</p>
-                    <p>If you have any questions, contact us at <a href="mailto:support@zodiaccurate.com">support@zodiaccurate.com</a>.</p>
+                  <p>© <span id="currentYear"></span> Zodiaccurate. All rights reserved.</p>
+                  <p>If you have any questions, contact us at <a href="mailto:support@zodiaccurate.com">support@zodiaccurate.com</a>.</p>
                 </div>
+                <script>
+                  document.getElementById("currentYear").textContent = new Date().getFullYear();
+                </script>
             </div>
         </body>
         </html>
