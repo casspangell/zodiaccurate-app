@@ -55,7 +55,7 @@ export const webhookHandler = onRequest(
 
     // Initialize Stripe instance
     if (!stripeInstance) {
-      stripeInstance = new stripe.Stripe(stripeSecret, {
+      stripeInstance = new stripe.Stripe(stripeApiKey, {
         apiVersion: "2024-06-20" as any, // Bypass type-checking for the apiVersion
       });
     }
@@ -96,44 +96,60 @@ export const webhookHandler = onRequest(
       case "customer.subscription.created":
         const session = event.data.object as any;
 
-        // Extract name and email
-        const name = session.customer_details?.name;
-        const email = session.customer_details?.email;
-        logger.info("AppScriptUrl: ", appScriptUrl);
-        logger.info("name: ", name, " email: ", email, " source: ","stripeWebhook");
-
-        if (name && email) {
-          // Call Apps Script function
-          try {
-            const payload = { "name":name, "email":email, "source": "stripeWebhook" };
-            logger.info("Data sent: ", payload);
-              const appScriptResponse = await axios.post(appScriptUrl, payload, {
-              headers: { "Content-Type": "application/json" },
-            });
-
-            logger.info("Apps Script response:", appScriptResponse.data);
-          } catch (err: any) {
-            logger.error("Error calling Apps Script:", err.message);
-          }
-        } else {
-          logger.warn("Name or email missing in the Stripe event.");
+        // Retrieve customer ID
+        const customerId = session.customer;
+        if (!customerId) {
+          logger.error("No customer ID found in the subscription event.");
+          response.status(400).send("Error: No customer ID in event.");
+          return;
         }
 
-        break;
+        logger.info(`Fetching customer details for customer ID: ${customerId}`);
 
-      default:
-        logger.info(`Unhandled event type: ${event.type}`);
+
+        logger.info("AppScriptUrl: ", appScriptUrl);
+
+        try {
+            // Fetch customer details from Stripe
+            const customer = await stripeInstance.customers.retrieve(customerId) as any;
+
+            const name = customer.name || "Seeker";
+            const email = customer.email || "Unknown Email";
+            logger.info("name: ", name, " email: ", email, " source: ","stripeWebhook");
+            logger.info("Fetched Customer Details:", { name, email });
+
+            if (name && email) {
+              // Send data to Apps Script
+              const payload = { name, email, source: "stripeWebhook" };
+              logger.info("Data sent to Apps Script:", payload);
+
+              const appScriptResponse = await axios.post(appScriptUrl, payload, {
+                headers: { "Content-Type": "application/json" },
+              });
+
+              logger.info("Apps Script response:", appScriptResponse.data);
+            } else {
+              logger.warn("Customer details incomplete:", { name, email });
+            }
+          } catch (err: any) {
+            logger.error("Error fetching customer details:", err.message);
+          }
+
+          break;
+
+        default:
+          logger.info(`Unhandled event type: ${event.type}`);
+      }
+
+      // Respond to Stripe
+      response.status(200).send("Webhook received");
+    } catch (error: any) {
+      const errorMessage = error instanceof Error ? error.message : "Unknown error";
+      logger.error("Error processing webhook:", errorMessage);
+      response.status(500).send("Internal Server Error");
     }
-
-
-    // Respond to Stripe
-    response.status(200).send("Webhook received");
-  } catch (error: any) {
-    const errorMessage = error instanceof Error ? error.message : "Unknown error";
-    logger.error("Error processing webhook:", errorMessage);
-    response.status(500).send("Internal Server Error");
   }
-});
+);
 
 export const handleEmailConfirmation = onRequest(
   async (request, response) => {
