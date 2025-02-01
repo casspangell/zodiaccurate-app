@@ -15,14 +15,24 @@ const db = getDatabase(app);
 // Retrieve secret from Google Cloud Secret Manager
 async function getSecret(secretName: string): Promise<string> {
   const [version] = await client.accessSecretVersion({
-    name: `projects/zodiaccurate-e9aaf/secrets/${secretName}/versions/latest`,
+    name: `projects/607112386051/secrets/${secretName}/versions/latest`,
   });
-  // console.log(secretName, ": ", version.payload?.data?.toString());
+  console.log(secretName, ": ", version.payload?.data?.toString());
   const payload = version.payload?.data?.toString().trim(); // Remove whitespace
   if (!payload) {
     throw new Error(`Secret ${secretName} not found`);
   }
   return payload;
+}
+
+async function getStripeApiKey() {
+  try {
+    const response = await axios.get("https://script.google.com/macros/s/AKfycbzhqQ43GT3KWpkCItTFR4ALgks6n5F88Cgwmq8h-niDxyq7WOR8toJ86PmPvm_42m6yGA/exec");
+    return response.data.stripeApiKey;
+  } catch (error) {
+    console.error("Error fetching API key:", error);
+    return null;
+  }
 }
 
 // Webhook Handler
@@ -32,12 +42,13 @@ export const webhookHandler = onRequest(
 
   async (request, response) => {
 
-  const appScriptUrl = "https://script.google.com/macros/s/AKfycbzCCuIwKfLzST7e5imB1qvPAq2LvlJLdU0FFZmyXAXi5Nd1Nc0Uc11gUgyXW_EfS3KS/exec";
+  const appScriptUrl = "https://script.google.com/macros/s/AKfycbzhqQ43GT3KWpkCItTFR4ALgks6n5F88Cgwmq8h-niDxyq7WOR8toJ86PmPvm_42m6yGA/exec";
 
   try {
     const stripeSecret = await getSecret("stripe_secret");
     logger.info(`Fetched Secret: ${stripeSecret}`);
-    // const webhookSecret = await getSecret("stripe_webhook_secret");
+    const stripeApiKey = await getStripeApiKey();
+    console.log("=====StripeAPIKey ", stripeApiKey);
 
     logger.info("Headers received:", request.headers);
     logger.info("Raw body received:", request.rawBody);
@@ -126,7 +137,7 @@ export const webhookHandler = onRequest(
 
 export const handleEmailConfirmation = onRequest(
   async (request, response) => {
-    const appScriptUrl = "https://script.google.com/macros/s/AKfycbzCCuIwKfLzST7e5imB1qvPAq2LvlJLdU0FFZmyXAXi5Nd1Nc0Uc11gUgyXW_EfS3KS/exec";
+    const appScriptUrl = "https://script.google.com/macros/s/AKfycbzhqQ43GT3KWpkCItTFR4ALgks6n5F88Cgwmq8h-niDxyq7WOR8toJ86PmPvm_42m6yGA/exec";
 
     try {
       const email = request.query.email as string;

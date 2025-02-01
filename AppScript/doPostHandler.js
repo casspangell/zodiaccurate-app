@@ -53,9 +53,3 @@ function doPost(e) {
     return ContentService.createTextOutput(`Internal server error: ${err.message}`).setMimeType(ContentService.MimeType.TEXT);
   }
 }
-
-
-function doGet() {
-  return ContentService.createTextOutput('Hello, world!');
-}
-
