@@ -36,44 +36,53 @@ export const webhookHandler = onRequest(
 
   try {
     const stripeSecret = await getSecret("stripe_secret");
-    const webhookSecret = await getSecret("stripe_webhook_secret");
-    // const sharedSecret = await getSecret("shared_secret");
+    logger.info(`Fetched Secret: ${stripeSecret}`);
+    // const webhookSecret = await getSecret("stripe_webhook_secret");
 
-    // logger.info("SHARED SECRET:", sharedSecret);
     logger.info("Headers received:", request.headers);
     logger.info("Raw body received:", request.rawBody);
 
     // Initialize Stripe instance
     if (!stripeInstance) {
       stripeInstance = new stripe.Stripe(stripeSecret, {
-        apiVersion: "2022-11-15" as any, // Bypass type-checking for the apiVersion
+        apiVersion: "2024-06-20" as any, // Bypass type-checking for the apiVersion
       });
     }
 
     // Verify Stripe webhook signature
     const sig = request.headers["stripe-signature"];
+    logger.info("Stripe-Signature Header:", request.headers["stripe-signature"]);
+
     if (!sig) {
       logger.error("Headers received without stripe-signature:", request.headers);
       response.status(400).send("Webhook Error: Missing stripe-signature header");
       return;
     }
 
+    console.log("Raw body received (as string):", request.rawBody?.toString("utf8"));
+
     let event;
     try {
-      event = stripeInstance.webhooks.constructEvent(request.rawBody, sig, webhookSecret);
-      logger.info("Webhook verified:", { id: event.id, type: event.type });
-    } catch (err: unknown) {
+      event = stripeInstance.webhooks.constructEvent(
+        request.rawBody,
+        sig,
+        stripeSecret
+      );
+
+      logger.info("Webhook verified successfully", { id: event.id, type: event.type });
+    } catch (err: any) {
       const errorMessage = err instanceof Error ? err.message : "Unknown error";
       logger.error("Webhook verification failed:", errorMessage);
       response.status(400).send(`Webhook Error: ${errorMessage}`);
       return;
     }
 
+
     logger.info("Event Type:", event.type);
 
     // Handle Stripe events
     switch (event.type) {
-      case "checkout.session.completed":
+      case "customer.subscription.created":
         const session = event.data.object as any;
 
         // Extract name and email
@@ -108,7 +117,7 @@ export const webhookHandler = onRequest(
 
     // Respond to Stripe
     response.status(200).send("Webhook received");
-  } catch (error: unknown) {
+  } catch (error: any) {
     const errorMessage = error instanceof Error ? error.message : "Unknown error";
     logger.error("Error processing webhook:", errorMessage);
     response.status(500).send("Internal Server Error");
@@ -291,7 +300,7 @@ export const handleEmailConfirmation = onRequest(
 
       response.status(200).send(htmlContent);
 
-    } catch (error: unknown) {
+    } catch (error: any) {
       const errorMessage = error instanceof Error ? error.message : "Unknown error";
       logger.error("Error processing email confirmation:", errorMessage);
       response.status(500).send("Internal Server Error");
