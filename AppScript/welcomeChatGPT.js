@@ -19,7 +19,7 @@ async function welcomeChatGPT(jsonSinglePersonData, uuid) {
       await Promise.all([
         sendWelcomeEmailWithMailerSend(name, editUrl, email),
         sendDailyEmailWithMailerSend(name, email, zodiaccurateData, uuid),
-        saveHoroscopeToFirebase(responseData, uuid)
+        saveHoroscopeToFirebase(zodiaccurateData, uuid)
       ]);
 
         console.log("Email sent successfully.");

@@ -66,6 +66,15 @@ function transformKeysToLowerCaseWithUnderscores(inputJson) {
   }
 }
 
+function getObjectFromData(data) {
+  if (Array.isArray(data) && data.length > 0) {
+    return data[0];
+  } else if (typeof data === "object" && data !== null) {
+    return data;
+  } else {
+    return null;
+  }
+}
 
 
 function trimWhitespace(input) {

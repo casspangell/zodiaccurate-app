@@ -123,7 +123,9 @@ async function sendDailyEmailWithMailerSend(clientName, email, prompt, uuid) {
   }
 
   // Handle the case where prompt is an array
-  const dailyPrompt = transformKeysToLowerCaseWithUnderscores(prompt);
+  var dailyPrompt = transformKeysToLowerCaseWithUnderscores(prompt);
+  dailyPrompt = getObjectFromData(dailyPrompt);
+  
   console.log("Daily prompt: ", dailyPrompt);
   const formattedDate = formatDateForUser(uuid);
 

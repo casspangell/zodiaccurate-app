@@ -344,7 +344,6 @@ function getUserDataFromTrialUserTableFirebase(email) {
     console.log("GETTING USER DATA FROM FIREBASE:", email);
 
     const firebaseUrl = `${FIREBASE_URL}/users.json?auth=${FIREBASE_API_KEY}`;
-    console.log("Firebase URL:", firebaseUrl);
 
     const options = {
         method: "get",
@@ -537,7 +536,6 @@ function saveHoroscopeToFirebase(jsonData, uuid, tomorrow) {
   const sanitizedData = sanitizeKeys(jsonData);
 
   const firebaseUrl = `${FIREBASE_URL}/zodiac/${uuid}/${dayOfWeek}.json?auth=${FIREBASE_API_KEY}`;
-  console.log("Firebase URL:", firebaseUrl);
 
   const options = {
     method: "put",
