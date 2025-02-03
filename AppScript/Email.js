@@ -88,7 +88,7 @@ async function sendWelcomeEmailWithMailerSend(clientName, editResponseUrl, email
               <p>Welcome to Zodiaccurate! We're thrilled that you've decided to join our community.</p>
               <p>Every day at 6 AM, you'll receive a personalized astrological reading tailored specifically to the details you've shared with us. Our goal is to provide you with insights that not only assist you to better navigate guide your daily decisions but also align that guidance with your personal life conditions, struggles and successes!<br></p>
               <p>If you ever need to update your Zodiaccurate “current life” information, you can easily do so by <a href="${editResponseUrl}">Clicking Here</a><br></p>
-              <p>We look forward to being a part of your challenging, miraculous , creative, life.<br><br></p>
+              <p>We look forward to being a part of your challenging, miraculous, creative, life.<br><br></p>
               <p>Best regards,<br/>
               Your Zodiaccurate Team<br></p>
               <p>You can change your CC information or cancel anytime via this <a href="${stripeLink}">Link</a></p>
@@ -125,7 +125,7 @@ async function sendDailyEmailWithMailerSend(clientName, email, prompt, uuid) {
   // Handle the case where prompt is an array
   var dailyPrompt = transformKeysToLowerCaseWithUnderscores(prompt);
   dailyPrompt = getObjectFromData(dailyPrompt);
-  
+
   console.log("Daily prompt: ", dailyPrompt);
   const formattedDate = formatDateForUser(uuid);
 
