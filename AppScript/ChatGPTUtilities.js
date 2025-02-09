@@ -21,13 +21,13 @@ function getChatInstructions(jsonSinglePersonData, uuid) {
     const prompt = `
         Here is user data: ${JSON.stringify(jsonSinglePersonData)}
         Your task is to create a daily, personalized horoscope for this person, incorporating astrological insights and practical advice. Focus on these sections and  generate a CSV file containing the following columns and data:
-        - Overview: 5 sentences Emotional, mental, and spiritual insights, including specific examples of challenges the person may face and practical ways to address them. (${modifiers.overview})
-        - Career and Finances: 5 sentences Strategies for professional and financial growth. Include specific small but meaningful steps the person can take, phrased in an empowering and open-ended tone to encourage autonomy. (${modifiers.careerAndFinances})
-        - Relationships: 5 sentences Emotional connections and advice for strengthening bonds. (${modifiers.relationships})
-        - Parenting Guidance: 5 sentences Support tailored to the user’s child if they have children, offering actionable suggestions for nurturing and engagement. (${modifiers.parentingGuidance}). Don't include this section if the user does not have a child.
-        - Health: 5 sentences Holistic well-being with practical health tips aligned with the person’s lifestyle and goals. (${modifiers.health})
-        - Personal Guidance: 5 sentences Introspective advice for self-improvement and emotional balance. Include suggestions for reflection and small changes aligned with the user’s values and aspirations. (${modifiers.personalGuidance})
-        - Important Person Relationship: 5 sentences Provide guidance on nurturing key relationships in the user's life if they have provided information for. Offer insights on how to deepen emotional bonds, improve communication, and create reciprocal support. Consider the unique dynamics of this relationship and suggest ways to cultivate mutual respect and understanding. (${modifiers.importantPersonRelationship}). If there is no data provided, skip.
+        - Overview: 5-9 sentences Emotional, mental, and spiritual insights, including specific examples of challenges the person may face and practical ways to address them. (${modifiers.overview})
+        - Career and Finances: 5-9 sentences Strategies for professional and financial growth. Include specific small but meaningful steps the person can take, phrased in an empowering and open-ended tone to encourage autonomy. (${modifiers.careerAndFinances})
+        - Relationships: 5-9 sentences Emotional connections and advice for strengthening bonds. (${modifiers.relationships})
+        - Parenting Guidance: 5-9 sentences Support tailored to the user’s child if they have children, offering actionable suggestions for nurturing and engagement. (${modifiers.parentingGuidance}). Don't include this section if the user does not have a child.
+        - Health: 5-9 sentences Holistic well-being with practical health tips aligned with the person’s lifestyle and goals. (${modifiers.health})
+        - Personal Guidance: 5-9 sentences Introspective advice for self-improvement and emotional balance. Include suggestions for reflection and small changes aligned with the user’s values and aspirations. (${modifiers.personalGuidance})
+        - Important Person Relationship: 5-9 sentences Provide guidance on nurturing key relationships in the user's life if they have provided information for. Offer insights on how to deepen emotional bonds, improve communication, and create reciprocal support. Consider the unique dynamics of this relationship and suggest ways to cultivate mutual respect and understanding. (${modifiers.importantPersonRelationship}). If there is no data provided, skip.
 - Local Weather: Brief forecast. (${modifiers.localWeather})  
         Read the individual’s birth date, time, location, and any personal details provided in their form as a reference not as concrete information but used as a guideline to facilitate the prompt. Understand the person’s situation regarding career status, relationship dynamics, health considerations, and interactions with children or important others. If relevant, mention any changes in the stars or timing from the last few days to highlight shifts in energy. Identify key astrological factors: Analyze natal charts, transits, planetary alignments, retrogrades, and compatibility aspects based on the individual’s unique details. Link these celestial events to the person’s current circumstances, challenges, and aspirations. Add that seems left field for advice but in line with the predictions. The user’s own wording about challenges or experiences should be creatively rephrased. Provide new angles, interpretations, and solutions that resonate with their situation. Personalize and integrate astrological insights: Mention partner names, children’s names, or important individuals if provided. For each section, provide three layers of scope (low, middle and high scope) and how it can affect the larger picture in their world.
 
@@ -52,12 +52,12 @@ function getChatGPTResponse(instructions, uuid) {
     const url = 'https://api.openai.com/v1/chat/completions';
 
     const payload = {
-        "model": "gpt-4-turbo-2024-04-09",
+        "model": "gpt-4o",
         "max_tokens": 4096,
-      "temperature": 0.8,
-      "top_p": 0.8,
-      "frequency_penalty": 0.6,
-      "presence_penalty": 0.5,
+        "temperature": 0.4,
+        "top_p": 0.6,
+        "frequency_penalty": 0.2,
+        "presence_penalty": 0.1,
       "logprobs": true,
         "messages": [
             {
