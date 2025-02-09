@@ -9,8 +9,12 @@ const MAILER_SEND_URL = "https://api.mailersend.com/v1/email";
 const GITHUB_ACCESS_TOKEN = PropertiesService.getScriptProperties().getProperty("GITHUB_ACCESS_TOKEN");
 const STRIPE_WEBHOOK_SECRET = PropertiesService.getScriptProperties().getProperty("STRIPE_WEBHOOK_SECRET");
 const SHARED_SECRET = PropertiesService.getScriptProperties().getProperty("SHARED_SECRET");
+const STRIPE_LINK = "https://billing.stripe.com/p/login/8wM03Y1ic3ROau4000";
+const EDIT_RESPONSE_URL_PRIME = "https://docs.google.com/forms/d/e/1FAIpQLSexpPmDP1R22xUemGUIU3TaDNvSwZVO7c0NZ8bC9piTn-B9XQ/viewform?edit2=";
 
-const TEST_USER = "2_ABaOnudBnBkwqlqnMUV9qS7zBUYoqPWaz1UyPeMW7GYOD2bPl2ZLYvQJ0UdU28kSvXtp_ZU";
+const PAUL_TEST = "2_ABaOnudBnBkwqlqnMUV9qS7zBUYoqPWaz1UyPeMW7GYOD2bPl2ZLYvQJ0UdU28kSvXtp_ZU";
+const CASS_TEST = "2_ABaOnuds5b7BPiDNl6ZUlev-eOWXNFLKBWrhPnT_Rdlji9mEhiuCX68uFMFZ8YdhMJ2pq9o";
+
 const TEST_USER_DATA = {
   "areas_of_improvement": "Getting up 6am and bed by 10pm, make consistently better food choices and eat less when I eat. Be non-responsive (negatively) to my daughter's tantrums.",
   "belief_system": "Spiritual",

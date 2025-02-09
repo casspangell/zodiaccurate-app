@@ -1,3 +1,8 @@
+function testChatPrompt() {
+    const testData = getUserDataFromFirebase(PAUL_TEST);
+    const instructions = getChatInstructions(testData, PAUL_TEST);
+    const output = getChatGPTResponse(instructions, PAUL_TEST);
+}
 
 /**
  * Constructs a ChatGPT prompt using user data and modifiers.
@@ -15,16 +20,18 @@ function getChatInstructions(jsonSinglePersonData, uuid) {
 
     const prompt = `
         Here is user data: ${JSON.stringify(jsonSinglePersonData)}
-        Your task is to create a daily, personalized horoscope for this person, incorporating astrological insights and practical advice. Focus on these sections and  generate a CSV file containing the following columns and data:. One containing the following columns and data:
-        - Overview: Emotional, mental, and spiritual insights, including specific examples of challenges the person may face and practical ways to address them. (${modifiers.overview})
-        - Career and Finances: Strategies for professional and financial growth. Include specific small but meaningful steps the person can take, phrased in an empowering and open-ended tone to encourage autonomy. (${modifiers.careerAndFinances})
-        - Relationships: Emotional connections and advice for strengthening bonds. (${modifiers.relationships})
-        - Parenting Guidance: Support tailored to the user’s child if they have children, offering actionable suggestions for nurturing and engagement. (${modifiers.parentingGuidance}). Don't include this section if the user does not have a child.
-        - Health: Holistic well-being with practical health tips aligned with the person’s lifestyle and goals. (${modifiers.health})
-        - Personal Guidance: Introspective advice for self-improvement and emotional balance. Include suggestions for reflection and small changes aligned with the user’s values and aspirations. (${modifiers.personalGuidance})
-        - Local Weather: Brief forecast.
-        Avoid repetition, technical terms, and ensure uniqueness each day. Use the previous day's data for reference: ${getWeekData}.
-        The output should include thoughtful, actionable advice based on the person’s astrological sign, planetary influences, and personal data while being empathetic and encouraging. Avoid being overly directive, and instead suggest options that empower the individual to take their own steps forward. Avoid repetition, technical terms, and ensure uniqueness each day. Use the previous day's data for reference: ${getWeekData}. Astrological predictions tailored to the user’s chart, offering insights on upcoming opportunities, challenges, or planetary influences that may affect key areas of their life.
+        Your task is to create a daily, personalized horoscope for this person, incorporating astrological insights and practical advice. Focus on these sections and  generate a CSV file containing the following columns and data:
+        - Overview: 5 sentences Emotional, mental, and spiritual insights, including specific examples of challenges the person may face and practical ways to address them. (${modifiers.overview})
+        - Career and Finances: 5 sentences Strategies for professional and financial growth. Include specific small but meaningful steps the person can take, phrased in an empowering and open-ended tone to encourage autonomy. (${modifiers.careerAndFinances})
+        - Relationships: 5 sentences Emotional connections and advice for strengthening bonds. (${modifiers.relationships})
+        - Parenting Guidance: 5 sentences Support tailored to the user’s child if they have children, offering actionable suggestions for nurturing and engagement. (${modifiers.parentingGuidance}). Don't include this section if the user does not have a child.
+        - Health: 5 sentences Holistic well-being with practical health tips aligned with the person’s lifestyle and goals. (${modifiers.health})
+        - Personal Guidance: 5 sentences Introspective advice for self-improvement and emotional balance. Include suggestions for reflection and small changes aligned with the user’s values and aspirations. (${modifiers.personalGuidance})
+        - Important Person Relationship: 5 sentences Provide guidance on nurturing key relationships in the user's life if they have provided information for. Offer insights on how to deepen emotional bonds, improve communication, and create reciprocal support. Consider the unique dynamics of this relationship and suggest ways to cultivate mutual respect and understanding. (${modifiers.importantPersonRelationship}). If there is no data provided, skip.
+- Local Weather: Brief forecast. (${modifiers.localWeather})  
+        Read the individual’s birth date, time, location, and any personal details provided in their form as a reference not as concrete information but used as a guideline to facilitate the prompt. Understand the person’s situation regarding career status, relationship dynamics, health considerations, and interactions with children or important others. If relevant, mention any changes in the stars or timing from the last few days to highlight shifts in energy. Identify key astrological factors: Analyze natal charts, transits, planetary alignments, retrogrades, and compatibility aspects based on the individual’s unique details. Link these celestial events to the person’s current circumstances, challenges, and aspirations. Add that seems left field for advice but in line with the predictions. The user’s own wording about challenges or experiences should be creatively rephrased. Provide new angles, interpretations, and solutions that resonate with their situation. Personalize and integrate astrological insights: Mention partner names, children’s names, or important individuals if provided. For each section, provide three layers of scope (low, middle and high scope) and how it can affect the larger picture in their world.
+
+IMPORTANT: Weave astrological references and predictions for the day (e.g., Sun, Moon, retrogrades, compatibility) naturally into the guidance, ensuring it remains accessible and empathetic. Use the person's first name. Each category provide 9 sentences of insight: (1) Personal Guidance: self-development insights, spiritual reflection, or motivation aligned with the person’s current astrological trends. always refer to the individual personally ${modifiers.overview} Ask leading questions to the person in your answers to increase personal reflection. (2) Career and Finances: Tailor advice based on the individual’s career status and any financial considerations or struggles they’ve shared. ${modifiers.careerAndFinances} (3) Health and Wellness: Offer supportive suggestions for physical, mental, and emotional health, drawing from both the horoscope and any personal health data provided. ${modifiers.health} (4) Partner Relationship: Discuss relationship harmony, communication tips, and emotional balance, rooted in compatibility elements and current planetary influences. ${modifiers.relationships}.(5) Children: Give guidance on fostering healthy connections with children, considering any stated issues like communication or school concerns. ${modifiers.parentingGuidance} The birthdates and zodiac information for these individuals need to be pulled and reflected in the response. The guidance is for the main person so they can have more effective communication and guidance for their loved one. (6) Close Important Person: Give guidance on fostering healthy connections with key individuals, considering any stated issues like communication or concerns. ${modifiers.parentingGuidance}. The birthdates and zodiac information for these individuals need to be reflected in the response. The guidance is for the main person so they can have more effective communication and guidance for their loved one. (7) Local Weather Forecast: Conclude with a brief, location-specific weather note for the day.
     `;
 
     return prompt.trim();
@@ -45,17 +52,22 @@ function getChatGPTResponse(instructions, uuid) {
     const url = 'https://api.openai.com/v1/chat/completions';
 
     const payload = {
-        "model": "gpt-4-turbo",
-        "max_tokens": 3000,
-        "temperature": 1.0,
+        "model": "gpt-4-turbo-2024-04-09",
+        "max_tokens": 4096,
+      "temperature": 0.8,
+      "top_p": 0.8,
+      "frequency_penalty": 0.6,
+      "presence_penalty": 0.5,
+      "logprobs": true,
         "messages": [
             {
                 "role": "system",
-                "content": "You are a highly knowledgeable and empathetic astrologer and personal guide."
+                "content": "You are bob brezney, a highly knowledgeable and empathetic astrologer and personal guide."
             },
             {
                 "role": "user",
-                "content": "You are a highly knowledgeable and empathetic astrologer and personal guide. Your task is to generate a personalized daily horoscope in CSV format based on the provided data. Always provide the CSV content enclosed in a markdown code block with the csv tag (e.g., csv \"Column1\",\"Column2\",\"Column3\" \"Value1\",\"Value2\",\"Value3\" ). The first row must contain column headers, and subsequent rows must contain corresponding values. Do not include any text or explanation outside the markdown block. Ensure all values are properly quoted (e.g., \"Value\"), especially if they contain commas, line breaks, or special characters. Example format: csv \"Overview\",\"Career and Finances\",\"Relationships\",\"Parenting Guidance\",\"Health\",\"Personal Guidance\",\"Local Weather\" \"Today's insights...\",\"Career advice...\",\"Relationship advice...\",\"Parenting guidance...\",\"Health tips...\",\"Personal advice...\",\"Local weather forecast...\" . Ensure the format is consistent and adheres strictly to these guidelines."
+                "content": "You are bob brezney, a highly knowledgeable and empathetic astrologer and personal guide. Your task is to generate a personalized daily horoscope in CSV format based on the provided data. Always provide the CSV content enclosed in a markdown code block with the csv tag (e.g., csv \"Column1\",\"Column2\",\"Column3\" \"Value1\",\"Value2\",\"Value3\" ). The first row must contain column headers, and subsequent rows must contain corresponding values. Do not include any text or explanation outside the markdown block. Ensure all values are properly quoted (e.g., \"Value\"), especially if they contain commas, line breaks, or special characters. Example format: csv \"Personal Guidance\",\"Career and Finances\",\"Health and Wellness\",\"Partner Relationship\",\"Children or Important Person Relationship\",\"Local Weather\". Ensure the format is consistent and adheres strictly to these guidelines."+ 
+                "speak like bob brezney creator of free will horoscope referencing and predicting astrological phenomena in each category. If suggesting an event, find local events that cater to the guidance. Final check: Review the completed horoscope to ensure it meets tone, personalization, and astrological accuracy standards, verifying that it addresses each category in the correct order without overlap or repetition. "
             },
             {
                 "role": "user",
@@ -75,6 +87,16 @@ function getChatGPTResponse(instructions, uuid) {
 
     const response = UrlFetchApp.fetch(url, options);
     const jsonResponse = JSON.parse(response.getContentText());
+
+      // Extract token usage details
+      var promptTokens = jsonResponse.usage.prompt_tokens;
+      var completionTokens = jsonResponse.usage.completion_tokens;
+      var totalTokens = jsonResponse.usage.total_tokens;
+
+      // Log the token usage
+      Logger.log("Prompt Tokens: " + promptTokens);
+      Logger.log("Completion Tokens: " + completionTokens);
+      Logger.log("Total Tokens: " + totalTokens);
 
     const responseData = parseResponseToJson(jsonResponse);
 
@@ -241,4 +263,17 @@ var personalGuidanceModifiers = [
   "Today might be a good day to practice gratitude.",
   "Reflect on your achievements and how far you've come.",
   "Think about ways to cultivate a growth mindset."
+];
+
+var importantPersonRelationshipModifiers = [
+  "Take a moment to express appreciation for the important people in your life.",
+  "Consider reaching out to a mentor, close friend, or family member for a meaningful conversation.",
+  "Focus on strengthening mutual understanding and emotional support in this relationship.",
+  "Reflect on ways to improve communication and foster a deeper connection.",
+  "Think about how you can show gratitude for their presence and influence in your life.",
+  "Today is a good day to offer support or encouragement to someone who has been there for you.",
+  "Consider how this relationship has shaped your growth and what you can do to nurture it further.",
+  "Think about setting healthy boundaries while maintaining a sense of closeness.",
+  "Reflect on past challenges in this relationship and how they have helped strengthen your bond.",
+  "Today might be a good day to share your thoughts and emotions openly, creating space for honesty and trust."
 ];
