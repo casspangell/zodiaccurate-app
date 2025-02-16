@@ -209,13 +209,22 @@ document.addEventListener("DOMContentLoaded", function () {
     function updateProgressBar(index) {
         const steps = document.querySelectorAll(".step");
         const progressBar = document.querySelector(".progress-bar");
-        const totalSteps = steps.length - 1;
 
-        if (index < 0 || index > totalSteps) return;
+        if (index < 0 || index >= steps.length) return;
 
-        let progressHeight = ((index / totalSteps) * 100).toFixed(2);
-        progressBar.style.height = `${progressHeight}%`;
+        // Get bounding positions
+        const firstStep = steps[0].getBoundingClientRect().top;
+        const lastStep = steps[steps.length - 1].getBoundingClientRect().top;
+        const activeStep = steps[index].getBoundingClientRect().top;
 
+        // Calculate exact height to align the bar to the middle of each button
+        const stepHeight = steps[0].offsetHeight; // Use step height for centering
+        const progressHeight = (activeStep - firstStep) + (stepHeight / 2);
+
+        // Update progress bar height dynamically
+        progressBar.style.height = `${progressHeight}px`;
+
+        // Update step states
         steps.forEach((step, i) => {
             step.classList.remove("active", "completed");
             if (i < index) {
@@ -225,8 +234,9 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         });
 
-        console.log(`Progress Updated: Step ${index} / ${totalSteps}`);
+        console.log(`Progress Updated: Step ${index}, Height: ${progressHeight}px`);
     }
+
 
     function scrollToTop() {
         window.scrollTo({ top: 0, behavior: "smooth" });
@@ -271,8 +281,6 @@ document.addEventListener("DOMContentLoaded", function () {
             if (Array.isArray(currentStep)) {
                 currentStep = currentStep.find(step => document.getElementById(step)?.style.display === "block") || currentStep[0];
             }
-
-            console.log(`Moving from Section: ${currentStep}`);
 
             switch (currentStep) {
                 case "intro":
@@ -327,8 +335,6 @@ document.addEventListener("DOMContentLoaded", function () {
                     console.error(`Unhandled section: ${currentStep}`);
                     break;
             }
-
-            console.log(`Now on Section: ${stepOrder[currentSection]}`);
         });
     });
 
