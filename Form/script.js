@@ -270,11 +270,6 @@ document.addEventListener("DOMContentLoaded", function () {
         newPartner.classList.add("partner-entry");
         newPartner.setAttribute("id", `partner-${partnerCount}`);
 
-        // Alternate background for every other partner
-        // if (partnerCount % 2 === 1) {
-        //     newPartner.classList.add("alternate-bg");
-        // }
-
         newPartner.innerHTML = `
                 <h3>Partner ${partnerCount} Information</h3>
                 <label>Partner's Name: <input type="text" name="partner_name_${partnerCount}"></label><br>
@@ -341,11 +336,6 @@ function addChild() {
     const newChild = document.createElement("div");
     newChild.classList.add("child-entry");
     newChild.setAttribute("id", `child-${childCount}`);
-
-    // Alternate background color for differentiation
-    if (partnerCount % 2 === 1) {
-        newPartner.classList.add("alternate-bg");
-    }
 
     newChild.innerHTML = `
         <div class="child-card">

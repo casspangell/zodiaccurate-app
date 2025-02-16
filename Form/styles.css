@@ -11,10 +11,12 @@ body {
 .container {
     max-width: 600px;
     margin: 50px auto;
-   /* padding: 30px;
+    padding: 30px;
     background: #2a0b5e;
     border-radius: 10px;
-    box-shadow: 0px 0px 15px rgba(255, 255, 255, 0.2);*/
+    box-shadow: 0px 0px 15px rgba(255, 255, 255, 0.2);
+    padding: 15px;
+    box-sizing: border-box;
 }
 
 .next {
@@ -55,13 +57,11 @@ input[type="text"],
 input[type="email"],
 input[type="date"],
 input[type="password"] {
-    width: 100%;
+    width: 100%; /* Ensures text fields don't overflow */
+    max-width: 100%; /* Prevents them from exceeding the container */
+    font-size: 16px;
     padding: 10px;
-    margin-top: 5px;
-    border: 1px solid #7e57c2;
-    border-radius: 5px;
-    background: #3c1b7e;
-    color: white;
+    box-sizing: border-box; /* Ensures padding doesn't affect width */
 }
 
 /* Radio & Checkbox Groups */
@@ -220,10 +220,10 @@ input[type="checkbox"]:focus {
 }
 
 .partner-entry {
-    padding: 15px;
+    border: 2px solid #7e57c2;
     border-radius: 10px;
-    margin-bottom: 10px;
-    transition: all 0.3s ease-in-out;
+    padding: 15px;
+    margin: 10px 0;
 }
 
 .partner-card {
@@ -239,14 +239,15 @@ input[type="checkbox"]:focus {
     background-color: var(--lighter-purple); /* Lighter shade for alternating partners */
 }
 
-.partner-entry.alternate-bg {
+/*.partner-entry.alternate-bg {
     bpadding 20px;
+    background-color: #5a2d91;
 }
 
 /* Lighter purple background for alternating sections */
 .partner-entry.alternate-bg .partner-card {
     background-color: #5a2d91;
-}
+}*/
 
 .partner-actions {
     display: flex;
@@ -523,4 +524,105 @@ input[type="checkbox"]:focus {
 
 .remove-important-person-btn:hover {
     background-color: #b71c1c;
+}
+
+/* General Mobile Styles */
+@media screen and (max-width: 768px) {
+    body {
+        padding: 10px;
+    }
+
+    .form-container {
+        flex-direction: column;
+        align-items: center;
+        padding: 0;
+    }
+
+    .container {
+        width: 100%;
+        max-width: 95%;
+        margin: 20px auto;
+        padding: 15px;
+        box-sizing: border-box;
+    }
+
+    h1 {
+        font-size: 22px;
+        text-align: center;
+    }
+
+    h2 {
+        font-size: 18px;
+        text-align: center;
+    }
+
+    .description {
+        font-size: 14px;
+    }
+
+    input[type="text"],
+    input[type="email"],
+    input[type="date"],
+    input[type="password"] {
+        width: 100%; /* Ensures text fields don't overflow */
+        max-width: 100%; /* Prevents them from exceeding the container */
+        font-size: 16px;
+        padding: 10px;
+        box-sizing: border-box; /* Ensures padding doesn't affect width */
+    }
+
+    .nav-button-container {
+        display: flex;
+        justify-content: center;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    button {
+        font-size: 14px;
+        padding: 10px;
+        width: 100%;
+    }
+
+    /* Progress Bar Moves to the Top */
+    .progress-container {
+        display: none;
+    }
+
+    .progress-bar {
+        display: none
+    }
+
+    .steps {
+        display: flex;
+        flex-direction: row;
+        justify-content: center;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .step {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: #5c4670;
+        color: transparent;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        transition: background 0.3s, transform 0.3s;
+    }
+
+    .step.active {
+        background: #ffcc00;
+        transform: scale(1.2);
+    }
+
+    .step.completed {
+        background: #8e44ad;
+    }
+
+    .step p {
+        display: none;
+    }
 }
