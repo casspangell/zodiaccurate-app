@@ -27,6 +27,14 @@ body {
     background-color: #44a2cb;
 }
 
+.submit {
+    background: #d6138f;
+}
+
+.submit:hover {
+    background-color: #d13698;
+}
+
 /* Headings */
 h1 {
     text-align: center;

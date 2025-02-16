@@ -105,38 +105,38 @@
 
                 <label for="emotional_health">Emotional Health</label>
                 <p class="description">Describe any emotional imbalances (e.g., anxiety, depression, grief, low self-esteem, anger). Leave blank if none.</p>
-                <textarea type="text" id="emotional_health" name="emotional_health"></textarea>
+                <textarea type="text" id="emotional_health" name="emotional_health" class="text-large auto-expand"></textarea>
 
                 <label for="mental_health">Mental Health</label>
                 <p class="description">List any mental health challenges (e.g., negative thinking, trauma, serious conditions). Leave blank if none.</p>
-                <textarea type="text" id="mental_health" name="mental_health"></textarea>
+                <textarea type="text" id="mental_health" name="mental_health" class="text-large auto-expand"></textarea>
 
                 <label for="wellness_goals">Wellness Goals</label>
                 <p class="description">What are your wellness goals (e.g., lose weight, gain strength, be more flexible)?</p>
-                <textarea type="text" id="wellness_goals" name="wellness_goals"></textarea>
+                <textarea type="text" id="wellness_goals" name="wellness_goals" class="text-large auto-expand"></textarea>
 
                 <label for="important_goals">Important Goals</label>
                 <p class="description">List 3-5 short or long-term goals or dreams.</p>
-                <textarea type="text" id="important_goals" name="important_goals"></textarea>
+                <textarea type="text" id="important_goals" name="important_goals" class="text-large auto-expand"></textarea>
 
                 <label for="areas_of_improvement">Areas of Improvement</label>
                 <p class="description">List 3-5 areas of your life you want to improve.</p>
-                <textarea type="text" id="areas_of_improvement" name="areas_of_improvement"></textarea>
+                <textarea type="text" id="areas_of_improvement" name="areas_of_improvement" class="text-large auto-expand"></textarea>
 
                 <label for="stress">Stress</label>
                 <p class="description">What are your top 3-5 sources of stress?</p>
-                <textarea type="text" id="stress" name="stress"></textarea>
+                <textarea type="text" id="stress" name="stress" class="text-large auto-expand"></textarea>
 
                 <label for="joy_satisfaction">Joy and Satisfaction</label>
                 <p class="description">What brings you joy and satisfaction?</p>
-                <textarea type="text" id="joy_satisfaction" name="joy_satisfaction"></textarea>
+                <textarea type="text" id="joy_satisfaction" name="joy_satisfaction" class="text-large auto-expand"></textarea>
 
                 <label for="family_values">Family Values</label>
                 <p class="description">What family values or principles matter most to you?</p>
-                <textarea type="text" id="family_values" name="family_values"></textarea>
-
+                <textarea type="text" id="family_values" name="family_values" class="text-large auto-expand"></textarea>
+                <br/><br/>
                 <div class="question-group">
-                    <label>Sexual Orientation (Optional)</label>
+                    <label>Sexual Orientation</label>
                     <p class="description">What is your sexual orientation?</p>
                     <div class="main-radio-group multi-column">
                         <label><input type="radio" name="orientation" value="Not Interested"> Not Interested</label>
@@ -150,7 +150,7 @@
                 </div>
 
                 <div class="question-group">
-                <label>Belief System (Optional)</label>
+                <label>Belief System</label>
                     <p class="description">If your beliefs influence your decisions, sharing them can help personalize your guidance.</p>
                     <div class="main-radio-group multi-column">
                         <label><input type="radio" name="belief_system" value="Christian"> Christian</label>
@@ -176,7 +176,7 @@
                 <h2>Relationship Status</h2>
                 <div class="question-group">
                 <p>What is your current relationship status?</p>
-                    <div class="main-radio-group">
+                    <div class="main-radio-group multi-column">
                         <label><input type="radio" name="relationship_status" value="future_partner"> Looking for a Life Partner</label>
                         <label><input type="radio" name="relationship_status" value="single"> Single - Not Looking</label>
                         <label><input type="radio" name="relationship_status" value="married"> Married</label>
@@ -208,10 +208,10 @@
                         <div class="question-group">
                             <label>How do you handle conflicts in your relationship?</label><br>
                             <div class="main-checkbox-group multi-column">
-                                <input type="checkbox" name="partner_conflict_1" value="Address Immediately"> Address Immediately
-                                <input type="checkbox" name="partner_conflict_1" value="Cool Down First"> Cool Down First
-                                <input type="checkbox" name="partner_conflict_1" value="Avoid Conflict"> Avoid Conflict
-                                <input type="checkbox" name="partner_conflict_1" value="Seek a Third-Party Opinion"> Seek a Third-Party Opinion
+                                <label><input type="checkbox" name="partner_conflict_1" value="Address Immediately"> Address Immediately</label>
+                                <label><input type="checkbox" name="partner_conflict_1" value="Cool Down First"> Cool Down First</label>
+                                <label><input type="checkbox" name="partner_conflict_1" value="Avoid Conflict"> Avoid Conflict</label>
+                                <label><input type="checkbox" name="partner_conflict_1" value="Seek a Third-Party Opinion"> Seek a Third-Party Opinion</label>
                             </div>
                         </div>
                         <br>
@@ -219,20 +219,19 @@
                         <label>List 3-5 things you want to improve about yourself in your relationship: <input type="text" name="partner_improve_1"></label><br>
                         <div class="question-group">
                             <label>Partner’s Belief System:</label><br>
-                            <select name="partner_belief_1">
-                                <option value="Christian">Christian</option>
-                                <option value="Mormon">Mormon</option>
-                                <option value="Buddhist">Buddhist</option>
-                                <option value="Islam">Islam</option>
-                                <option value="Jewish">Jewish</option>
-                                <option value="Hindu">Hindu</option>
-                                <option value="Spiritual">Spiritual</option>
-                                <option value="Atheist">Atheist</option>
-                                <option value="Agnostic">Agnostic</option>
-                                <option value="Pagan">Pagan</option>
-                                <option value="Other">Other</option>
-                            </select>
-                        </div>
+                            <div class="main-radio-group multi-column">
+                                <label><input type="radio" name="belief_system" value="Christian"> Christian</label>
+                                <label><input type="radio" name="belief_system" value="Mormon"> Mormon</label>
+                                <label><input type="radio" name="belief_system" value="Buddhist"> Buddhist</label>
+                                <label><input type="radio" name="belief_system" value="Islam"> Islam</label>
+                                <label><input type="radio" name="belief_system" value="Jewish"> Jewish</label>
+                                <label><input type="radio" name="belief_system" value="Hindu"> Hindu</label>
+                                <label><input type="radio" name="belief_system" value="Spiritual"> Spiritual</label>
+                                <label><input type="radio" name="belief_system" value="Atheist"> Atheist</label>
+                                <label><input type="radio" name="belief_system" value="Agnostic"> Agnostic</label>
+                                <label><input type="radio" name="belief_system" value="Pagan"> Pagan</label>
+                                <label><input type="radio" name="belief_system" value="Other"> Other</label>
+                            </div>
                         <br>
                     </div>
                 </div>

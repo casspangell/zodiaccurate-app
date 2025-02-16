@@ -6,11 +6,11 @@ document.addEventListener("DOMContentLoaded", function () {
     const prevButtons = document.querySelectorAll(".prev");
     const steps = document.querySelectorAll(".step");
 
-    // const relationshipStatus = document.getElementById("relationship-status");
-    // const partnerSection = document.getElementById("partner-section");
-    // const futurePartnerSection = document.getElementById("future-partner-section");
-    // const addPartnerButton = document.getElementById("add-partner");
-    // const partnerContainer = document.getElementById("partner-container");
+    const relationshipStatus = document.getElementById("relationship-status");
+    const partnerSection = document.getElementById("partner-section");
+    const futurePartnerSection = document.getElementById("future-partner-section");
+    const addPartnerButton = document.getElementById("add-partner");
+    const partnerContainer = document.getElementById("partner-container");
     const addChildButton = document.getElementById("add-child");
     const childContainer = document.getElementById("child-container");
 
@@ -233,8 +233,6 @@ document.addEventListener("DOMContentLoaded", function () {
                 step.classList.add("active");
             }
         });
-
-        console.log(`Progress Updated: Step ${index}, Height: ${progressHeight}px`);
     }
 
 
@@ -269,6 +267,35 @@ document.addEventListener("DOMContentLoaded", function () {
         showSection(currentSection);
     }
 
+    function printSections() {
+    const sections = document.querySelectorAll(".section");
+    
+    sections.forEach((section, index) => {
+        const sectionTitle = section.querySelector("h2")?.textContent.trim() || "Unnamed Section";
+        console.log(`Index: ${index}, Section: ${sectionTitle}`);
+    });
+}
+
+// Call the function to print the section list
+printSections();
+
+function printSectionsWithVisibility() {
+    const sections = document.querySelectorAll(".section");
+
+    sections.forEach((section, index) => {
+        const wasHidden = section.style.display === "none";
+        section.style.display = "block"; // Temporarily show it
+
+        const sectionTitle = section.querySelector("h2")?.textContent.trim() || "Unnamed Section";
+        console.log(`Index: ${index}, Section: ${sectionTitle}, ID: ${section.id}`);
+
+        if (wasHidden) section.style.display = "none"; // Restore original state
+    });
+}
+
+printSectionsWithVisibility();
+
+
     nextButtons.forEach((button) => {
         button.addEventListener("click", function () {
             if (!validateSection()) {
@@ -295,21 +322,27 @@ document.addEventListener("DOMContentLoaded", function () {
                     const status = selectedStatus.value;
 
                     if (["married", "committed", "separated_fix"].includes(status)) {
+                        console.log("go to partner");
                         goToSection(3);
                     } else if (["future_partner", "divorced", "separated_differences"].includes(status)) {
+                        console.log("go to future partner");
                         goToSection(4);
                     } else {
+                        console.log("goto important_people");
                         goToSection(10);
                     }
                     break;
                 case "partner":
                 case "future_partner":
+                    console.log("goto important_people");
                     goToSection(10);
                     break
                 case "important_people":
+                    console.log("goto children");
                     goToSection(9);
                     break;
                 case "children":
+                    console.log("goto employment_status");
                     goToSection(5);
                     break;
                 case "employment_status":
@@ -318,16 +351,20 @@ document.addEventListener("DOMContentLoaded", function () {
                     const employmentStatus = selectedEmployment.value;
 
                     if (["employed", "business_owner", "entrepreneur", "self_employed"].includes(employmentStatus)) {
+                        console.log("goto employed");
                         goToSection(6);
                     } else if (employmentStatus === "unemployed") {
+                        console.log("goto unemployed");
                         goToSection(7);
                     } else if (employmentStatus === "retired") {
+                        console.log("goto retired");
                         goToSection(8);
                     }
                     break;
                 case "employed":
                 case "unemployed":
                 case "retired":
+                    console.log("goto final");
                     goToSection(11);
                     break;
 
@@ -525,12 +562,12 @@ function addImportantPerson() {
             <label>Birth City: <input type="text" name="important_person_birth_city_${importantPersonCount}" placeholder="City, State, Country or 'Unknown'"></label><br>
             <label>What is your relationship with this person?</label><br>
             <div class="main-radio-group multi-column">
-                <input type="radio" name="important_person_relation_${importantPersonCount}" value="Family Member"> Family Member
-                <input type="radio" name="important_person_relation_${importantPersonCount}" value="Roommate"> Roommate
-                <input type="radio" name="important_person_relation_${importantPersonCount}" value="Friend"> Friend
-                <input type="radio" name="important_person_relation_${importantPersonCount}" value="Business Partner"> Business Partner
-                <input type="radio" name="important_person_relation_${importantPersonCount}" value="Ex-Partner"> Ex-Partner
-                <input type="radio" name="important_person_relation_${importantPersonCount}" value="Other"> Other
+                <label><input type="radio" name="important_person_relation_${importantPersonCount}" value="Family Member"> Family Member</label>
+                <label><input type="radio" name="important_person_relation_${importantPersonCount}" value="Roommate"> Roommate</label>
+                <label><input type="radio" name="important_person_relation_${importantPersonCount}" value="Friend"> Friend</label>
+                <label><input type="radio" name="important_person_relation_${importantPersonCount}" value="Business Partner"> Business Partner</label>
+                <label><input type="radio" name="important_person_relation_${importantPersonCount}" value="Ex-Partner"> Ex-Partner</label>
+                <label><input type="radio" name="important_person_relation_${importantPersonCount}" value="Other"> Other</label>
             </div>
             <br>
             <label>Describe how this person affects your daily life: <input type="text" name="important_person_impact_${importantPersonCount}"></label><br>
@@ -538,14 +575,12 @@ function addImportantPerson() {
             <label>List 3-5 things you appreciate about this person: <input type="text" name="important_person_appreciation_${importantPersonCount}"></label><br>
             <label>How do you typically handle disagreements with this person?</label><br>
             <div class="main-checkbox-group multi-column">
-                <input type="checkbox" name="important_person_conflict_${importantPersonCount}" value="Address Immediately"> Address Immediately
-                <input type="checkbox" name="important_person_conflict_${importantPersonCount}" value="Take Time to Cool Down"> Take Time to Cool Down
-                <input type="checkbox" name="important_person_conflict_${importantPersonCount}" value="Avoid Confrontation"> Avoid Confrontation
-                <input type="checkbox" name="important_person_conflict_${importantPersonCount}" value="Seek a Third-Party Opinion"> Seek a Third-Party Opinion
+                <label><input type="checkbox" name="important_person_conflict_${importantPersonCount}" value="Address Immediately"> Address Immediately</label>
+                <label><input type="checkbox" name="important_person_conflict_${importantPersonCount}" value="Take Time to Cool Down"> Take Time to Cool Down</label>
+                <label><input type="checkbox" name="important_person_conflict_${importantPersonCount}" value="Avoid Confrontation"> Avoid Confrontation</label>
+                <label><input type="checkbox" name="important_person_conflict_${importantPersonCount}" value="Seek a Third-Party Opinion"> Seek a Third-Party Opinion</label>
             </div>
             <br>
-
-});
 
             <label>List 3-5 ways you want to improve your relationship with this person (Optional): <input type="text" name="important_person_improvement_${importantPersonCount}"></label><br>
             <button type="button" class="remove-important-person-btn" data-person-id="${importantPersonCount}">Remove This Person</button>
