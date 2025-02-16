@@ -101,27 +101,20 @@ input[type="password"] {
     gap: 10px 20px;
 }
 
-/* Ensure labels align properly */
-.main-radio-group.multi-column label {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
 /* Hide default radio button */
 input[type="radio"] {
     appearance: none;
     -webkit-appearance: none;
     -moz-appearance: none;
-    width: 20px; /* Fixed size */
-    height: 20px; /* Fixed size */
+    width: 20px !important;
+    height: 20px !important;
     border-radius: 50%;
     background-color: white;
     display: inline-block;
     position: relative;
     cursor: pointer;
     transition: all 0.2s ease-in-out;
-    border: 2px solid #5a3e85; /* Keeps the border proportional */
+    flex-shrink: 0;
 }
 
 /* Style when checked */
@@ -134,8 +127,8 @@ input[type="radio"]:checked {
 input[type="radio"]::after {
     content: "";
     display: block;
-    width: 10px;
-    height: 10px;
+    width: 10px !important;
+    height: 10px !important;
     border-radius: 5px;
     background-color: #5a3e85; /* Dark purple inner circle for contrast */
     position: absolute;
@@ -143,6 +136,14 @@ input[type="radio"]::after {
     left: 50%;
     transform: translate(-50%, -50%) scale(0);
     transition: all 0.2s ease-in-out;
+}
+
+.main-radio-group.multi-column label {
+    display: flex;
+    align-items: center;
+    font-weight: normal;
+    gap: 8px;
+    font-size: clamp(0.8rem, 2vw, 1.2rem); /* Dynamically resizes text */
 }
 
 /* Show inner circle when selected */
