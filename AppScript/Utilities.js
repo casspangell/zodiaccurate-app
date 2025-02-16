@@ -28,43 +28,98 @@ function sanitizeKeys(data) {
   return sanitizedObject;
 }
 
-function transformKeysToLowerCaseWithUnderscores(inputJson) {
-  console.log("Original Input Data:", JSON.stringify(inputJson, null, 2));
+/**
+ * Sanitizes JSON keys before saving to Firebase.
+ * - Converts keys to lowercase.
+ * - Replaces spaces with underscores.
+ * - Removes special characters that Firebase does not allow.
+ * - Ensures values are valid JSON objects/strings.
+ *
+ * @param {Object} jsonData - The raw user data to be sanitized.
+ * @returns {Object} - The sanitized JSON object.
+ */
+function sanitizeJsonKeys(jsonData) {
+    const sanitizedData = {};
 
-  if (Array.isArray(inputJson)) {
-    // Transform each object in the array
-    const transformedArray = inputJson.map(item => {
-      const transformedItem = {};
-      for (const key in item) {
-        const transformedKey = key
-          .toLowerCase()
-          .replace(/\s+/g, '_')   // Replace spaces with underscores
-          .replace(/[^a-z0-9_]/g, ''); // Remove non-alphanumeric characters except underscores
+    Object.keys(jsonData).forEach((key) => {
+        // Convert key to lowercase
+        let sanitizedKey = key.toLowerCase();
 
-        transformedItem[transformedKey] = item[key];
-      }
-      return transformedItem;
+        // Remove leading/trailing spaces
+        sanitizedKey = sanitizedKey.trim();
+
+        // Replace spaces with underscores
+        sanitizedKey = sanitizedKey.replace(/\s+/g, "_");
+
+        // Remove disallowed characters ($ # [ ] / or .)
+        sanitizedKey = sanitizedKey.replace(/[$#\[\]\/.]/g, "");
+
+        // Store value with sanitized key
+        sanitizedData[sanitizedKey] = jsonData[key];
     });
-    console.log("Transformed Array Data:", JSON.stringify(transformedArray, null, 2));
-    return transformedArray;
-  } else if (typeof inputJson === 'object' && inputJson !== null) {
-    // Transform a single object
-    const transformedObject = {};
-    for (const key in inputJson) {
-      const transformedKey = key
-        .toLowerCase()
-        .replace(/\s+/g, '_')   // Replace spaces with underscores
-        .replace(/[^a-z0-9_]/g, ''); // Remove non-alphanumeric characters except underscores
 
-      transformedObject[transformedKey] = inputJson[key];
-    }
-    console.log("Transformed Object Data:", JSON.stringify(transformedObject, null, 2));
-    return transformedObject;
-  } else {
-    // Return the input as-is for unsupported types
-    return inputJson;
-  }
+    return sanitizedData;
 }
+
+/**
+ * Transforms object keys to lowercase with underscores, and replaces slashes in strings.
+ *
+ * @param {Object|Array|string} inputJson - The data to transform.
+ * @returns {Object|Array|string} - Transformed data with corrected keys or strings.
+ */
+function transformKeysToLowerCaseWithUnderscores(inputJson) {
+    console.log("Original Input Data:", JSON.stringify(inputJson, null, 2));
+
+    if (typeof inputJson === "string") {
+        // Handle strings like "Asia/Calcutta" → "Asia_Calcutta"
+        const transformedString = inputJson.toLowerCase().replace(/\//g, "_");
+        console.log("Transformed String:", transformedString);
+        return transformedString;
+    } 
+    
+    else if (Array.isArray(inputJson)) {
+        // Transform each object in the array
+        const transformedArray = inputJson.map(item => {
+            if (typeof item === "string") {
+                return item.toLowerCase().replace(/\//g, "_"); // Transform strings in arrays
+            }
+            const transformedItem = {};
+            for (const key in item) {
+                const transformedKey = key
+                    .toLowerCase()
+                    .replace(/\s+/g, '_')   // Replace spaces with underscores
+                    .replace(/[^a-z0-9_]/g, ''); // Remove non-alphanumeric characters except underscores
+
+                transformedItem[transformedKey] = item[key];
+            }
+            return transformedItem;
+        });
+        console.log("Transformed Array Data:", JSON.stringify(transformedArray, null, 2));
+        return transformedArray;
+    } 
+    
+    else if (typeof inputJson === "object" && inputJson !== null) {
+        // Transform a single object
+        const transformedObject = {};
+        for (const key in inputJson) {
+            const transformedKey = key
+                .toLowerCase()
+                .replace(/\s+/g, '_')   // Replace spaces with underscores
+                .replace(/[^a-z0-9_]/g, ''); // Remove non-alphanumeric characters except underscores
+
+            transformedObject[transformedKey] = inputJson[key];
+        }
+        console.log("Transformed Object Data:", JSON.stringify(transformedObject, null, 2));
+        return transformedObject;
+    } 
+    
+    else {
+        // Return the input as-is for unsupported types
+        console.log("No transformation applied. Returning input as is.");
+        return inputJson;
+    }
+}
+
 
 function getObjectFromData(data) {
   if (Array.isArray(data) && data.length > 0) {
@@ -76,7 +131,6 @@ function getObjectFromData(data) {
   }
 }
 
-
 function trimWhitespace(input) {
   if (typeof input === "string") {
     return input.trim();
@@ -84,8 +138,18 @@ function trimWhitespace(input) {
   return input;
 }
 
+/**
+ * Replaces slashes ("/") with underscores ("_") in a given string.
+ *
+ * @param {string|null|undefined} input - The string to process.
+ * @returns {string} - The modified string with slashes replaced, or an empty string if input is invalid.
+ */
 function replaceSlashesWithDashes(input) {
-    return input.replace(/\//g, "_");
+    if (!input || typeof input !== "string") {
+        Logger.log("Invalid input received in replaceSlashesWithDashes: " + input);
+        return input;
+    }
+    return input.toLowerCase().replace(/\//g, "_");
 }
 
 function getCurrentHour() {
@@ -127,6 +191,15 @@ function getTomorrowDay() {
   const tomorrowDay = daysOfWeek[(today.getDay() + 1) % 7];
   
   return tomorrowDay;
+}
+
+function getTodayDay() {
+  const today = new Date();
+  const daysOfWeek = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
+  
+  const todayDay = daysOfWeek[(today.getDay()) % 7];
+  
+  return todayDay;
 }
 
 

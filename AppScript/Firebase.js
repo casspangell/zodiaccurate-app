@@ -6,12 +6,16 @@
  * @returns {boolean} - Returns true if the operation is successful, otherwise false.
  */
 function pushEntryToFirebase(jsonData, uuid) {
-    Logger.log("PUSHING ENTRY TO FIREBASE...", JSON.stringify(jsonData));
+    Logger.log("Sanitizing JSON before saving...");
+    const sanitizedData = sanitizeJsonKeys(jsonData); // Clean keys before saving
+
+    Logger.log("pushEntryToFirebase...", JSON.stringify(sanitizedData));
     const firebaseUrl = `${FIREBASE_URL}/responses/${uuid}.json?auth=${FIREBASE_API_KEY}`;
+
     const options = {
         method: "put",
         contentType: "application/json",
-        payload: JSON.stringify(jsonData),
+        payload: JSON.stringify(sanitizedData),
         headers: {
             Authorization: `Bearer ${FIREBASE_API_KEY}`
         }
@@ -36,7 +40,8 @@ function pushEntryToFirebase(jsonData, uuid) {
  * @returns {boolean} - Returns true if the operation is successful, otherwise false.
  */
 function saveUserToUserTableFirebase(uuid, jsonData) {
-    Logger.log("PUSHING USER TO FIREBASE...", JSON.stringify(jsonData));
+
+    Logger.log("saveUserToUserTableFirebase...", JSON.stringify(jsonData));
     const firebaseUrl = `${FIREBASE_URL}/users/${uuid}.json?auth=${FIREBASE_API_KEY}`;
     const options = {
         method: "patch",
@@ -59,7 +64,7 @@ function saveUserToUserTableFirebase(uuid, jsonData) {
 }
 
 function saveEmailCampaignToFirebase(jsonData, uuid) {
-      Logger.log("PUSHING EMAIL CAMPAIGN TO FIREBASE...", JSON.stringify(jsonData));
+      Logger.log("saveEmailCampaignToFirebase...", JSON.stringify(jsonData));
 
     const firebaseUrl = `${FIREBASE_URL}/trial_campaign/${uuid}.json?auth=${FIREBASE_API_KEY}`;
     const options = {
@@ -83,7 +88,7 @@ function saveEmailCampaignToFirebase(jsonData, uuid) {
 }
 
 function getEmailCampaignFromFirebase(uuid) {
-      console.log("GETTING USER DATA FROM FIREBASE: ", uuid);
+      console.log("getEmailCampaignFromFirebase: ", uuid);
     const firebaseUrl = `${FIREBASE_URL}/trial_campaign/${uuid}.json?auth=${FIREBASE_API_KEY}`;
 
     const options = {
@@ -129,6 +134,7 @@ function getEmailCampaignFromFirebase(uuid) {
  */
 function updateExecTimeTable(uuid, timezone) {
   const execTimeUrl = `${FIREBASE_URL}/exec_time.json?auth=${FIREBASE_API_KEY}`;
+  timezone = transformKeysToLowerCaseWithUnderscores(timezone);
 
   try {
     // Fetch the entire exec_time table
@@ -143,6 +149,8 @@ function updateExecTimeTable(uuid, timezone) {
     // Check all timezones for the UUID
     let uuidFound = false;
     Object.keys(execTimeData || {}).forEach((tz) => {
+      tz = transformKeysToLowerCaseWithUnderscores(tz);
+
       if (execTimeData[tz] && execTimeData[tz][uuid]) {
         uuidFound = true;
 
@@ -202,6 +210,8 @@ function saveTimezoneToFirebase(timezone, uuid, jsonData) {
 
     try {
         const response = UrlFetchApp.fetch(firebaseUrl, options);
+        saveTimezoneToTimezoneArrayList(updatedTimezone);
+
         Logger.log("Entry saved: " + response.getContentText());
         return true;
     } catch (e) {
@@ -209,6 +219,176 @@ function saveTimezoneToFirebase(timezone, uuid, jsonData) {
         return false;
     }
 }
+
+
+/**
+ * Adds new timezones to the existing list in Firebase, avoiding duplicates.
+ *
+ * @param {string[]} newTimezones - An array of new timezone strings to add.
+ * @returns {boolean} - Returns true if the operation is successful, otherwise false.
+ */
+/**
+ * Adds a single new timezone to the existing list in Firebase, avoiding duplicates.
+ *
+ * @param {string} newTimezone - A single timezone string to add (e.g., "America/Chicago").
+ * @returns {boolean} - Returns true if the operation is successful, otherwise false.
+ */
+function saveTimezoneToTimezoneArrayList(newTimezone) {
+    if (!newTimezone || typeof newTimezone !== "string") {
+        Logger.log("Invalid timezone provided.");
+        return false;
+    }
+
+    Logger.log(`Adding new timezone to Firebase: ${newTimezone}`);
+
+    const firebaseUrl = `${FIREBASE_URL}/timezones.json?auth=${FIREBASE_API_KEY}`;
+
+    try {
+        // Fetch existing timezones
+        const response = UrlFetchApp.fetch(firebaseUrl, { method: "get" });
+        let existingTimezones = JSON.parse(response.getContentText());
+
+        if (!Array.isArray(existingTimezones)) {
+            existingTimezones = []; // If data is invalid or missing, initialize as an empty array
+        }
+
+        // Merge and remove duplicates (corrected to treat newTimezone as a single string)
+        if (!existingTimezones.includes(newTimezone)) {
+            if(newTimezone != null) {
+                existingTimezones.push(newTimezone);
+            }
+        }
+
+        Logger.log(`Updated timezones: ${JSON.stringify(existingTimezones)}`);
+
+        // Save the updated array back to Firebase
+        const options = {
+            method: "put",
+            contentType: "application/json",
+            payload: JSON.stringify(existingTimezones), // Save the merged list
+            headers: {
+                Authorization: `Bearer ${FIREBASE_API_KEY}`
+            }
+        };
+
+        const saveResponse = UrlFetchApp.fetch(firebaseUrl, options);
+        Logger.log(`Timezones list updated successfully: ${saveResponse.getContentText()}`);
+        return true;
+    } catch (e) {
+        Logger.log(`Error updating timezones in Firebase: ${e.message}`);
+        return false;
+    }
+}
+
+/**
+ * Fetches the list of timezones from Firebase and removes null values.
+ *
+ * @returns {string[]} - An array of valid timezone strings.
+ */
+function getTimezonesArrayListFromFirebase() {
+    Logger.log("Fetching timezones from Firebase...");
+
+    const firebaseUrl = `${FIREBASE_URL}/timezones.json?auth=${FIREBASE_API_KEY}`;
+
+    const options = {
+        method: "get",
+        contentType: "application/json",
+        headers: {
+            Authorization: `Bearer ${FIREBASE_API_KEY}`
+        }
+    };
+
+    try {
+        const response = UrlFetchApp.fetch(firebaseUrl, options);
+        let timezones = JSON.parse(response.getContentText());
+
+        if (Array.isArray(timezones)) {
+            // Remove `null` or `undefined` values
+            timezones = timezones.filter(tz => tz !== null && tz !== undefined);
+        
+            // Convert all to lowercase and replace slashes with underscores
+            timezones = timezones.map(tz => replaceSlashesWithDashes(tz));
+
+            Logger.log(`Cleaned timezones: ${JSON.stringify(timezones)}`);
+            return timezones;
+        } else {
+            Logger.log("Invalid or empty timezone data retrieved.");
+            return [];
+        }
+    } catch (e) {
+        Logger.log(`Error fetching timezones from Firebase: ${e.message}`);
+        return [];
+    }
+}
+
+
+/**
+ * Saves a single timezone entry to the "timezones" table in Firebase.
+ *
+ * @param {string} timezone - The timezone string to save (e.g., "America/Chicago").
+ * @returns {boolean} - Returns true if the operation is successful, otherwise false.
+ */
+// function saveTimezoneToTimezoneTable(timezone) {
+//     if (!timezone || typeof timezone !== "string") {
+//         Logger.log("Invalid timezone provided.");
+//         return false;
+//     }
+
+//     Logger.log(`Saving single timezone to Firebase: ${timezone}`);
+
+//     const formattedTimezone = timezone.replace(/\//g, '_'); // Convert slashes to dashes
+//     const firebaseUrl = `${FIREBASE_URL}/timezones/${formattedTimezone}.json?auth=${FIREBASE_API_KEY}`;
+
+//     const options = {
+//         method: "put",
+//         contentType: "application/json",
+//         payload: JSON.stringify(timezone), // Save as a plain string
+//         headers: {
+//             Authorization: `Bearer ${FIREBASE_API_KEY}`
+//         }
+//     };
+
+//     try {
+//         const response = UrlFetchApp.fetch(firebaseUrl, options);
+//         Logger.log(`Timezone ${timezone} saved successfully: ${response.getContentText()}`);
+//         return true;
+//     } catch (e) {
+//         Logger.log(`Error saving timezone ${timezone} to Firebase: ${e.message}`);
+//         return false;
+//     }
+// }
+
+
+
+function getUserTimezone(uuid) {
+    console.log("FETCHING USER TIMEZONE FOR UUID: ", uuid);
+    const firebaseUrl = `${FIREBASE_URL}/users/${uuid}/timezone.json?auth=${FIREBASE_API_KEY}`;
+
+    const options = {
+        method: "get",
+        headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${FIREBASE_API_KEY}`
+        }
+    };
+
+    try {
+        const response = UrlFetchApp.fetch(firebaseUrl, { ...options, muteHttpExceptions: true });
+        const timezone = JSON.parse(response.getContentText());
+
+        if (!timezone) {
+            Logger.log("No timezone found for UUID: " + uuid);
+            return null;
+        }
+
+        console.log("User's timezone: ", timezone);
+        return timezone; // Return the timezone
+    } catch (e) {
+        Logger.log("Error retrieving timezone for UUID " + uuid + ": " + e.message);
+        return null;
+    }
+}
+
 
 /**
  * Checks if a user exists in the Firebase responses table for a specific UUID.
@@ -242,35 +422,6 @@ function doesUserExist(uuid) {
     }
 }
 
-function getUserTimezone(uuid) {
-    console.log("FETCHING USER TIMEZONE FOR UUID: ", uuid);
-    const firebaseUrl = `${FIREBASE_URL}/users/${uuid}/timezone.json?auth=${FIREBASE_API_KEY}`;
-
-    const options = {
-        method: "get",
-        headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${FIREBASE_API_KEY}`
-        }
-    };
-
-    try {
-        const response = UrlFetchApp.fetch(firebaseUrl, { ...options, muteHttpExceptions: true });
-        const timezone = JSON.parse(response.getContentText());
-
-        if (!timezone) {
-            Logger.log("No timezone found for UUID: " + uuid);
-            return null;
-        }
-
-        console.log("User's timezone: ", timezone);
-        return timezone; // Return the timezone
-    } catch (e) {
-        Logger.log("Error retrieving timezone for UUID " + uuid + ": " + e.message);
-        return null;
-    }
-}
-
 /**
  * Retrieves user data from the Firebase USERS table for a specific UUID.
  *
@@ -279,7 +430,7 @@ function getUserTimezone(uuid) {
  */
 function getUserDataFromUserTableFirebase(uuid) {
 
-    console.log("GETTING USER DATA FROM FIREBASE: ", uuid);
+    console.log("getUserDataFromUserTableFirebase: ", uuid);
     const firebaseUrl = `${FIREBASE_URL}/users/${uuid}.json?auth=${FIREBASE_API_KEY}`;
 
     const options = {
@@ -341,7 +492,7 @@ function saveTrialUserToFirebase(email) {
 }
 
 function getUserDataFromTrialUserTableFirebase(email) {
-    console.log("GETTING USER DATA FROM FIREBASE:", email);
+    console.log("getUserDataFromTrialUserTableFirebase:", email);
 
     const firebaseUrl = `${FIREBASE_URL}/users.json?auth=${FIREBASE_API_KEY}`;
 
@@ -386,7 +537,7 @@ function getUserDataFromTrialUserTableFirebase(email) {
  * @returns {Object|null} - The user data if found, otherwise null.
  */
 function getUserDataFromFirebase(uuid) {
-    console.log("GETTING USER DATA FROM FIREBASE: ", uuid);
+    console.log("getUserDataFromFirebase: ", uuid);
 
     const firebaseUrl = `${FIREBASE_URL}/responses/${uuid}.json?auth=${FIREBASE_API_KEY}`;
 
@@ -423,43 +574,48 @@ function getUserDataFromFirebase(uuid) {
 
 
 /**
- * Retrieves UUIDs and their associated data from the Firebase exec_time table for a specific timezone.
+ * Retrieves UUIDs and their associated data from the Firebase exec_time table for multiple timezones.
  *
- * @param {string} timezone - The timezone to retrieve UUIDs for.
- * @returns {string[]} - An array of UUIDs found for the specified timezone.
+ * @param {string[]} timezones - An array of timezones to retrieve UUIDs for.
+ * @returns {string[]} - An array of unique UUIDs found for the specified timezones.
  */
-function getUUIDDataFromExecTimeTable(timezone) {
-    console.log(`getUUIDDataFromExecTimeTable(${timezone})`);
-    const firebaseUrl = `${FIREBASE_URL}/exec_time/${timezone}.json?auth=${FIREBASE_API_KEY}`;
+function getUUIDDataFromExecTimeTable(timezones) {
+    console.log(`getUUIDDataFromExecTimeTable(${timezones})`);
 
-    const options = {
-        method: "get",
-        headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${FIREBASE_API_KEY}`
-        },
-        muteHttpExceptions: true // Avoid throwing errors for non-200 responses
-    };
+    var uuidSet = new Set(); // Use a Set to avoid duplicate UUIDs
 
-    var uuidArr = [];
-    try {
-        const response = UrlFetchApp.fetch(firebaseUrl, options);
-        const uuidData = JSON.parse(response.getContentText());
+    // Iterate over each timezone in the array
+    timezones.forEach((timezone) => {
+        const formattedTimezone = timezone.replace(/\//g, '-'); // Ensure Firebase format
+        const firebaseUrl = `${FIREBASE_URL}/exec_time/${formattedTimezone}.json?auth=${FIREBASE_API_KEY}`;
 
-        for (let uuid in uuidData) {
-            if (uuidData.hasOwnProperty(uuid)) {
-                uuidArr.push(uuid); // Add each UUID to the array
+        const options = {
+            method: "get",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${FIREBASE_API_KEY}`
+            },
+            muteHttpExceptions: true // Avoid throwing errors for non-200 responses
+        };
+
+        try {
+            const response = UrlFetchApp.fetch(firebaseUrl, options);
+            const uuidData = JSON.parse(response.getContentText());
+
+            if (uuidData && typeof uuidData === "object") {
+                Object.keys(uuidData).forEach((uuid) => uuidSet.add(uuid)); // Add UUIDs to Set
             }
+        } catch (error) {
+            Logger.log(`Error retrieving data for timezone ${timezone}: ${error.message}`);
         }
+    });
 
-        Logger.log(`UUIDs with data for timezone ${timezone}: ${JSON.stringify(uuidArr)}`);
-        return uuidArr;
+    const uuidArr = Array.from(uuidSet); // Convert Set to array
+    Logger.log(`UUIDs with data for timezones ${JSON.stringify(timezones)}: ${JSON.stringify(uuidArr)}`);
 
-    } catch (error) {
-        Logger.log(`Error retrieving data for timezone ${timezone}: ${error.message}`);
-        return []; // Return an empty array on error
-    }
+    return uuidArr;
 }
+
 
 function getUUIDDataFromTrialCampaignTable() {
     console.log(`getting UUIDs from TrialCampaignTable`);
@@ -560,7 +716,7 @@ function saveHoroscopeToFirebase(jsonData, uuid, tomorrow) {
  * @returns {Object|null} - The zodiac data for today if found, otherwise null.
  */
 function getZodiacDataForToday(uuid) {
-    console.log("Getting zodiac data for today");
+    console.log("Getting zodiac data for today for uuid: ", uuid);
   // Firebase URL to the zodiac table using the provided UUID
   const url = `${FIREBASE_URL}/zodiac/${uuid}.json?auth=${FIREBASE_API_KEY}`;
   try {

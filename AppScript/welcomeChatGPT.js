@@ -6,10 +6,6 @@ function testWelcomeChatGPT() {
 async function welcomeChatGPT(jsonSinglePersonData, uuid) {
     console.log("PREPARE WELCOME CHATGPT");
 
-    // // Fetch user data
-    // var jsonSinglePersonData = {};
-    // jsonSinglePersonData = getUserDataFromFirebase(uuid);
-
     // Generate ChatGPT prompt
     const prompt = getChatInstructions(jsonSinglePersonData, uuid);
     const userData = getUserDataFromUserTableFirebase(uuid);

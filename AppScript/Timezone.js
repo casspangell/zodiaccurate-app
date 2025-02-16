@@ -1,128 +1,96 @@
 /**
- * Retrieves the time zone ID for a given location using the Google Maps Geocoding and Time Zone APIs.
- * - Geocodes the location to retrieve latitude and longitude.
- * - Fetches the time zone ID for the geocoded coordinates.
+ * Retrieves the timezone from a given location and saves it to Firebase.
  *
- * @param {string} location - The location name or address to resolve.
- * @returns {string|null} - The time zone ID (e.g., "America/New_York") if successful, or null if an error occurs.
+ * @param {string} location - The location to determine the timezone for.
+ * @param {string} uuid - The unique identifier for the user.
+ * @returns {string|null} - The formatted timezone string or null if an error occurs.
  */
-function getTimeZoneFromLocation(location) {
-  console.log("Getting timezone from location: ", location);
-  try {
-    const geocoder = Maps.newGeocoder();
-    const response = geocoder.geocode(location);
-    
-    if (response.status === 'OK' && response.results.length > 0) {
-      const result = response.results[0];
-      const lat = result.geometry.location.lat;
-      const lng = result.geometry.location.lng;
-      
-      const apiKey = GOOGLE_MAPS_API_KEY;
-      const timestamp = Math.floor(Date.now() / 1000); // Current timestamp in seconds
-      const timezoneUrl = `https://maps.googleapis.com/maps/api/timezone/json?location=${lat},${lng}&timestamp=${timestamp}&key=${apiKey}`;
-      const timezoneResponse = UrlFetchApp.fetch(timezoneUrl);
-      const timezoneData = JSON.parse(timezoneResponse.getContentText());
-      
-      if (timezoneData.status === 'OK') {
-        return timezoneData.timeZoneId; // Returns the time zone ID (e.g., "America/New_York")
-      } else {
-        throw new Error('Error fetching timezone: ' + timezoneData.errorMessage);
-      }
-    } else {
-      throw new Error('Error geocoding location: ' + response.status);
+function getTimeZoneFromLocation(location, uuid) {
+    console.log("Getting timezone from location:", location);
+    try {
+        const geocoder = Maps.newGeocoder();
+        const response = geocoder.geocode(location);
+        
+        if (response.status === 'OK' && response.results.length > 0) {
+            const result = response.results[0];
+            const lat = result.geometry.location.lat;
+            const lng = result.geometry.location.lng;
+            
+            const apiKey = GOOGLE_MAPS_API_KEY;
+            const timestamp = Math.floor(Date.now() / 1000); // Current timestamp in seconds
+            const timezoneUrl = `https://maps.googleapis.com/maps/api/timezone/json?location=${lat},${lng}&timestamp=${timestamp}&key=${apiKey}`;
+            const timezoneResponse = UrlFetchApp.fetch(timezoneUrl);
+            const timezoneData = JSON.parse(timezoneResponse.getContentText());
+            
+            if (timezoneData.status === 'OK') {
+                let timezoneId = timezoneData.timeZoneId; // Example: "America/New_York"
+                timezoneId = transformKeysToLowerCaseWithUnderscores(timezoneId);
+                console.log("Timezone: ", timezoneId);
+
+                // Save timezone to Array List
+                saveTimezoneToTimezoneArrayList(timezoneId);
+
+                return timezoneId;
+            } else {
+                throw new Error('Error fetching timezone: ' + timezoneData.errorMessage);
+            }
+        } else {
+            throw new Error('Error geocoding location: ' + response.status);
+        }
+    } catch (error) {
+        Logger.log('An error occurred: ' + error.message);
+        return null;
     }
-  } catch (error) {
-    Logger.log('An error occurred: ' + error.message);
-    return null;
-  }
 }
+
 
 /**
- * Returns a list of time zone IDs for English-speaking countries and regions.
- * - Includes major English-speaking countries like the United States, United Kingdom, Canada, Australia, and others.
- * - Provides coverage for additional regions with English as an official language.
+ * Retrieves timezones from Firebase and filters them based on the target hour.
  *
- * @returns {string[]} - An array of time zone IDs (e.g., "America/New_York").
+ * @param {number} targetHour - The target hour (0-23) to match timezones against.
+ * @returns {string[]} - An array of matching timezones where the local hour matches the target hour.
  */
-function getEnglishSpeakingCountryTimezones() {
-  return [
-    // United States
-    "America/New_York",      // Eastern Time
-    "America/Chicago",       // Central Time
-    "America/Denver",        // Mountain Time
-    "America/Los_Angeles",   // Pacific Time
-    "America/Anchorage",     // Alaska Time
-    "Pacific/Honolulu",      // Hawaii Time
+function getTimezonesAtTime(targetHour) {
+    Logger.log(`Fetching timezones from Firebase to filter by target hour: ${targetHour}`);
 
-    // Canada
-    "America/Toronto",       // Eastern Time
-    "America/Winnipeg",      // Central Time
-    "America/Edmonton",      // Mountain Time
-    "America/Vancouver",     // Pacific Time
-    "America/St_Johns",      // Newfoundland Time
+    const timezones = getTimezonesArrayListFromFirebase(); // Retrieve the timezone list
+    if (!Array.isArray(timezones) || timezones.length === 0) {
+        Logger.log("No valid timezones found in Firebase.");
+        return [];
+    }
 
-    // United Kingdom
-    "Europe/London",         // Greenwich Mean Time (GMT)
+    // Convert stored format (underscores) back to valid IANA format (slashes)
+    const validTimezones = timezones.map(tz => tz.replace(/_/g, "/"));
 
-    // Australia
-    "Australia/Sydney",      // Eastern Standard Time
-    "Australia/Brisbane",    // Eastern Standard Time (no DST)
-    "Australia/Adelaide",    // Central Standard Time
-    "Australia/Perth",       // Western Standard Time
+    // Ensure proper format for target hour
+    const formattedTargetHour = String(targetHour).padStart(2, "0");
 
-    // Ireland
-    "Europe/Dublin",         // GMT or Irish Standard Time (DST)
+    // Filter timezones where the local hour matches the target hour
+    const matchingTimezones = validTimezones.filter((timezone) => {
+        try {
+            const now = new Date();
+            const localTime = new Intl.DateTimeFormat("en-US", {
+                timeZone: timezone,
+                hour: "2-digit",
+                hour12: false
+            }).format(now);
 
-    // New Zealand
-    "Pacific/Auckland",      // New Zealand Standard Time
-    "Pacific/Chatham",       // Chatham Island Time
+            return localTime === formattedTargetHour;
+        } catch (error) {
+            Logger.log(`Error processing timezone ${timezone}: ${error.message}`);
+            return false;
+        }
+    });
 
-    // South Africa
-    "Africa/Johannesburg",   // South Africa Standard Time
+    // Convert matching timezones back to Firebase format (underscores)
+    const formattedTimezones = matchingTimezones.map(tz => tz.replace(/\//g, "_"));
 
-    // Other English-Speaking Regions
-    "Pacific/Fiji",          // Fiji Time
-    "Pacific/Port_Moresby",  // Papua New Guinea Time
-    "America/Jamaica",       // Jamaica Standard Time
-    "Atlantic/Bermuda",      // Atlantic Standard Time
-    "America/Nassau",        // Bahamas
-    "Indian/Mauritius",      // Mauritius Time
-    "Pacific/Guam",          // Guam Standard Time
-    "Pacific/Saipan",        // Northern Mariana Islands
-    "America/Barbados",      // Barbados Time
-
-    // Caribbean (British Overseas Territories)
-    "America/Grand_Turk",    // Turks and Caicos Islands
-    "America/Cayman",        // Cayman Islands
-
-    // Hong Kong (former British colony)
-    "Asia/Hong_Kong",        // Hong Kong Time
-
-    // Singapore (English as one of the official languages)
-    "Asia/Singapore"         // Singapore Time
-  ];
+    Logger.log(`Timezones where it is currently ${targetHour}:00 → ${JSON.stringify(formattedTimezones)}`);
+    return formattedTimezones;
 }
 
-function getTimezonesAtTime(time) {
-  const timezones = getEnglishSpeakingCountryTimezones();
-  const now = new Date();
 
-  targetHour = time;
-  // Ensure the target hour is a valid 24-hour format string
-  const formattedTargetHour = String(targetHour).padStart(2, "0");
 
-  // Filter timezones where the local hour matches the targeted hour
-  const matchingTimezones = timezones.filter((timezone) => {
-    const localHour = Utilities.formatDate(now, timezone, "HH");
-    return localHour === formattedTargetHour;
-  });
-
-  formattedTimezones = matchingTimezones.map((timezone) => replaceSlashesWithDashes(timezone)); //match db formatting
-
-  Logger.log(`Timezones with local hour ${formattedTargetHour}: ${JSON.stringify(formattedTimezones)}`);
-  return "Australia_Brisbane"; //TODO REMOVE
-  // return formattedTimezones;
-}
 
 /**
  * Fetches UUIDs and their associated user data for the specified timezones.
@@ -157,5 +125,4 @@ function fetchUUIDsForTimezone(time) {
   }
 
 }
-
 

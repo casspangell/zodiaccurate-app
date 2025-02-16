@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZodiAccurate Form</title>
+    <link rel="stylesheet" href="styles.css">
+    <script defer src="script.js"></script>
+</head>
+<body>
+    <div>
+<div class="form-container">
+    <div class="progress-container">
+        <div class="progress-bar"></div>
+            <div class="steps">
+                <div class="step active">Intro</div>
+                <div class="step">Wellness</div>
+                <div class="step">Relationship</div>
+                <div class="step">Partner</div>
+                <div class="step">Employment Status</div>
+                <div class="step">Employment</div>
+                <div class="step">Children</div>
+                <div class="step">Important People</div>
+                <div class="step">Final</div>
+            </div>
+        </div>
+
+    <div class="container">
+        <h1>ZodiAccurate Form</h1>
+
+        <!-- Sections -->
+        <form id="multiStepForm">
+            <!-- Intro Section -->
+            <div class="section active">
+                <h2>Intro</h2>
+                <p class="description">
+                    IMPORTANT: Please fill out the entire form. If you close the browser, you may need to start over. 
+                    We follow all global GDPR privacy policies. Your information is private and only used by the software to create your daily report.
+                </p>
+
+                <label for="email">Email</label>
+                <p class="description">Enter your valid email address (double-check for spelling errors).</p>
+                <input type="email" id="email" name="email" required>
+
+                <label for="location">Your Current Location</label>
+                <p class="description">Enter your city, state, province, and country. This ensures your daily guidance is delivered at 6 AM (or earlier) in your time zone.</p>
+                <input type="text" id="location" name="location" required>
+
+                <label for="name">Name</label>
+                <p class="description">Enter your first name.</p>
+                <input type="text" id="name" name="name" required>
+
+                <label for="birth_city">Birth City</label>
+                <p class="description">Enter the city, state, province, and country where you were born (if applicable).</p>
+                <input type="text" id="birth_city" name="birth_city">
+
+                <label for="birth_date">Birth Date</label>
+                <p class="description">Enter your birth date (Example: December 15, 1986).</p>
+                <input type="text" id="birth_date" name="birth_date" required>
+
+                <label for="birth_time">Birth Time</label>
+                <p class="description">Enter your birth time (Example: 1:30 PM). If unknown, make your best guess. This improves accuracy.</p>
+                <input type="text" id="birth_time" name="birth_time">
+                
+                <div class="nav-button-container">
+                    <button type="button" class="next">Save & Continue</button>
+                </div>
+            </div>
+
+            <!-- Personal Wellness Section -->
+            <div class="section">
+                <h2>Personal Wellness</h2>
+                <p class="description">
+                    Health changes over time. You may have occasional migraines but long-term depression. 
+                    Share anything you want and update as needed.
+                </p>
+
+                <label>Overall Health</label>
+                <p class="description">How would you rate your overall health?</p>
+                <div class="radio-group">
+                    <label><input type="radio" name="overall_health" value="Excellent" required> Excellent</label>
+                    <label><input type="radio" name="overall_health" value="Very Good"> Very Good</label>
+                    <label><input type="radio" name="overall_health" value="Pretty Good"> Pretty Good</label>
+                    <label><input type="radio" name="overall_health" value="Needs Some Improvement"> Needs Some Improvement</label>
+                    <label><input type="radio" name="overall_health" value="Needs A Lot of Improvement"> Needs A Lot of Improvement</label>
+                    <label><input type="radio" name="overall_health" value="Poor"> Poor</label>
+                </div>
+
+                <label for="physical_health">Physical Health</label>
+                <p class="description">Describe your current physical health (e.g., arthritis, low energy, pain, digestive issues, etc.).</p>
+                <input type="text" id="physical_health" name="physical_health">
+
+                <label for="emotional_health">Emotional Health</label>
+                <p class="description">Describe any emotional imbalances (e.g., anxiety, depression, grief, low self-esteem, anger). Leave blank if none.</p>
+                <input type="text" id="emotional_health" name="emotional_health">
+
+                <label for="mental_health">Mental Health</label>
+                <p class="description">List any mental health challenges (e.g., negative thinking, trauma, serious conditions). Leave blank if none.</p>
+                <input type="text" id="mental_health" name="mental_health">
+
+                <label for="wellness_goals">Wellness Goals</label>
+                <p class="description">What are your wellness goals (e.g., lose weight, gain strength, be more flexible)?</p>
+                <input type="text" id="wellness_goals" name="wellness_goals">
+
+                <label for="important_goals">Important Goals</label>
+                <p class="description">List 3-5 short or long-term goals or dreams.</p>
+                <input type="text" id="important_goals" name="important_goals">
+
+                <label for="areas_of_improvement">Areas of Improvement</label>
+                <p class="description">List 3-5 areas of your life you want to improve.</p>
+                <input type="text" id="areas_of_improvement" name="areas_of_improvement">
+
+                <label for="stress">Stress</label>
+                <p class="description">What are your top 3-5 sources of stress?</p>
+                <input type="text" id="stress" name="stress">
+
+                <label for="joy_satisfaction">Joy and Satisfaction</label>
+                <p class="description">What brings you joy and satisfaction?</p>
+                <input type="text" id="joy_satisfaction" name="joy_satisfaction">
+
+                <label for="family_values">Family Values</label>
+                <p class="description">What family values or principles matter most to you?</p>
+                <input type="text" id="family_values" name="family_values">
+
+                <label>Sexual Orientation (Optional)</label>
+                <p class="description">What is your sexual orientation?</p>
+                <div class="radio-group">
+                    <label><input type="radio" name="orientation" value="Not Interested"> Not Interested</label>
+                    <label><input type="radio" name="orientation" value="Prefer Male"> Prefer Male</label>
+                    <label><input type="radio" name="orientation" value="Prefer Female"> Prefer Female</label>
+                    <label><input type="radio" name="orientation" value="Bisexual"> Bisexual</label>
+                    <label><input type="radio" name="orientation" value="Asexual"> Asexual</label>
+                    <label><input type="radio" name="orientation" value="Pansexual"> Pansexual</label>
+                    <label><input type="radio" name="orientation" value="Other"> Other</label>
+                </div>
+
+                <label>Belief System (Optional)</label>
+                <p class="description">If your beliefs influence your decisions, sharing them can help personalize your guidance.</p>
+                <div class="radio-group">
+                    <label><input type="radio" name="belief_system" value="Christian"> Christian</label>
+                    <label><input type="radio" name="belief_system" value="Mormon"> Mormon</label>
+                    <label><input type="radio" name="belief_system" value="Buddhist"> Buddhist</label>
+                    <label><input type="radio" name="belief_system" value="Islam"> Islam</label>
+                    <label><input type="radio" name="belief_system" value="Jewish"> Jewish</label>
+                    <label><input type="radio" name="belief_system" value="Hindu"> Hindu</label>
+                    <label><input type="radio" name="belief_system" value="Spiritual"> Spiritual</label>
+                    <label><input type="radio" name="belief_system" value="Atheist"> Atheist</label>
+                    <label><input type="radio" name="belief_system" value="Agnostic"> Agnostic</label>
+                    <label><input type="radio" name="belief_system" value="Pagan"> Pagan</label>
+                    <label><input type="radio" name="belief_system" value="Other"> Other</label>
+                </div>
+                <div class="nav-button-container">
+                    <button type="button" class="prev">Back</button>
+                    <button type="button" class="next">Save & Continue</button>
+                </div>
+            </div>
+
+            <div class="section" id="relationship-status-section">
+                <h2>Relationship Status</h2>
+                <p>What is your current relationship status?</p>
+                
+                <label><input type="radio" name="relationship_status" value="future_partner"> Looking for a Life Partner/s</label>
+                <label><input type="radio" name="relationship_status" value="single"> Single - Not Looking</label>
+                <label><input type="radio" name="relationship_status" value="married"> Married</label>
+                <label><input type="radio" name="relationship_status" value="committed"> In a Committed Relationship</label>
+                <label><input type="radio" name="relationship_status" value="separated_fix"> Separated (Trying to Fix)</label>
+                <label><input type="radio" name="relationship_status" value="separated_differences"> Separated (Irreconcilable Differences)</label>
+                <label><input type="radio" name="relationship_status" value="divorced"> Divorced</label>
+                <label><input type="radio" name="relationship_status" value="not_interested"> Not Interested in a Relationship</label>
+                
+                <div class="nav-button-container">
+                    <button type="button" class="prev">Back</button>
+                    <button type="button" class="next">Save & Continue</button>
+                </div>
+            </div>
+
+
+            <!-- Partner Section (Visible if in a relationship) -->
+            <section class="section" id="partner-section" style="display: none;">
+                <h2>Partner Information</h2>
+                <p>If you've had or have a partner you wish to include you can do so here.</p>
+                <div id="partner-container">
+                    <div class="partner-entry" id="partner-1">
+                        <label>Partner's Name: <input type="text" name="partner_name_1"></label><br>
+                        <label>Partner's Birth Date: <input type="text" name="partner_birth_date_1" placeholder="Example: May 25, 1984"></label><br>
+                        <label>Partner's Birth Time: <input type="text" name="partner_birth_time_1" placeholder="Example: 1:30 PM"></label><br>
+                        <label>Partner's Birth City: <input type="text" name="partner_birth_city_1"></label><br>
+                        <label>Partner's Stress: <input type="text" name="partner_stress_1"></label><br>
+                        <label>How do you handle conflicts in your relationship?</label><br>
+                        <input type="checkbox" name="partner_conflict_1" value="Address Immediately"> Address Immediately
+                        <input type="checkbox" name="partner_conflict_1" value="Cool Down First"> Cool Down First
+                        <input type="checkbox" name="partner_conflict_1" value="Avoid Conflict"> Avoid Conflict
+                        <input type="checkbox" name="partner_conflict_1" value="Seek a Third-Party Opinion"> Seek a Third-Party Opinion
+                        <br>
+                        <label>List 3-5 things you love about your partner: <input type="text" name="partner_love_1"></label><br>
+                        <label>List 3-5 things you want to improve about yourself in your relationship: <input type="text" name="partner_improve_1"></label><br>
+                        <label>Partner’s Belief System:</label><br>
+                        <select name="partner_belief_1">
+                            <option value="Christian">Christian</option>
+                            <option value="Mormon">Mormon</option>
+                            <option value="Buddhist">Buddhist</option>
+                            <option value="Islam">Islam</option>
+                            <option value="Jewish">Jewish</option>
+                            <option value="Hindu">Hindu</option>
+                            <option value="Spiritual">Spiritual</option>
+                            <option value="Atheist">Atheist</option>
+                            <option value="Agnostic">Agnostic</option>
+                            <option value="Pagan">Pagan</option>
+                            <option value="Other">Other</option>
+                        </select>
+                        <br>
+                    </div>
+                </div>
+
+                <div class="partner-actions">
+                    <button type="button" id="add-partner">➕ Add Another Partner</button>
+                </div>
+
+                <div class="nav-button-container">
+                    <button type="button" id="back-button" class="prev">Back</button>
+                    <button type="button" id="save-continue" class="next">Save & Continue</button>
+                </div>
+
+            </section>
+
+
+            <!-- Future Partner Section (Visible if looking for a partner) -->
+            <section class="section" id="future-partner-section" style="display: none;">
+                <h2>Future Partner Preferences</h2>
+                <label>What qualities do you want in a partner?</label><br>
+                <input type="checkbox"> Loyalty
+                <input type="checkbox"> Honesty
+                <input type="checkbox"> Humor
+                <input type="checkbox"> Ambition
+                <input type="checkbox"> Compassion
+                <input type="checkbox"> Open Heart
+                <input type="checkbox"> Communicative
+                <input type="checkbox"> Introspective
+                <input type="checkbox"> Strong-Willed
+                <input type="checkbox"> Calm
+                <br>
+                <label>How would you describe your lifestyle?</label><br>
+                <input type="checkbox"> Busy & Hectic
+                <input type="checkbox"> Balanced & Steady
+                <input type="checkbox"> Relaxed & Easygoing
+                <br>
+                <label>How do you usually meet people?</label><br>
+                <input type="checkbox"> Through Friends
+                <input type="checkbox"> Social Activities
+                <input type="checkbox"> Online Dating
+                <input type="checkbox"> Random Encounters
+                <br>
+                <label>How do you like to spend your weekends?</label><br>
+                <input type="checkbox"> Outdoor Activities
+                <input type="checkbox"> Relaxing at Home
+                <input type="checkbox"> Socializing
+                <input type="checkbox"> Engaging in a Hobby
+                <br>
+                <label>What is your love language?</label><br>
+                <input type="checkbox"> Words of Affirmation
+                <input type="checkbox"> Acts of Service
+                <input type="checkbox"> Giving/Receiving Gifts
+                <input type="checkbox"> Quality Time
+                <input type="checkbox"> Physical Touch
+                <br>
+                <label>How important is physical attraction in a relationship?</label><br>
+                <select>
+                    <option>Very Important</option>
+                    <option>Somewhat Important</option>
+                    <option>Not Very Important</option>
+                    <option>Not Important at All</option>
+                </select>
+                <br>
+                <div class="nav-button-container">
+                    <button type="button" class="prev">Back</button>
+                    <button type="button" class="next">Save & Continue</button>
+                </div>
+            </section>
+
+            <!-- EMPLOYMENT STATUS SECTION -->
+            <section id="employment-status-section" class="section">
+                <h2>Employment Status</h2>
+                <p>What is your current employment status?</p>
+                <label><input type="radio" name="employment_status" value="employed"> Employed</label>
+                <label><input type="radio" name="employment_status" value="business_owner"> Business Owner</label>
+                <label><input type="radio" name="employment_status" value="entrepreneur"> Entrepreneur</label>
+                <label><input type="radio" name="employment_status" value="self_employed"> Self-Employed</label>
+                <label><input type="radio" name="employment_status" value="unemployed"> Unemployed</label>
+                <label><input type="radio" name="employment_status" value="retired"> Retired</label>
+                <div class="nav-button-container">
+                    <button type="button" class="prev">Back</button>
+                    <button type="button" class="next">Save & Continue</button>
+                </div>
+            </section>
+
+            <!-- CURRENT EMPLOYMENT SECTION -->
+            <section id="current-employment-section" class="section">
+                <h2>Current Employment</h2>
+                
+                <label>Enter your job title or industry:
+                    <input type="text" name="job_title" placeholder="e.g., Software Engineer, Teacher">
+                </label>
+
+                <p>How do you feel about your current job?</p>
+                <label><input type="radio" name="job_satisfaction" value="very_satisfied"> Very Satisfied</label>
+                <label><input type="radio" name="job_satisfaction" value="satisfied"> Satisfied</label>
+                <label><input type="radio" name="job_satisfaction" value="neutral"> Neutral</label>
+                <label><input type="radio" name="job_satisfaction" value="dissatisfied"> Dissatisfied</label>
+                <label><input type="radio" name="job_satisfaction" value="very_dissatisfied"> Very Dissatisfied</label>
+
+                <p>What are your career goals for the next six months?</p>
+                <label><input type="checkbox" name="career_goals" value="promotion"> Promotion</label>
+                <label><input type="checkbox" name="career_goals" value="job_stability"> Job Stability</label>
+                <label><input type="checkbox" name="career_goals" value="work_life_balance"> Work-Life Balance</label>
+                <label><input type="checkbox" name="career_goals" value="skill_development"> Skill Development</label>
+                <label><input type="checkbox" name="career_goals" value="finding_new_job"> Finding a New Job</label>
+
+                <p>How do you handle work-related stress?</p>
+                <label><input type="checkbox" name="work_stress" value="stay_calm"> Stay Calm & Focused</label>
+                <label><input type="checkbox" name="work_stress" value="seek_support"> Seek Support</label>
+                <label><input type="checkbox" name="work_stress" value="take_breaks"> Take Breaks</label>
+                <label><input type="checkbox" name="work_stress" value="struggle_manage"> Struggle but Manage</label>
+                <label><input type="checkbox" name="work_stress" value="feel_overwhelmed"> Feel Overwhelmed</label>
+
+                <p>What is your ideal work environment?</p>
+                <label><input type="checkbox" name="work_environment" value="team_oriented"> Team-Oriented</label>
+                <label><input type="checkbox" name="work_environment" value="independent"> Independent</label>
+                <label><input type="checkbox" name="work_environment" value="structured"> Structured</label>
+                <label><input type="checkbox" name="work_environment" value="fast_paced"> Fast-Paced</label>
+                <label><input type="checkbox" name="work_environment" value="creative_flexible"> Creative & Flexible</label>
+
+                <p>How do you make career decisions?</p>
+                <label><input type="checkbox" name="career_decision" value="intuition"> Intuition & Gut Feelings</label>
+                <label><input type="checkbox" name="career_decision" value="data_facts"> Data & Facts</label>
+                <label><input type="checkbox" name="career_decision" value="seek_advice"> Seek Advice</label>
+                <label><input type="checkbox" name="career_decision" value="balance_intuition_logic"> Balance Intuition & Logic</label>
+                <label><input type="checkbox" name="career_decision" value="delay_decisions"> Delay Decisions</label>
+
+                <p>How balanced is your work and personal life?</p>
+                <label><input type="radio" name="work_life_balance" value="perfect"> Perfect Balance</label>
+                <label><input type="radio" name="work_life_balance" value="mostly_balanced"> Mostly Balanced</label>
+                <label><input type="radio" name="work_life_balance" value="struggling"> Struggling to Balance</label>
+                <label><input type="radio" name="work_life_balance" value="work_dominates"> Work Dominates</label>
+                <label><input type="radio" name="work_life_balance" value="personal_priority"> Personal Life Priority</label>
+
+                <p>How secure do you feel about your finances?</p>
+                <label><input type="radio" name="financial_security" value="very_secure"> Very Secure</label>
+                <label><input type="radio" name="financial_security" value="moderately_secure"> Moderately Secure</label>
+                <label><input type="radio" name="financial_security" value="somewhat_insecure"> Somewhat Insecure</label>
+                <label><input type="radio" name="financial_security" value="insecure"> Insecure</label>
+                <label><input type="radio" name="financial_security" value="extremely_insecure"> Extremely Insecure</label>
+
+                <div class="nav-button-container">
+                    <button type="button" class="prev">Back</button>
+                    <button type="button" class="next">Save & Continue</button>
+                </div>
+            </section>
+
+            <!-- UNEMPLOYED SECTION -->
+            <section id="unemployed-section" class="section">
+                <h2>Unemployed</h2>
+                <p>Looking for work? What is your focus?</p>
+
+                <label><input type="checkbox" name="job_focus" value="passion_focused"> Passion-Focused</label>
+                <label><input type="checkbox" name="job_focus" value="stable_income"> Stable Income</label>
+                <label><input type="checkbox" name="job_focus" value="skills_update"> Skills Update</label>
+                <label><input type="checkbox" name="job_focus" value="exploring_new_careers"> Exploring New Careers</label>
+                <div class="nav-button-container">
+                    <button type="button" class="prev">Back</button>
+                    <button type="button" class="next">Save & Continue</button>
+                </div>
+            </section>
+
+            <!-- RETIRED SECTION -->
+            <section id="retired-section" class="section">
+                <h2>Retired</h2>
+                <p>How do you stay active in retirement?</p>
+
+                <label><input type="checkbox" name="retirement_activity" value="exercise"> Exercise</label>
+                <label><input type="checkbox" name="retirement_activity" value="social_events"> Social Events</label>
+                <label><input type="checkbox" name="retirement_activity" value="learning_skills"> Learning New Skills</label>
+                <label><input type="checkbox" name="retirement_activity" value="family_time"> Family Time</label>
+                <label><input type="checkbox" name="retirement_activity" value="relaxed_lifestyle"> Relaxed Lifestyle</label>
+                <div class="nav-button-container">
+                    <button type="button" class="prev">Back</button>
+                    <button type="button" class="next">Save & Continue</button>
+                </div>
+            </section>
+
+            <!-- Children Section -->
+            <section class="section" id="children-section" style="display: none;">
+                <h2>Children Information</h2>
+                <p>If you have children and want to receive daily guidance based on their zodiac insights, complete this section.</p>
+
+                <div id="child-container">
+                    <!-- Children entries will be added here dynamically -->
+                </div>
+
+                <div class="buttons-container">
+                    <button type="button" id="add-child">➕ Add Child</button>
+                </div>
+
+                <div class="nav-button-container">
+                    <button type="button" class="prev">Back</button>
+                    <button type="button" class="next">Save & Continue</button>
+                </div>
+            </section>
+
+            <!-- Important Person Section -->
+            <section class="section" id="important-person-section" style="display: none;">
+                <h2>Important People in Your Life</h2>
+                <p>Add close individuals who significantly impact your daily life.</p>
+
+                <div id="important-person-container">
+                    <!-- Important people will be added dynamically here -->
+                </div>
+
+                <div class="buttons-container">
+                    <button type="button" id="add-important-person">➕ Add Important Person</button>
+                </div>
+
+                <div class="nav-button-container">
+                    <button type="button" class="prev">Back</button>
+                    <button type="button" class="next">Save & Continue</button>
+                </div>
+            </section>
+
+
+            <!-- Final Section -->
+            <div class="section">
+                <h2>Final</h2>
+                <p class="description">Confirm your consent and email preferences.</p>
+
+                <label>Consent Policies</label>
+                <p class="description">Your information is secure and encrypted. Please agree to the ZodiAccurate GDPR Privacy Policy.</p>
+                <input type="checkbox" required> I agree
+
+                <label>Email Agreement</label>
+                <p class="description">By selecting "Yes," you agree to receive daily email guidance from ZodiAccurate.</p>
+                <input type="checkbox" required> Yes
+
+                <div class="button-group">
+                    <button type="button" class="prev">Back</button>
+                    <button type="submit">Submit</button>
+                </div>
+            </div>
+        </form>
+    </div>
+<script src="script.js"></script>
+</body>
+</html>

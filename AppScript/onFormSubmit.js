@@ -56,7 +56,7 @@ function onFormSubmitHandler(e) {
 
   // Check if the user already exists in Firebase
   const user = doesUserExist(uuid);
-  const userSaveResult = saveUserToUserTableFirebase(uuid, userData);
+  // const userSaveResult = saveUserToUserTableFirebase(uuid, userData);
 
   if (user !== false) {
     // Handle existing user update
@@ -75,11 +75,6 @@ function onFormSubmitHandler(e) {
     jsonData["trial-date-start"] = new Date();
     jsonData["trial"] = "true";
 
-    // itemResponses.forEach(item => {
-    //   const question = item.getItem().getTitle().toLowerCase().trim();
-    //   const answer = item.getResponse();
-    // });
-
     const userSaveResult = saveUserToUserTableFirebase(uuid, userData);
     const saveResult = pushEntryToFirebase(jsonData, uuid);
 
@@ -93,5 +88,5 @@ function onFormSubmitHandler(e) {
   
     const formattedTimezone = replaceSlashesWithDashes(timezone);
     updateExecTimeTable(uuid, formattedTimezone);
-
+    saveTimezoneToFirebase(formattedTimezone);
 }

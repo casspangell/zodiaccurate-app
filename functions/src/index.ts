@@ -27,7 +27,7 @@ async function getSecret(secretName: string): Promise<string> {
 
 async function getStripeApiKey() {
   try {
-    const response = await axios.get("https://script.google.com/macros/s/AKfycbzhqQ43GT3KWpkCItTFR4ALgks6n5F88Cgwmq8h-niDxyq7WOR8toJ86PmPvm_42m6yGA/exec");
+    const response = await axios.get("https://script.google.com/macros/s/AKfycby3MLZZkaRDAmXX_obM5aVl9s1RmVBnwDUozC4LEGiOXItoVo6L2Jdos5PQEQvULTWGNQ/exec");
     return response.data.stripeApiKey;
   } catch (error) {
     console.error("Error fetching API key:", error);
@@ -42,13 +42,12 @@ export const webhookHandler = onRequest(
 
   async (request, response) => {
 
-  const appScriptUrl = "https://script.google.com/macros/s/AKfycbzhqQ43GT3KWpkCItTFR4ALgks6n5F88Cgwmq8h-niDxyq7WOR8toJ86PmPvm_42m6yGA/exec";
+  const appScriptUrl = "https://script.google.com/macros/s/AKfycby3MLZZkaRDAmXX_obM5aVl9s1RmVBnwDUozC4LEGiOXItoVo6L2Jdos5PQEQvULTWGNQ/exec";
 
   try {
     const stripeSecret = await getSecret("stripe_secret");
     logger.info(`Fetched Secret: ${stripeSecret}`);
     const stripeApiKey = await getStripeApiKey();
-    console.log("=====StripeAPIKey ", stripeApiKey);
 
     logger.info("Headers received:", request.headers);
     logger.info("Raw body received:", request.rawBody);
@@ -153,7 +152,7 @@ export const webhookHandler = onRequest(
 
 export const handleEmailConfirmation = onRequest(
   async (request, response) => {
-    const appScriptUrl = "https://script.google.com/macros/s/AKfycbzhqQ43GT3KWpkCItTFR4ALgks6n5F88Cgwmq8h-niDxyq7WOR8toJ86PmPvm_42m6yGA/exec";
+    const appScriptUrl = "https://script.google.com/macros/s/AKfycby3MLZZkaRDAmXX_obM5aVl9s1RmVBnwDUozC4LEGiOXItoVo6L2Jdos5PQEQvULTWGNQ/exec";
 
     try {
       const email = request.query.email as string;
@@ -199,7 +198,12 @@ export const handleEmailConfirmation = onRequest(
           // Trial is still active
           const daysLeft = 10 - diffInDays;
           trialMessage = `<p>Your trial is still active! You started your trial on <strong>${trialStartDate.toLocaleDateString("en-US")}
-          </strong>.<br/>You have <strong>${daysLeft}</strong> day(s) left in your trial.</p>`;
+          </strong>.<br/>You have <strong>${daysLeft}</strong> day(s) left in your trial.</p><br><br>
+          <strong>If you need to fill out About You Questionaire:</strong> 
+          <div class="button-container">
+          <a href="https://zodiaccurate.com/about-you" class="button">Get Started</a>
+        </div>
+        <p>If you already have done so, an update information link is at the bottom of your daily Zodiaccurate email.</p>`;
         }
       } else {
         logger.info("No trial record found for email:", email);
