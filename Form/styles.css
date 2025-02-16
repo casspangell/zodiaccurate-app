@@ -72,6 +72,27 @@ input[type="password"] {
     margin-bottom: 10px;
 }
 
+.main-radio-group {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+}
+
+/* For groups with more than three radio buttons: Two-column layout */
+.main-radio-group.multi-column { 
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr)); /* Two equal columns */
+    gap: 10px 20px;
+}
+
+/* Ensure labels align properly */
+.main-radio-group.multi-column label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
 /* Hide the default radio button */
 /* Hide default radio button */
 input[type="radio"] {
@@ -486,6 +507,17 @@ input[type="checkbox"]:focus {
 }
 
 
+.main-checkbox-group.multi-column {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px 20px;
+}
+
+.main-checkbox-group.multi-column label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
 
 
 
