@@ -108,20 +108,20 @@ input[type="password"] {
     gap: 8px;
 }
 
-/* Hide the default radio button */
 /* Hide default radio button */
 input[type="radio"] {
     appearance: none;
     -webkit-appearance: none;
     -moz-appearance: none;
-    width: 20px;
-    height: 20px;
-    border-radius: 10px; /* Makes it round */
+    width: 20px; /* Fixed size */
+    height: 20px; /* Fixed size */
+    border-radius: 50%;
     background-color: white;
     display: inline-block;
     position: relative;
     cursor: pointer;
     transition: all 0.2s ease-in-out;
+    border: 2px solid #5a3e85; /* Keeps the border proportional */
 }
 
 /* Style when checked */
@@ -160,8 +160,6 @@ input[type="radio"]:focus {
     outline: 2px solid #ffcc00;
     outline-offset: 3px;
 }
-
-
 
 input[type="radio"],
 input[type="checkbox"] {

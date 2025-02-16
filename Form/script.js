@@ -6,11 +6,11 @@ document.addEventListener("DOMContentLoaded", function () {
     const prevButtons = document.querySelectorAll(".prev");
     const steps = document.querySelectorAll(".step");
 
-    const relationshipStatus = document.getElementById("relationship-status");
-    const partnerSection = document.getElementById("partner-section");
-    const futurePartnerSection = document.getElementById("future-partner-section");
-    const addPartnerButton = document.getElementById("add-partner");
-    const partnerContainer = document.getElementById("partner-container");
+    // const relationshipStatus = document.getElementById("relationship-status");
+    // const partnerSection = document.getElementById("partner-section");
+    // const futurePartnerSection = document.getElementById("future-partner-section");
+    // const addPartnerButton = document.getElementById("add-partner");
+    // const partnerContainer = document.getElementById("partner-container");
     const addChildButton = document.getElementById("add-child");
     const childContainer = document.getElementById("child-container");
 
@@ -32,10 +32,10 @@ document.addEventListener("DOMContentLoaded", function () {
         1: "wellness",
         2: "relationship_status",
         3: ["partner", "future_partner"],
-        4: "employment_status",
-        5: ["employed", "unemployed", "retired"],
-        6: "children",
-        7: "important_people",
+        4: "important_people",
+        5: "children",
+        6: "employment_status",
+        7: ["employed", "unemployed", "retired"],
         8: "final"
     };
 
@@ -43,7 +43,7 @@ document.addEventListener("DOMContentLoaded", function () {
         0: "intro",
         1: "wellness",
         2: "relationship_status",
-        3: "partner",
+        3: "partner", 
         4: "future_partner",
         5: "employment_status",
         6: "employed",
@@ -286,16 +286,22 @@ document.addEventListener("DOMContentLoaded", function () {
                     if (!selectedStatus) return;
                     const status = selectedStatus.value;
 
-                    if (["married", "committed", "separated_fix", "separated_differences", "divorced"].includes(status)) {
+                    if (["married", "committed", "separated_fix"].includes(status)) {
                         goToSection(3);
-                    } else if (status === "future_partner") {
+                    } else if (["future_partner", "divorced", "separated_differences"].includes(status)) {
                         goToSection(4);
                     } else {
-                        goToSection(5);
+                        goToSection(10);
                     }
                     break;
                 case "partner":
                 case "future_partner":
+                    goToSection(10);
+                    break
+                case "important_people":
+                    goToSection(9);
+                    break;
+                case "children":
                     goToSection(5);
                     break;
                 case "employment_status":
@@ -314,14 +320,9 @@ document.addEventListener("DOMContentLoaded", function () {
                 case "employed":
                 case "unemployed":
                 case "retired":
-                    goToSection(9);
-                    break;
-                case "children":
-                    goToSection(10);
-                    break;
-                case "important_people":
                     goToSection(11);
                     break;
+
                 default:
                     console.error(`Unhandled section: ${currentStep}`);
                     break;
@@ -378,69 +379,69 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     });
 
-    if (!addPartnerButton.dataset.listener) {  // Prevent duplicate listeners
-        addPartnerButton.addEventListener("click", function () {
-            console.log("Adding a partner..."); 
-            addPartner();
-        });
-        addPartnerButton.dataset.listener = "true";  // Mark as attached
-    }
+    // if (!addPartnerButton.dataset.listener) {  // Prevent duplicate listeners
+    //     addPartnerButton.addEventListener("click", function () {
+    //         console.log("Adding a partner..."); 
+    //         addPartner();
+    //     });
+    //     addPartnerButton.dataset.listener = "true";  // Mark as attached
+    // }
 
 
-    function addPartner() {
-        partnerCount++;
-        console.log(`Adding Partner ${partnerCount}`);
-        const newPartner = document.createElement("div");
-        newPartner.classList.add("partner-entry");
-        newPartner.setAttribute("id", `partner-${partnerCount}`);
-        newPartner.innerHTML = `
-                <h3>Partner ${partnerCount} Information</h3>
-                <label>Partner's Name: <input type="text" name="partner_name_${partnerCount}"></label><br>
-                <label>Partner's Birth Date: <input type="text" name="partner_birth_date_${partnerCount}" placeholder="Example: May 25, 1984"></label><br>
-                <label>Partner's Birth Time: <input type="text" name="partner_birth_time_${partnerCount}" placeholder="Example: 1:30 PM"></label><br>
-                <label>Partner's Birth City: <input type="text" name="partner_birth_city_${partnerCount}"></label><br>
-                <label>Partner's Stress: <input type="text" name="partner_stress_${partnerCount}"></label><br>
-                <label>How do you handle conflicts in your relationship?</label><br>
-                <div class="main-checkbox-group multi-column">
-                    <input type="checkbox" name="partner_conflict_${partnerCount}" value="Address Immediately"> Address Immediately
-                    <input type="checkbox" name="partner_conflict_${partnerCount}" value="Cool Down First"> Cool Down First
-                    <input type="checkbox" name="partner_conflict_${partnerCount}" value="Avoid Conflict"> Avoid Conflict
-                    <input type="checkbox" name="partner_conflict_${partnerCount}" value="Seek a Third-Party Opinion"> Seek a Third-Party Opinion
-                </div>
-                <br>
-                <label>List 3-5 things you love about your partner: <input type="text" name="partner_love_${partnerCount}"></label><br>
-                <label>List 3-5 things you want to improve about yourself in your relationship: <input type="text" name="partner_improve_${partnerCount}"></label><br>
-                <label>Partner’s Belief System:</label><br>
-                <select name="partner_belief_${partnerCount}">
-                    <option value="Christian">Christian</option>
-                    <option value="Mormon">Mormon</option>
-                    <option value="Buddhist">Buddhist</option>
-                    <option value="Islam">Islam</option>
-                    <option value="Jewish">Jewish</option>
-                    <option value="Hindu">Hindu</option>
-                    <option value="Spiritual">Spiritual</option>
-                    <option value="Atheist">Atheist</option>
-                    <option value="Agnostic">Agnostic</option>
-                    <option value="Pagan">Pagan</option>
-                    <option value="Other">Other</option>
-                </select>
-                                <br>
-                <button type="button" class="remove-partner-btn" data-partner-id="${partnerCount}">Remove This Partner</button>
-        `;
-        partnerContainer.appendChild(newPartner);
-        console.log(`Partner ${partnerCount} added successfully.`);
-        // Attach remove event to the button immediately after adding the partner
-        newPartner.querySelector(".remove-partner-btn").addEventListener("click", function () {
-            removePartner(newPartner);
-    });
-    }
+    // function addPartner() {
+    //     partnerCount++;
+    //     console.log(`Adding Partner ${partnerCount}`);
+    //     const newPartner = document.createElement("div");
+    //     newPartner.classList.add("partner-entry");
+    //     newPartner.setAttribute("id", `partner-${partnerCount}`);
+    //     newPartner.innerHTML = `
+    //             <h3>Partner ${partnerCount} Information</h3>
+    //             <label>Partner's Name: <input type="text" name="partner_name_${partnerCount}"></label><br>
+    //             <label>Partner's Birth Date: <input type="text" name="partner_birth_date_${partnerCount}" placeholder="Example: May 25, 1984"></label><br>
+    //             <label>Partner's Birth Time: <input type="text" name="partner_birth_time_${partnerCount}" placeholder="Example: 1:30 PM"></label><br>
+    //             <label>Partner's Birth City: <input type="text" name="partner_birth_city_${partnerCount}"></label><br>
+    //             <label>Partner's Stress: <input type="text" name="partner_stress_${partnerCount}"></label><br>
+    //             <label>How do you handle conflicts in your relationship?</label><br>
+    //             <div class="main-checkbox-group multi-column">
+    //                 <input type="checkbox" name="partner_conflict_${partnerCount}" value="Address Immediately"> Address Immediately
+    //                 <input type="checkbox" name="partner_conflict_${partnerCount}" value="Cool Down First"> Cool Down First
+    //                 <input type="checkbox" name="partner_conflict_${partnerCount}" value="Avoid Conflict"> Avoid Conflict
+    //                 <input type="checkbox" name="partner_conflict_${partnerCount}" value="Seek a Third-Party Opinion"> Seek a Third-Party Opinion
+    //             </div>
+    //             <br>
+    //             <label>List 3-5 things you love about your partner: <input type="text" name="partner_love_${partnerCount}"></label><br>
+    //             <label>List 3-5 things you want to improve about yourself in your relationship: <input type="text" name="partner_improve_${partnerCount}"></label><br>
+    //             <label>Partner’s Belief System:</label><br>
+    //             <select name="partner_belief_${partnerCount}">
+    //                 <option value="Christian">Christian</option>
+    //                 <option value="Mormon">Mormon</option>
+    //                 <option value="Buddhist">Buddhist</option>
+    //                 <option value="Islam">Islam</option>
+    //                 <option value="Jewish">Jewish</option>
+    //                 <option value="Hindu">Hindu</option>
+    //                 <option value="Spiritual">Spiritual</option>
+    //                 <option value="Atheist">Atheist</option>
+    //                 <option value="Agnostic">Agnostic</option>
+    //                 <option value="Pagan">Pagan</option>
+    //                 <option value="Other">Other</option>
+    //             </select>
+    //                             <br>
+    //             <button type="button" class="remove-partner-btn" data-partner-id="${partnerCount}">Remove This Partner</button>
+    //     `;
+    //     partnerContainer.appendChild(newPartner);
+    //     console.log(`Partner ${partnerCount} added successfully.`);
+    //     // Attach remove event to the button immediately after adding the partner
+    //     newPartner.querySelector(".remove-partner-btn").addEventListener("click", function () {
+    //         removePartner(newPartner);
+    // });
+    // }
 
-    function removePartner(partnerElement) {
-        partnerCount--;
-        console.log(`Removing ${partnerElement.id}`);
-        partnerElement.remove();
-        console.log(`Partner removed successfully.`);
-    }
+    // function removePartner(partnerElement) {
+    //     partnerCount--;
+    //     console.log(`Removing ${partnerElement.id}`);
+    //     partnerElement.remove();
+    //     console.log(`Partner removed successfully.`);
+    // }
 
     if (addChildButton) {
         if (!addChildButton.dataset.listener) {  // Prevent duplicate event listeners
@@ -465,12 +466,12 @@ document.addEventListener("DOMContentLoaded", function () {
             <label>Child's Birth Date: <input type="text" name="child_birth_date_${childCount}" placeholder="Example: May 25, 2019"></label><br>
             <label>Child's Birth Time: <input type="text" name="child_birth_time_${childCount}" placeholder="Example: 1:30 PM"></label><br>
             
-            <div class="main-radio-group multi-column">
             <label>What is your child’s gender?</label><br>
-                <input type="radio" name="child_gender_${childCount}" value="Male"> Male
-                <input type="radio" name="child_gender_${childCount}" value="Female"> Female
-                <input type="radio" name="child_gender_${childCount}" value="Prefer Not to Say"> Prefer Not to Say
-                <input type="radio" name="child_gender_${childCount}" value="Other"> Other
+            <div class="main-radio-group multi-column">
+               <label><input type="radio" name="child_gender_${childCount}" value="Male"> Male</label>
+                <label><input type="radio" name="child_gender_${childCount}" value="Female"> Female</label>
+                <label><input type="radio" name="child_gender_${childCount}" value="Prefer Not to Say"> Prefer Not to Say</label>
+                <label><input type="radio" name="child_gender_${childCount}" value="Other"> Other</label>
             </div>
             <br>
             <label>Child's Primary Activities: <input type="text" name="child_activities_${childCount}"></label><br>

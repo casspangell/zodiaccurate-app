@@ -17,10 +17,10 @@
                 <div class="step">Wellness</div>
                 <div class="step">Relationship</div>
                 <div class="step">Partner</div>
+                <div class="step">Important People</div>
+                <div class="step">Children</div>
                 <div class="step">Employment Status</div>
                 <div class="step">Employment</div>
-                <div class="step">Children</div>
-                <div class="step">Important People</div>
                 <div class="step">Final</div>
             </div>
         </div>
@@ -102,35 +102,35 @@
 
                 <label for="emotional_health">Emotional Health</label>
                 <p class="description">Describe any emotional imbalances (e.g., anxiety, depression, grief, low self-esteem, anger). Leave blank if none.</p>
-                <input type="text" id="emotional_health" name="emotional_health">
+                <textarea type="text" id="emotional_health" name="emotional_health"></textarea>
 
                 <label for="mental_health">Mental Health</label>
                 <p class="description">List any mental health challenges (e.g., negative thinking, trauma, serious conditions). Leave blank if none.</p>
-                <input type="text" id="mental_health" name="mental_health">
+                <textarea type="text" id="mental_health" name="mental_health"></textarea>
 
                 <label for="wellness_goals">Wellness Goals</label>
                 <p class="description">What are your wellness goals (e.g., lose weight, gain strength, be more flexible)?</p>
-                <input type="text" id="wellness_goals" name="wellness_goals">
+                <textarea type="text" id="wellness_goals" name="wellness_goals"></textarea>
 
                 <label for="important_goals">Important Goals</label>
                 <p class="description">List 3-5 short or long-term goals or dreams.</p>
-                <input type="text" id="important_goals" name="important_goals">
+                <textarea type="text" id="important_goals" name="important_goals"></textarea>
 
                 <label for="areas_of_improvement">Areas of Improvement</label>
                 <p class="description">List 3-5 areas of your life you want to improve.</p>
-                <input type="text" id="areas_of_improvement" name="areas_of_improvement">
+                <textarea type="text" id="areas_of_improvement" name="areas_of_improvement"></textarea>
 
                 <label for="stress">Stress</label>
                 <p class="description">What are your top 3-5 sources of stress?</p>
-                <input type="text" id="stress" name="stress">
+                <textarea type="text" id="stress" name="stress"></textarea>
 
                 <label for="joy_satisfaction">Joy and Satisfaction</label>
                 <p class="description">What brings you joy and satisfaction?</p>
-                <input type="text" id="joy_satisfaction" name="joy_satisfaction">
+                <textarea type="text" id="joy_satisfaction" name="joy_satisfaction"></textarea>
 
                 <label for="family_values">Family Values</label>
                 <p class="description">What family values or principles matter most to you?</p>
-                <input type="text" id="family_values" name="family_values">
+                <textarea type="text" id="family_values" name="family_values"></textarea>
 
                 <label>Sexual Orientation (Optional)</label>
                 <p class="description">What is your sexual orientation?</p>
@@ -169,7 +169,7 @@
                 <h2>Relationship Status</h2>
                 <p>What is your current relationship status?</p>
                 <div class="main-radio-group">
-                    <label><input type="radio" name="relationship_status" value="future_partner"> Looking for a Life Partner/s</label>
+                    <label><input type="radio" name="relationship_status" value="future_partner"> Looking for a Life Partner</label>
                     <label><input type="radio" name="relationship_status" value="single"> Single - Not Looking</label>
                     <label><input type="radio" name="relationship_status" value="married"> Married</label>
                     <label><input type="radio" name="relationship_status" value="committed"> In a Committed Relationship</label>
@@ -224,9 +224,9 @@
                     </div>
                 </div>
 
-                <div class="partner-actions">
+<!--                 <div class="partner-actions">
                     <button type="button" id="add-partner">➕ Add Another Partner</button>
-                </div>
+                </div> -->
 
                 <div class="nav-button-container">
                     <button type="button" class="prev">Back</button>
@@ -449,7 +449,7 @@
             <!-- Important Person Section -->
             <section class="section" id="important-person-section" style="display: none;">
                 <h2>Important People in Your Life</h2>
-                <p>Add close individuals who significantly impact your daily life.</p>
+                <p>Add close individuals (Not Children, this is addressed in another section) who significantly impact your daily life.</p>
 
                 <div id="important-person-container">
                     <!-- Important people will be added dynamically here -->
