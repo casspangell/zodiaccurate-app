@@ -11,10 +11,18 @@ body {
 .container {
     max-width: 600px;
     margin: 50px auto;
-    padding: 30px;
+   /* padding: 30px;
     background: #2a0b5e;
     border-radius: 10px;
-    box-shadow: 0px 0px 15px rgba(255, 255, 255, 0.2);
+    box-shadow: 0px 0px 15px rgba(255, 255, 255, 0.2);*/
+}
+
+.next {
+    background-color: #3c8fb3;
+}
+
+.next:hover {
+    background-color: #44a2cb;
 }
 
 /* Headings */
@@ -64,6 +72,61 @@ input[type="password"] {
     margin-bottom: 10px;
 }
 
+/* Hide the default radio button */
+/* Hide default radio button */
+input[type="radio"] {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    width: 20px;
+    height: 20px;
+    border-radius: 10px; /* Makes it round */
+    background-color: white;
+    display: inline-block;
+    position: relative;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+}
+
+/* Style when checked */
+input[type="radio"]:checked {
+    background-color: #ffcc00; /* Vibrant yellow-gold */
+    border: 2px solid #ffcc00;
+}
+
+/* Add a small inner circle when selected */
+input[type="radio"]::after {
+    content: "";
+    display: block;
+    width: 10px;
+    height: 10px;
+    border-radius: 5px;
+    background-color: #5a3e85; /* Dark purple inner circle for contrast */
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0);
+    transition: all 0.2s ease-in-out;
+}
+
+/* Show inner circle when selected */
+input[type="radio"]:checked::after {
+    transform: translate(-50%, -50%) scale(1);
+}
+
+/* Optional: Add hover effect */
+input[type="radio"]:hover {
+    border-color: #f5d76e; /* Lighter gold on hover */
+}
+
+/* Optional: Add focus effect */
+input[type="radio"]:focus {
+    outline: 2px solid #ffcc00;
+    outline-offset: 3px;
+}
+
+
+
 input[type="radio"],
 input[type="checkbox"] {
     margin-right: 5px;
@@ -94,6 +157,59 @@ button:hover {
     background: #9a67ea;
 }
 
+/* Hide default checkbox */
+input[type="checkbox"] {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    width: 20px;
+    height: 20px;
+    border-radius: 5px; /* Rounded corners */
+    background-color: white;
+    display: inline-block;
+    position: relative;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+}
+
+/* Style when checked */
+input[type="checkbox"]:checked {
+    background-color: #ffcc00; /* Vibrant yellow-gold */
+    border: 2px solid #ffcc00;
+}
+
+/* Checkmark icon */
+input[type="checkbox"]::after {
+    content: "";
+    display: block;
+    width: 10px;
+    height: 10px;
+    border-radius: 3px; /* Slightly rounded checkmark */
+    background-color: #5a3e85; /* Dark purple check for contrast */
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0);
+    transition: all 0.2s ease-in-out;
+}
+
+/* Show checkmark when selected */
+input[type="checkbox"]:checked::after {
+    transform: translate(-50%, -50%) scale(1);
+}
+
+/* Optional: Add hover effect */
+input[type="checkbox"]:hover {
+    border-color: #f5d76e; /* Lighter gold on hover */
+}
+
+/* Optional: Add focus effect */
+input[type="checkbox"]:focus {
+    outline: 2px solid #ffcc00;
+    outline-offset: 3px;
+}
+
+
 .button-container {
     display: flex;
     justify-content: flex-start; /* Aligns buttons from the left */
@@ -123,9 +239,13 @@ button:hover {
     background-color: var(--lighter-purple); /* Lighter shade for alternating partners */
 }
 
+.partner-entry.alternate-bg {
+    bpadding 20px;
+}
+
 /* Lighter purple background for alternating sections */
 .partner-entry.alternate-bg .partner-card {
-    background-color: #5a2d91; /* Lighter Purple */
+    background-color: #5a2d91;
 }
 
 .partner-actions {

@@ -21,9 +21,9 @@ document.addEventListener("DOMContentLoaded", function () {
     const addChildButton = document.getElementById("add-child");
     const childContainer = document.getElementById("child-container");
 
-    let partnerCount = 0;
-    let childCount = 0;
-    let importantPersonCount = 0;
+    let partnerCount = 1;
+    let childCount = 1;
+    let importantPersonCount = 1;
 
     updateProgressBar(0);
 
@@ -271,12 +271,11 @@ document.addEventListener("DOMContentLoaded", function () {
         newPartner.setAttribute("id", `partner-${partnerCount}`);
 
         // Alternate background for every other partner
-        if (partnerCount % 2 === 1) {
-            newPartner.classList.add("alternate-bg");
-        }
+        // if (partnerCount % 2 === 1) {
+        //     newPartner.classList.add("alternate-bg");
+        // }
 
         newPartner.innerHTML = `
-            <div class="partner-card">
                 <h3>Partner ${partnerCount} Information</h3>
                 <label>Partner's Name: <input type="text" name="partner_name_${partnerCount}"></label><br>
                 <label>Partner's Birth Date: <input type="text" name="partner_birth_date_${partnerCount}" placeholder="Example: May 25, 1984"></label><br>
@@ -307,7 +306,6 @@ document.addEventListener("DOMContentLoaded", function () {
                 </select>
                 <br>
                 <button type="button" class="remove-partner-btn" data-partner-id="${partnerCount}">Remove This Partner</button>
-            </div>
         `;
 
         partnerContainer.appendChild(newPartner);
@@ -345,10 +343,8 @@ function addChild() {
     newChild.setAttribute("id", `child-${childCount}`);
 
     // Alternate background color for differentiation
-    if (childCount % 2 === 0) {
-        newChild.style.backgroundColor = "#3a2f5b"; // Dark purple for contrast
-    } else {
-        newChild.style.backgroundColor = "#4e3b6c"; // Lighter purple
+    if (partnerCount % 2 === 1) {
+        newPartner.classList.add("alternate-bg");
     }
 
     newChild.innerHTML = `
@@ -457,6 +453,7 @@ if (!document.getElementById("add-important-person").dataset.listener) {
     });
     document.getElementById("add-important-person").dataset.listener = "true";
 }
+
 function findStepNumber(progressKey) {
     if (!progressFlowOrder.hasOwnProperty(progressKey)) {
         console.warn(`Invalid progress key: ${progressKey}`);

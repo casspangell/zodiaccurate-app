@@ -38,33 +38,35 @@
                     We follow all global GDPR privacy policies. Your information is private and only used by the software to create your daily report.
                 </p>
 
-                <label for="email">Email</label>
+                <label for="email">Email *</label>
                 <p class="description">Enter your valid email address (double-check for spelling errors).</p>
-                <input type="email" id="email" name="email" required>
+                <input type="email" id="email" name="email" class="text-short" required>
 
-                <label for="location">Your Current Location</label>
+                <label for="location">Your Current Location *</label>
                 <p class="description">Enter your city, state, province, and country. This ensures your daily guidance is delivered at 6 AM (or earlier) in your time zone.</p>
                 <input type="text" id="location" name="location" required>
 
-                <label for="name">Name</label>
+                <label for="name">Name *</label>
                 <p class="description">Enter your first name.</p>
                 <input type="text" id="name" name="name" required>
 
-                <label for="birth_city">Birth City</label>
+                <label for="birth_city">Birth City *</label>
                 <p class="description">Enter the city, state, province, and country where you were born (if applicable).</p>
                 <input type="text" id="birth_city" name="birth_city">
 
-                <label for="birth_date">Birth Date</label>
+                <label for="birth_date">Birth Date *</label>
                 <p class="description">Enter your birth date (Example: December 15, 1986).</p>
                 <input type="text" id="birth_date" name="birth_date" required>
 
-                <label for="birth_time">Birth Time</label>
+                <label for="birth_time">Birth Time *</label>
                 <p class="description">Enter your birth time (Example: 1:30 PM). If unknown, make your best guess. This improves accuracy.</p>
                 <input type="text" id="birth_time" name="birth_time">
                 
                 <div class="nav-button-container">
                     <button type="button" class="next">Save & Continue</button>
                 </div>
+                <br>
+                <p>* required field</p>
             </div>
 
             <!-- Personal Wellness Section -->
