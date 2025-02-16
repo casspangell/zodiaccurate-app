@@ -64,6 +64,21 @@ input[type="password"] {
     box-sizing: border-box; /* Ensures padding doesn't affect width */
 }
 
+.text-large {
+    width: 100%;
+    min-height: 50px; /* Minimum height */
+    max-height: 300px; /* Optional: prevent excessive growth */
+    font-size: 16px;
+    padding: 10px;
+    box-sizing: border-box;
+    text-align: left;
+    vertical-align: top;
+    overflow-y: hidden; /* Hide scrollbar when resizing */
+    resize: none; /* Prevent manual resizing since it's auto-expanding */
+    line-height: 1.5;
+    white-space: pre-wrap; /* Ensure word wrapping */
+}
+
 /* Radio & Checkbox Groups */
 .radio-group {
     display: flex;

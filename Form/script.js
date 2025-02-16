@@ -44,6 +44,8 @@ document.addEventListener("DOMContentLoaded", function () {
     // Load saved form data from localStorage
     let formData = JSON.parse(localStorage.getItem("formData")) || {};
 
+    loadFormData();
+
     // Function to save form data to localStorage
     function saveFormData() {
         sections[currentSection].querySelectorAll("input, select, textarea").forEach((input) => {
@@ -161,6 +163,12 @@ document.addEventListener("DOMContentLoaded", function () {
 
         return isValid;
     }
+
+    document.querySelectorAll("input, select, textarea").forEach((input) => {
+        input.addEventListener("input", saveFormData);
+        input.addEventListener("change", saveFormData);
+        input.addEventListener("blur", saveFormData);
+    });
 
     // Validate all required fields on "Save & Continue" click
     document.getElementById("saveContinueBtn").addEventListener("click", function () {
@@ -349,4 +357,11 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     showSection(currentSection);
+
+    document.querySelectorAll("textarea.auto-expand").forEach((textarea) => {
+        textarea.addEventListener("input", function () {
+            this.style.height = "auto"; // Reset height to recalculate
+            this.style.height = this.scrollHeight + "px"; // Set height based on content
+        });
+    });
 });
