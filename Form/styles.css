@@ -53,6 +53,25 @@ label {
     margin-bottom: 5px;
 }
 
+.question-group {
+    background-color: #2e1a47; /* Deep purple background */
+    padding: 16px;
+    border-radius: 12px; /* Rounded edges for a soft appearance */
+    border: 2px solid #5a3e85; /* Subtle contrast with a border */
+    margin-bottom: 20px; /* Space between question groups */
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); /* Light shadow for depth */
+    max-width: 600px; /* Prevents it from stretching too wide */
+}
+
+/* Style the question label */
+.question-group > label {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: #f5d76e; /* Warm gold color for contrast */
+    display: block;
+    margin-bottom: 10px;
+}
+
 input[type="text"],
 input[type="email"],
 input[type="date"],
@@ -85,6 +104,14 @@ input[type="password"] {
     flex-wrap: wrap;
     gap: 10px;
     margin-bottom: 10px;
+}
+
+.main-radio-group label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: clamp(0, 2vw, 1.2rem);
+    font-weight: normal !important;
 }
 
 .main-radio-group {
@@ -143,7 +170,8 @@ input[type="radio"]::after {
     align-items: center;
     font-weight: normal;
     gap: 8px;
-    font-size: clamp(0.8rem, 2vw, 1.2rem); /* Dynamically resizes text */
+    font-size: clamp(0, 2vw, 1.2rem); /* Dynamically resizes text */
+    font-weight: normal !important;
 }
 
 /* Show inner circle when selected */
@@ -521,17 +549,28 @@ input[type="checkbox"]:focus {
     background-color: #b71c1c;
 }
 
+.main-checkbox-group label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: clamp(0, 2vw, 1.2rem);
+    font-weight: normal !important;
+}
+
 
 .main-checkbox-group.multi-column {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 10px 20px;
+    flex-shrink: 0;
 }
 
 .main-checkbox-group.multi-column label {
     display: flex;
     align-items: center;
     gap: 8px;
+    font-size: clamp(0, 2vw, 1.2rem);
+    font-weight: normal !important;
 }
 
 
