@@ -1,9 +1,13 @@
 document.addEventListener("DOMContentLoaded", function () {
     let currentSection = 0;
     const navigationHistory = [];
+    const form = document.getElementById("multiStepForm");
+
     const sections = document.querySelectorAll(".section");
     const nextButtons = document.querySelectorAll(".next");
     const prevButtons = document.querySelectorAll(".prev");
+    const submitButton = document.querySelector(".submit");
+
     const steps = document.querySelectorAll(".step");
 
     const relationshipStatus = document.getElementById("relationship-status");
@@ -600,6 +604,46 @@ function removeImportantPerson(personElement) {
     importantPersonCount--;
     console.log(`Important Person removed. Remaining count: ${importantPersonCount}`);
 }
+
+function collectFormData() {
+        const formData = {};
+        const inputs = form.querySelectorAll("input, select, textarea");
+
+        inputs.forEach((input) => {
+            if (input.type === "checkbox") {
+                if (!formData[input.name]) {
+                    formData[input.name] = [];
+                }
+                if (input.checked) {
+                    formData[input.name].push(input.value);
+                }
+            } else if (input.type === "radio") {
+                if (input.checked) {
+                    formData[input.name] = input.value;
+                }
+            } else {
+                formData[input.name] = input.value.trim();
+            }
+        });
+
+        return formData;
+    }
+
+    function removeEmptyValues(obj) {
+        return Object.fromEntries(
+            Object.entries(obj).filter(([_, value]) => {
+                return value !== null && value !== "" && 
+                       !(Array.isArray(value) && value.length === 0);
+            })
+        );
+    }
+
+    submitButton.addEventListener("click", function (event) {
+        event.preventDefault(); // Prevent actual form submission
+        let formDataObject = collectFormData();
+        formDataObject = removeEmptyValues(formDataObject); // Remove empty fields
+        console.log("Filtered Form Data:", formDataObject);
+    });
 
 });
 
