@@ -102,18 +102,20 @@ function pushEntryToFirebase(jsonData, uuid) {
     const sanitizedData = sanitizeJsonKeys(jsonData); // Clean keys before saving
 
     Logger.log("pushEntryToFirebase...", JSON.stringify(sanitizedData));
-    const firebaseUrl = `${FIREBASE_URL}/responses/${uuid}.json?auth=${FIREBASE_API_KEY}`;
 
     const token = getFirebaseIdToken("appscript@zodiaccurate.com", FIREBASE_PASSWORD);
-    console.log("=== token created");
+
+    if (!token) {
+        Logger.log("❌ Firebase authentication failed. No token received.");
+        return false;
+    }
+
+    const firebaseUrl = `${FIREBASE_URL}/responses/${uuid}.json?auth=${token}`;
     
     const options = {
         method: "put",
         contentType: "application/json",
         payload: JSON.stringify(sanitizedData),
-        headers: {
-            Authorization: `Bearer ${token}`
-        }
     };
 
     try {
@@ -358,39 +360,58 @@ function saveTimezoneToTimezoneArrayList(newTimezone) {
 
     Logger.log(`Adding new timezone to Firebase: ${newTimezone}`);
 
-    const firebaseUrl = `${FIREBASE_URL}/timezones.json?auth=${FIREBASE_API_KEY}`;
     const token = getFirebaseIdToken("appscript@zodiaccurate.com", FIREBASE_PASSWORD);
-     console.log("=== token created");
+    if (!token) {
+        Logger.log("Failed to authenticate with Firebase.");
+        return false;
+    }
+    console.log("=== Firebase token created");
+
+    const firebaseUrl = `${FIREBASE_URL}/timezones.json?auth=${FIREBASE_API_KEY}`;
 
     try {
-        // Fetch existing timezones
-        const response = UrlFetchApp.fetch(firebaseUrl, { method: "get" });
+        // Fetch existing timezones with authentication
+        const getOptions = {
+            method: "get",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`
+            },
+            muteHttpExceptions: true // Prevents throwing an error for non-200 responses
+        };
+
+        const response = UrlFetchApp.fetch(firebaseUrl, getOptions);
+        const statusCode = response.getResponseCode();
+
+        if (statusCode !== 200) {
+            Logger.log(`Failed to fetch existing timezones: HTTP ${statusCode}`);
+            return false;
+        }
+
         let existingTimezones = JSON.parse(response.getContentText());
 
         if (!Array.isArray(existingTimezones)) {
-            existingTimezones = []; // If data is invalid or missing, initialize as an empty array
+            existingTimezones = []; // Initialize as an empty array if missing
         }
 
-        // Merge and remove duplicates (corrected to treat newTimezone as a single string)
+        // Ensure newTimezone is added only if it's not already in the array
         if (!existingTimezones.includes(newTimezone)) {
-            if(newTimezone != null) {
-                existingTimezones.push(newTimezone);
-            }
+            existingTimezones.push(newTimezone);
         }
 
         Logger.log(`Updated timezones: ${JSON.stringify(existingTimezones)}`);
 
-        // Save the updated array back to Firebase
-        const options = {
+        // Save the updated array back to Firebase with authentication
+        const putOptions = {
             method: "put",
             contentType: "application/json",
-            payload: JSON.stringify(existingTimezones), // Save the merged list
+            payload: JSON.stringify(existingTimezones),
             headers: {
                 Authorization: `Bearer ${token}`
             }
         };
 
-        const saveResponse = UrlFetchApp.fetch(firebaseUrl, options);
+        const saveResponse = UrlFetchApp.fetch(firebaseUrl, putOptions);
         Logger.log(`Timezones list updated successfully: ${saveResponse.getContentText()}`);
         return true;
     } catch (e) {
@@ -398,6 +419,7 @@ function saveTimezoneToTimezoneArrayList(newTimezone) {
         return false;
     }
 }
+
 
 /**
  * Fetches the list of timezones from Firebase and removes null values.
