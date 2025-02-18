@@ -6,46 +6,64 @@
  * @returns {string|null} - The formatted timezone string or null if an error occurs.
  */
 function getTimeZoneFromLocation(location, uuid) {
-    console.log("Getting timezone from location:", location);
+    Logger.log(`🌍 Getting timezone from location: ${location} for UUID: ${uuid}`);
 
+    // Authenticate & retrieve token
     const token = getFirebaseIdToken("appscript@zodiaccurate.com", FIREBASE_PASSWORD);
-     console.log("=== token created");
+    if (!token) {
+        Logger.log("❌ Firebase Authentication Failed.");
+        return null;
+    }
+    Logger.log("✅ Firebase Token Retrieved");
 
     try {
         const geocoder = Maps.newGeocoder();
         const response = geocoder.geocode(location);
         
-        if (response.status === 'OK' && response.results.length > 0) {
-            const result = response.results[0];
-            const lat = result.geometry.location.lat;
-            const lng = result.geometry.location.lng;
-            
-            const apiKey = GOOGLE_MAPS_API_KEY;
-            const timestamp = Math.floor(Date.now() / 1000); // Current timestamp in seconds
-            const timezoneUrl = `https://maps.googleapis.com/maps/api/timezone/json?location=${lat},${lng}&timestamp=${timestamp}&key=${apiKey}`;
-            const timezoneResponse = UrlFetchApp.fetch(timezoneUrl);
-            const timezoneData = JSON.parse(timezoneResponse.getContentText());
-            
-            if (timezoneData.status === 'OK') {
-                let timezoneId = timezoneData.timeZoneId; // Example: "America/New_York"
-                timezoneId = transformKeysToLowerCaseWithUnderscores(timezoneId);
-                console.log("Timezone: ", timezoneId);
+        // Log full geocoder response
+        Logger.log(`🛰️ Geocoder API Response: ${JSON.stringify(response, null, 2)}`);
 
-                // Save timezone to Array List
-                saveTimezoneToTimezoneArrayList(timezoneId);
-
-                return timezoneId;
-            } else {
-                throw new Error('Error fetching timezone: ' + timezoneData.errorMessage);
-            }
-        } else {
-            throw new Error('Error geocoding location: ' + response.status);
+        if (response.status !== 'OK' || !response.results.length) {
+            Logger.log(`❌ Geocoding failed for location '${location}' - Status: ${response.status}`);
+            return "america_chicago";
         }
+
+        const result = response.results[0];
+        const lat = result.geometry.location.lat;
+        const lng = result.geometry.location.lng;
+        Logger.log(`📍 Geocoded Coordinates: Latitude=${lat}, Longitude=${lng}`);
+
+        // Fetch timezone data
+        const apiKey = GOOGLE_MAPS_API_KEY;
+        const timestamp = Math.floor(Date.now() / 1000);
+        const timezoneUrl = `https://maps.googleapis.com/maps/api/timezone/json?location=${lat},${lng}&timestamp=${timestamp}&key=${apiKey}`;
+        Logger.log(`🕒 Fetching Timezone API: ${timezoneUrl}`);
+
+        const timezoneResponse = UrlFetchApp.fetch(timezoneUrl);
+        const timezoneData = JSON.parse(timezoneResponse.getContentText());
+
+        // Log full timezone response
+        Logger.log(`⏳ Timezone API Response: ${JSON.stringify(timezoneData, null, 2)}`);
+
+        if (timezoneData.status !== 'OK') {
+            Logger.log(`❌ Timezone fetch failed for coordinates (${lat}, ${lng}) - Status: ${timezoneData.status}`);
+            return null;
+        }
+
+        let timezoneId = timezoneData.timeZoneId; // Example: "America/New_York"
+        timezoneId = transformKeysToLowerCaseWithUnderscores(timezoneId);
+        Logger.log(`✅ Retrieved Timezone ID: ${timezoneId}`);
+
+        // Save timezone to Firebase
+        saveTimezoneToTimezoneArrayList(timezoneId);
+
+        return timezoneId;
     } catch (error) {
-        Logger.log('An error occurred: ' + error.message);
+        Logger.log(`❌ Error in getTimeZoneFromLocation: ${error.message}`);
         return null;
     }
 }
+
 
 
 /**

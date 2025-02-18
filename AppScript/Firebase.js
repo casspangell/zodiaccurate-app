@@ -356,7 +356,7 @@ function saveTimezoneToFirebase(timezone, uuid, jsonData) {
     const options = {
         method: "put",
         contentType: "application/json",
-        payload: JSON.stringify(jsonData),
+        payload: JSON.stringify(timezone),
         headers: {
             Authorization: `Bearer ${token}`
         }
@@ -597,6 +597,7 @@ function getUserTimezone(uuid) {
         return null;
     }
 }
+
 
 
 /**
