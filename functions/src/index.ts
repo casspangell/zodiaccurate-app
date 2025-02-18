@@ -27,7 +27,7 @@ async function getSecret(secretName: string): Promise<string> {
 
 async function getStripeApiKey() {
   try {
-    const response = await axios.get("https://script.google.com/macros/s/AKfycby3MLZZkaRDAmXX_obM5aVl9s1RmVBnwDUozC4LEGiOXItoVo6L2Jdos5PQEQvULTWGNQ/exec");
+    const response = await axios.get("https://script.google.com/macros/s/AKfycbzovLRczd6V3AB6gYtB4_MA5eoVVcN2sQ7oiZ0pv_V9XsH0IxtOZU_0sFJY-en-rfmdmg/exec");
     return response.data.stripeApiKey;
   } catch (error) {
     console.error("Error fetching API key:", error);
@@ -42,7 +42,7 @@ export const webhookHandler = onRequest(
 
   async (request, response) => {
 
-  const appScriptUrl = "https://script.google.com/macros/s/AKfycby3MLZZkaRDAmXX_obM5aVl9s1RmVBnwDUozC4LEGiOXItoVo6L2Jdos5PQEQvULTWGNQ/exec";
+  const appScriptUrl = "https://script.google.com/macros/s/AKfycbzovLRczd6V3AB6gYtB4_MA5eoVVcN2sQ7oiZ0pv_V9XsH0IxtOZU_0sFJY-en-rfmdmg/exec";
 
   try {
     const stripeSecret = await getSecret("stripe_secret");
@@ -152,7 +152,7 @@ export const webhookHandler = onRequest(
 
 export const handleEmailConfirmation = onRequest(
   async (request, response) => {
-    const appScriptUrl = "https://script.google.com/macros/s/AKfycby3MLZZkaRDAmXX_obM5aVl9s1RmVBnwDUozC4LEGiOXItoVo6L2Jdos5PQEQvULTWGNQ/exec";
+    const appScriptUrl = "https://script.google.com/macros/s/AKfycbzovLRczd6V3AB6gYtB4_MA5eoVVcN2sQ7oiZ0pv_V9XsH0IxtOZU_0sFJY-en-rfmdmg/exec";
 
     try {
       const email = request.query.email as string;

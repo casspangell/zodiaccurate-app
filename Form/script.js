@@ -26,6 +26,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
     const progressContainer = document.querySelector(".progress-container");
 
+    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzovLRczd6V3AB6gYtB4_MA5eoVVcN2sQ7oiZ0pv_V9XsH0IxtOZU_0sFJY-en-rfmdmg/exec";
+
     let partnerCount = 1;
     let childCount = 0;
     let importantPersonCount = 0;
@@ -638,11 +640,36 @@ function collectFormData() {
         );
     }
 
+    async function sendToGoogleAppsScript(formDataObject) {
+        try {
+
+            formDataObject["source"] = "webForm";
+
+            const response = await fetch(GOOGLE_SCRIPT_URL, {
+                method: "POST",
+                mode: "no-cors",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(formDataObject)
+            });
+
+            console.log("Data sent successfully to Google Apps Script:", formDataObject);
+        } catch (error) {
+            console.error("Error sending data:", error);
+        }
+    }
+
     submitButton.addEventListener("click", function (event) {
-        event.preventDefault(); // Prevent actual form submission
+        event.preventDefault();
+
         let formDataObject = collectFormData();
-        formDataObject = removeEmptyValues(formDataObject); // Remove empty fields
-        console.log("Filtered Form Data:", formDataObject);
+        formDataObject = removeEmptyValues(formDataObject);
+
+        console.log("Filtered Form Data before sending:", formDataObject);
+
+        // Send data to Google Apps Script with "source": "webForm"
+        sendToGoogleAppsScript(formDataObject);
     });
 
 });

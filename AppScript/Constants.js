@@ -11,6 +11,7 @@ const STRIPE_WEBHOOK_SECRET = PropertiesService.getScriptProperties().getPropert
 const SHARED_SECRET = PropertiesService.getScriptProperties().getProperty("SHARED_SECRET");
 const STRIPE_LINK = "https://billing.stripe.com/p/login/8wM03Y1ic3ROau4000";
 const EDIT_RESPONSE_URL_PRIME = "https://docs.google.com/forms/d/e/1FAIpQLSexpPmDP1R22xUemGUIU3TaDNvSwZVO7c0NZ8bC9piTn-B9XQ/viewform?edit2=";
+const FIREBASE_PASSWORD = PropertiesService.getScriptProperties().getProperty("FIREBASE_PASSWORD");
 
 const PAUL_TEST = "2_ABaOnudBnBkwqlqnMUV9qS7zBUYoqPWaz1UyPeMW7GYOD2bPl2ZLYvQJ0UdU28kSvXtp_ZU";
 const CASS_TEST = "2_ABaOnuds5b7BPiDNl6ZUlev-eOWXNFLKBWrhPnT_Rdlji9mEhiuCX68uFMFZ8YdhMJ2pq9o";

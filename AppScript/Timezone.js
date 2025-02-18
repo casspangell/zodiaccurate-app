@@ -101,28 +101,38 @@ function getTimezonesAtTime(targetHour) {
  * @returns {Object|null} - An object containing UUIDs as keys and user data as values, or null if no data is found.
  */
 function fetchUUIDsForTimezone(time) {
-  const timezones = getTimezonesAtTime(time);
-  console.log("Timezones at 6 AM:", JSON.stringify(timezones, null, 2));
+    const timezones = getTimezonesAtTime(time);
+    console.log("Timezones at " + time + " AM:", JSON.stringify(timezones, null, 2));
 
-  if (Object.keys(timezones).length !== 0) {
-  // Fetch user data for these timezones
-  const uuids = getUUIDDataFromExecTimeTable(timezones);
-  console.log("UUIDs for Timezone:", JSON.stringify(uuids, null, 2));
-
-    // Process and store user UUIDs if data exists
-    if (uuids) {
-      const jsonData = {};
-      uuids.forEach((uuid) => {
-          const userData = getUserDataFromFirebase(uuids);
-          jsonData[uuid] = userData; 
-      });
-
-      return jsonData;
-    } else {
-      console.log("No users found for the given timezones.");
-      return null;
+    if (!Array.isArray(timezones) || timezones.length === 0) {
+        console.log("No matching timezones found.");
+        return null;
     }
-  }
 
+    // Fetch user UUIDs from Firebase for these timezones
+    const uuids = getUUIDDataFromExecTimeTable(timezones);
+    console.log("UUIDs for Timezone:", JSON.stringify(uuids, null, 2));
+
+    if (!Array.isArray(uuids) || uuids.length === 0) {
+        console.log("No users found for the given timezones.");
+        return null;
+    }
+
+    const jsonData = {};
+    uuids.forEach((uuid) => {
+        console.log("Processing UUID " + uuid + " for user data");
+        
+        // Fetch user data for this specific UUID
+        const userData = getUserDataFromUserTableFirebase(uuid);
+
+        if (userData && userData.email) {
+            jsonData[uuid] = userData;
+        } else {
+            console.log("Skipping UUID " + uuid + " due to missing email.");
+        }
+    });
+
+    return jsonData;
 }
+
 

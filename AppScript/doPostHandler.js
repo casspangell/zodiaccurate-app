@@ -23,7 +23,11 @@ function doPost(e) {
     // Extract email and name from the parsed data
     const email = data?.email;
     const name = data?.name;
-    const source = data?.source;
+    const source = data?.source?.trim();
+    console.log(`Extracted source (raw): '${data?.source}'`);
+    console.log(`Extracted source (trimmed): '${source}'`);
+    console.log(`Type of source: ${typeof source}`);
+
 
     console.log("Extracted email:", email);
     console.log("Extracted name:", name);
@@ -31,20 +35,21 @@ function doPost(e) {
 
     // Ensure both email and name are present
     if (!email || !name || !source) {
-      console.error("Missing email or name or source in the request payload.");
-      return ContentService.createTextOutput("Error: Missing email or name or source").setMimeType(ContentService.MimeType.TEXT);
+      console.error("Missing email, name, or source in the request payload.");
+      return ContentService.createTextOutput("Error: Missing email, name, or source")
+        .setMimeType(ContentService.MimeType.TEXT);
     }
 
-    if (source === "stripeWebhook") {
-        const confimationEmail = sendEmailConfirmationWithMailerSend(name, email);
-
-    } 
-
-    else if (source === "emailConfirmation") {
+    if (source === "stripewebhook") {
+      const confimationEmail = sendEmailConfirmationWithMailerSend(name, email);
+    } else if (source === "webform") {
+      console.log("Handling request from Web Form");
+      return onWebFormSubmitHandler(data);
+    } else if (source === "emailconfirmation") {
       console.log("Handling email confirmation:", email);
       // activateTrialForUser(email, name);
     } else {
-      console.warn("Unknown source:", source);
+      console.warn(`Unknown source: '${source}'`);
     }
 
     return ContentService.createTextOutput("Success").setMimeType(ContentService.MimeType.TEXT);

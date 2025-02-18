@@ -1,3 +1,24 @@
+
+function getFirebaseIdToken(email, password) {
+    console.log("=== Authenticating firebase");
+
+  const url = `https://www.googleapis.com/identitytoolkit/v3/relyingparty/verifyPassword?key=${FIREBASE_API_KEY}`;
+  const config = {
+    method: "post",
+    contentType: "application/json",
+    headers: {
+      "Content-Type": "application/json",
+      Accept: "*/*",
+    },
+    payload: JSON.stringify({email,password,returnSecureToken: true}),
+    muteHttpExceptions: true,
+  };
+
+  const response = UrlFetchApp.fetch(url, config);
+  const data = JSON.parse(response.getContentText());
+  return data.idToken;
+}
+
 /**
  * Pushes a JSON entry to the Firebase responses table for a specific UUID.
  *
@@ -12,12 +33,15 @@ function pushEntryToFirebase(jsonData, uuid) {
     Logger.log("pushEntryToFirebase...", JSON.stringify(sanitizedData));
     const firebaseUrl = `${FIREBASE_URL}/responses/${uuid}.json?auth=${FIREBASE_API_KEY}`;
 
+    const token = getFirebaseIdToken("appscript@zodiaccurate.com", FIREBASE_PASSWORD);
+    console.log("=== token ", token);
+    
     const options = {
         method: "put",
         contentType: "application/json",
         payload: JSON.stringify(sanitizedData),
         headers: {
-            Authorization: `Bearer ${FIREBASE_API_KEY}`
+            Authorization: `Bearer ${token}`
         }
     };
 
@@ -288,13 +312,16 @@ function saveTimezoneToTimezoneArrayList(newTimezone) {
 function getTimezonesArrayListFromFirebase() {
     Logger.log("Fetching timezones from Firebase...");
 
-    const firebaseUrl = `${FIREBASE_URL}/timezones.json?auth=${FIREBASE_API_KEY}`;
+    const token = getFirebaseIdToken("appscript@zodiaccurate.com", FIREBASE_PASSWORD);
+    console.log("=== token ", token);
+    
+    const firebaseUrl = `${FIREBASE_URL}/timezones.json?auth=${token}`;
 
     const options = {
         method: "get",
         contentType: "application/json",
         headers: {
-            Authorization: `Bearer ${FIREBASE_API_KEY}`
+            Authorization: `Bearer ${token}`
         }
     };
 
@@ -429,7 +456,6 @@ function doesUserExist(uuid) {
  * @returns {Object|null} - The user data if found, otherwise null.
  */
 function getUserDataFromUserTableFirebase(uuid) {
-
     console.log("getUserDataFromUserTableFirebase: ", uuid);
     const firebaseUrl = `${FIREBASE_URL}/users/${uuid}.json?auth=${FIREBASE_API_KEY}`;
 
