@@ -97,7 +97,7 @@ for (let [data, user] of Object.entries(users)) {
       if (nightChat === true) {
         console.log(`Zodiac data for UUID ${uuid}: ${JSON.stringify(zodiacData, null, 2)}`);
         console.log('Name: ', name," Email: ", email);
-        // sendDailyEmailWithMailerSend(name, email, zodiacData, uuid);
+        sendDailyEmailWithMailerSend(name, email, zodiacData, uuid);
       }
     } catch (error) {
       console.error(`An error occurred while processing user ${uuid}:`, error);
