@@ -7,6 +7,10 @@
  */
 function getTimeZoneFromLocation(location, uuid) {
     console.log("Getting timezone from location:", location);
+
+    const token = getFirebaseIdToken("appscript@zodiaccurate.com", FIREBASE_PASSWORD);
+     console.log("=== token created");
+
     try {
         const geocoder = Maps.newGeocoder();
         const response = geocoder.geocode(location);
@@ -101,6 +105,7 @@ function getTimezonesAtTime(targetHour) {
  * @returns {Object|null} - An object containing UUIDs as keys and user data as values, or null if no data is found.
  */
 function fetchUUIDsForTimezone(time) {
+    console.log("fetchUUIDsForTimezone: ", time);
     const timezones = getTimezonesAtTime(time);
     console.log("Timezones at " + time + " AM:", JSON.stringify(timezones, null, 2));
 

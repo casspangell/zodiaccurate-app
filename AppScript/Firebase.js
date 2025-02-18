@@ -1,23 +1,94 @@
 
+let cachedToken = null;
+let tokenExpirationTime = null;
+
 function getFirebaseIdToken(email, password) {
+    const now = new Date().getTime();
+    
+    // Use cached token if still valid
+    if (cachedToken && tokenExpirationTime > now) {
+        return cachedToken;
+    }
+
     console.log("=== Authenticating firebase");
 
-  const url = `https://www.googleapis.com/identitytoolkit/v3/relyingparty/verifyPassword?key=${FIREBASE_API_KEY}`;
-  const config = {
-    method: "post",
-    contentType: "application/json",
-    headers: {
-      "Content-Type": "application/json",
-      Accept: "*/*",
-    },
-    payload: JSON.stringify({email,password,returnSecureToken: true}),
-    muteHttpExceptions: true,
-  };
+    const url = `https://www.googleapis.com/identitytoolkit/v3/relyingparty/verifyPassword?key=${FIREBASE_API_KEY}`;
+    const config = {
+        method: "post",
+        contentType: "application/json",
+        headers: {
+            "Content-Type": "application/json",
+            Accept: "*/*",
+        },
+        payload: JSON.stringify({ email, password, returnSecureToken: true }),
+        muteHttpExceptions: true,
+    };
 
-  const response = UrlFetchApp.fetch(url, config);
-  const data = JSON.parse(response.getContentText());
-  return data.idToken;
+    const response = UrlFetchApp.fetch(url, config);
+    const data = JSON.parse(response.getContentText());
+
+    if (!data.idToken) {
+        Logger.log(`Firebase Authentication Error: ${JSON.stringify(data)}`);
+        return null;
+    }
+
+    // Cache the token and set expiration time
+    cachedToken = data.idToken;
+    tokenExpirationTime = now + (data.expiresIn * 1000) - 60000; // Refresh 1 minute before expiry
+
+    return cachedToken;
 }
+
+
+// function getFirebaseIdToken(email, password) {
+//     console.log("=== Authenticating firebase");
+
+//   const url = `https://www.googleapis.com/identitytoolkit/v3/relyingparty/verifyPassword?key=${FIREBASE_API_KEY}`;
+//   const config = {
+//     method: "post",
+//     contentType: "application/json",
+//     headers: {
+//       "Content-Type": "application/json",
+//       Accept: "*/*",
+//     },
+//     payload: JSON.stringify({email,password,returnSecureToken: true}),
+//     muteHttpExceptions: true,
+//   };
+
+//   const response = UrlFetchApp.fetch(url, config);
+//   const data = JSON.parse(response.getContentText());
+
+//   if (!data.idToken) {
+//         Logger.log(`Firebase Authentication Error: ${JSON.stringify(data)}`);
+//         return null;
+//     }
+
+//   return data.idToken;
+// }
+
+// function getFirebaseIdToken(email, password) {
+//     Logger.log("Authenticating Firebase...");
+
+//     const url = `https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${FIREBASE_API_KEY}`;
+//     const config = {
+//         method: "post",
+//         contentType: "application/json",
+//         payload: JSON.stringify({ email, password, returnSecureToken: true }),
+//         muteHttpExceptions: true
+//     };
+
+//     const response = UrlFetchApp.fetch(url, config);
+//     const data = JSON.parse(response.getContentText());
+
+//     if (!data.idToken) {
+//         Logger.log(`🔥 Firebase Authentication Failed: ${JSON.stringify(data)}`);
+//         return null;
+//     }
+
+//     Logger.log(`✅ New Firebase Token: ${data.idToken.substring(0, 10)}...`);
+//     return data.idToken;
+// }
+
 
 /**
  * Pushes a JSON entry to the Firebase responses table for a specific UUID.
@@ -27,14 +98,14 @@ function getFirebaseIdToken(email, password) {
  * @returns {boolean} - Returns true if the operation is successful, otherwise false.
  */
 function pushEntryToFirebase(jsonData, uuid) {
-    Logger.log("Sanitizing JSON before saving...");
+    Logger.log("pushEntryToFirebase Sanitizing JSON before saving...");
     const sanitizedData = sanitizeJsonKeys(jsonData); // Clean keys before saving
 
     Logger.log("pushEntryToFirebase...", JSON.stringify(sanitizedData));
     const firebaseUrl = `${FIREBASE_URL}/responses/${uuid}.json?auth=${FIREBASE_API_KEY}`;
 
     const token = getFirebaseIdToken("appscript@zodiaccurate.com", FIREBASE_PASSWORD);
-    console.log("=== token ", token);
+    console.log("=== token created");
     
     const options = {
         method: "put",
@@ -67,12 +138,16 @@ function saveUserToUserTableFirebase(uuid, jsonData) {
 
     Logger.log("saveUserToUserTableFirebase...", JSON.stringify(jsonData));
     const firebaseUrl = `${FIREBASE_URL}/users/${uuid}.json?auth=${FIREBASE_API_KEY}`;
+
+     const token = getFirebaseIdToken("appscript@zodiaccurate.com", FIREBASE_PASSWORD);
+     console.log("=== token created");
+
     const options = {
         method: "patch",
         contentType: "application/json",
         payload: JSON.stringify(jsonData),
         headers: {
-            Authorization: `Bearer ${FIREBASE_API_KEY}`
+            Authorization: `Bearer ${token}`
         }
     };
 
@@ -91,12 +166,16 @@ function saveEmailCampaignToFirebase(jsonData, uuid) {
       Logger.log("saveEmailCampaignToFirebase...", JSON.stringify(jsonData));
 
     const firebaseUrl = `${FIREBASE_URL}/trial_campaign/${uuid}.json?auth=${FIREBASE_API_KEY}`;
+
+ const token = getFirebaseIdToken("appscript@zodiaccurate.com", FIREBASE_PASSWORD);
+     console.log("=== token created");
+
     const options = {
         method: "patch",
         contentType: "application/json",
         payload: JSON.stringify(jsonData),
         headers: {
-            Authorization: `Bearer ${FIREBASE_API_KEY}`
+            Authorization: `Bearer ${token}`
         }
     };
 
@@ -115,11 +194,14 @@ function getEmailCampaignFromFirebase(uuid) {
       console.log("getEmailCampaignFromFirebase: ", uuid);
     const firebaseUrl = `${FIREBASE_URL}/trial_campaign/${uuid}.json?auth=${FIREBASE_API_KEY}`;
 
+    const token = getFirebaseIdToken("appscript@zodiaccurate.com", FIREBASE_PASSWORD);
+     console.log("=== token created");
+
     const options = {
         method: "get",
         headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${FIREBASE_API_KEY}`
+            Authorization: `Bearer ${token}`
         }
     };
 
@@ -157,7 +239,11 @@ function getEmailCampaignFromFirebase(uuid) {
  * @returns {void}
  */
 function updateExecTimeTable(uuid, timezone) {
+    console.log("updateExecTimeTable");
   const execTimeUrl = `${FIREBASE_URL}/exec_time.json?auth=${FIREBASE_API_KEY}`;
+  const token = getFirebaseIdToken("appscript@zodiaccurate.com", FIREBASE_PASSWORD);
+   console.log("=== token created");
+
   timezone = transformKeysToLowerCaseWithUnderscores(timezone);
 
   try {
@@ -165,7 +251,8 @@ function updateExecTimeTable(uuid, timezone) {
     const response = UrlFetchApp.fetch(execTimeUrl, {
       method: "get",
       headers: {
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`
       }
     });
     const execTimeData = JSON.parse(response.getContentText());
@@ -201,7 +288,8 @@ function updateExecTimeTable(uuid, timezone) {
       contentType: "application/json",
       payload: JSON.stringify(timezone),
       headers: {
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`
       }
     });
     Logger.log(`Added UUID: ${uuid} to timezone: ${timezone}`);
@@ -220,15 +308,18 @@ function updateExecTimeTable(uuid, timezone) {
  * @returns {boolean} - Returns true if the operation is successful, otherwise false.
  */
 function saveTimezoneToFirebase(timezone, uuid, jsonData) {
-    Logger.log("SAVING TIMEZONE ENTRY TO FIREBASE...", timezone);
+    Logger.log("saveTimezoneToFirebase", timezone);
     const updatedTimezone = replaceSlashesWithDashes(timezone); 
     const firebaseUrl = `${FIREBASE_URL}/exec_time/${updatedTimezone}/${uuid}.json?auth=${FIREBASE_API_KEY}`;
+    const token = getFirebaseIdToken("appscript@zodiaccurate.com", FIREBASE_PASSWORD);
+     console.log("=== token created");
+
     const options = {
         method: "put",
         contentType: "application/json",
         payload: JSON.stringify(jsonData),
         headers: {
-            Authorization: `Bearer ${FIREBASE_API_KEY}`
+            Authorization: `Bearer ${token}`
         }
     };
 
@@ -258,6 +349,8 @@ function saveTimezoneToFirebase(timezone, uuid, jsonData) {
  * @returns {boolean} - Returns true if the operation is successful, otherwise false.
  */
 function saveTimezoneToTimezoneArrayList(newTimezone) {
+    console.log("saveTimezoneToTimezoneArrayList");
+
     if (!newTimezone || typeof newTimezone !== "string") {
         Logger.log("Invalid timezone provided.");
         return false;
@@ -266,6 +359,8 @@ function saveTimezoneToTimezoneArrayList(newTimezone) {
     Logger.log(`Adding new timezone to Firebase: ${newTimezone}`);
 
     const firebaseUrl = `${FIREBASE_URL}/timezones.json?auth=${FIREBASE_API_KEY}`;
+    const token = getFirebaseIdToken("appscript@zodiaccurate.com", FIREBASE_PASSWORD);
+     console.log("=== token created");
 
     try {
         // Fetch existing timezones
@@ -291,7 +386,7 @@ function saveTimezoneToTimezoneArrayList(newTimezone) {
             contentType: "application/json",
             payload: JSON.stringify(existingTimezones), // Save the merged list
             headers: {
-                Authorization: `Bearer ${FIREBASE_API_KEY}`
+                Authorization: `Bearer ${token}`
             }
         };
 
@@ -310,10 +405,10 @@ function saveTimezoneToTimezoneArrayList(newTimezone) {
  * @returns {string[]} - An array of valid timezone strings.
  */
 function getTimezonesArrayListFromFirebase() {
-    Logger.log("Fetching timezones from Firebase...");
+    Logger.log("getTimezonesArrayListFromFirebase");
 
     const token = getFirebaseIdToken("appscript@zodiaccurate.com", FIREBASE_PASSWORD);
-    console.log("=== token ", token);
+     console.log("=== token created");
     
     const firebaseUrl = `${FIREBASE_URL}/timezones.json?auth=${token}`;
 
@@ -388,14 +483,17 @@ function getTimezonesArrayListFromFirebase() {
 
 
 function getUserTimezone(uuid) {
-    console.log("FETCHING USER TIMEZONE FOR UUID: ", uuid);
+    console.log("getUserTimezone: ", uuid);
     const firebaseUrl = `${FIREBASE_URL}/users/${uuid}/timezone.json?auth=${FIREBASE_API_KEY}`;
+
+    const token = getFirebaseIdToken("appscript@zodiaccurate.com", FIREBASE_PASSWORD);
+     console.log("=== token created");
 
     const options = {
         method: "get",
         headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${FIREBASE_API_KEY}`
+            Authorization: `Bearer ${token}`
         }
     };
 
@@ -424,14 +522,16 @@ function getUserTimezone(uuid) {
  * @returns {boolean} - Returns true if the user exists, otherwise false.
  */
 function doesUserExist(uuid) {
-    console.log("CHECKING IF USER EXISTS: ", uuid);
+    console.log("doesUserExist: ", uuid);
     const firebaseUrl = `${FIREBASE_URL}/users/${uuid}.json?auth=${FIREBASE_API_KEY}`;
+    const token = getFirebaseIdToken("appscript@zodiaccurate.com", FIREBASE_PASSWORD);
+     console.log("=== token created");
 
     const options = {
         method: "get",
         headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${FIREBASE_API_KEY}`
+            Authorization: `Bearer ${token}`
         }
     };
 
@@ -457,13 +557,16 @@ function doesUserExist(uuid) {
  */
 function getUserDataFromUserTableFirebase(uuid) {
     console.log("getUserDataFromUserTableFirebase: ", uuid);
-    const firebaseUrl = `${FIREBASE_URL}/users/${uuid}.json?auth=${FIREBASE_API_KEY}`;
+    const token = getFirebaseIdToken("appscript@zodiaccurate.com", FIREBASE_PASSWORD);
+     console.log("=== token created");
+
+     const firebaseUrl = `${FIREBASE_URL}/users/${uuid}.json?auth=${token}`;
 
     const options = {
         method: "get",
         headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${FIREBASE_API_KEY}`
+            Authorization: `Bearer ${token}`
         }
     };
 
@@ -487,10 +590,13 @@ function test()  {
 }
 
 function saveTrialUserToFirebase(email) {
-    Logger.log("SAVING TRIAL USER ENTRY TO FIREBASE...", email);
+    Logger.log("saveTrialUserToFirebase: ", email);
     var encodedEmail = email.replace(/@/g, "_at_").replace(/\./g, "_dot_");
 
     const firebaseUrl = `${FIREBASE_URL}/trial_users/${encodedEmail}.json?auth=${FIREBASE_API_KEY}`;
+    const token = getFirebaseIdToken("appscript@zodiaccurate.com", FIREBASE_PASSWORD);
+     console.log("=== token created");
+
     console.log(firebaseUrl);
     const today = new Date();
 
@@ -503,7 +609,7 @@ function saveTrialUserToFirebase(email) {
         contentType: "application/json",
         payload: JSON.stringify(userData),
         headers: {
-            Authorization: `Bearer ${FIREBASE_API_KEY}`
+            Authorization: `Bearer ${token}`
         }
     };
 
@@ -521,12 +627,14 @@ function getUserDataFromTrialUserTableFirebase(email) {
     console.log("getUserDataFromTrialUserTableFirebase:", email);
 
     const firebaseUrl = `${FIREBASE_URL}/users.json?auth=${FIREBASE_API_KEY}`;
+    const token = getFirebaseIdToken("appscript@zodiaccurate.com", FIREBASE_PASSWORD);
+     console.log("=== token created");
 
     const options = {
         method: "get",
         headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${FIREBASE_API_KEY}`
+            Authorization: `Bearer ${token}`
         }
     };
 
@@ -566,12 +674,14 @@ function getUserDataFromFirebase(uuid) {
     console.log("getUserDataFromFirebase: ", uuid);
 
     const firebaseUrl = `${FIREBASE_URL}/responses/${uuid}.json?auth=${FIREBASE_API_KEY}`;
+    const token = getFirebaseIdToken("appscript@zodiaccurate.com", FIREBASE_PASSWORD);
+     console.log("=== token created");
 
     const options = {
         method: "get",
         headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${FIREBASE_API_KEY}`
+            Authorization: `Bearer ${token}`
         }
     };
 
@@ -606,52 +716,79 @@ function getUserDataFromFirebase(uuid) {
  * @returns {string[]} - An array of unique UUIDs found for the specified timezones.
  */
 function getUUIDDataFromExecTimeTable(timezones) {
-    console.log(`getUUIDDataFromExecTimeTable(${timezones})`);
+    console.log(`getUUIDDataFromExecTimeTable(${JSON.stringify(timezones)})`);
+    
+    const token = getFirebaseIdToken("appscript@zodiaccurate.com", FIREBASE_PASSWORD);
+    if (!token) {
+        Logger.log("❌ Failed to authenticate with Firebase. Token is null.");
+        return [];
+    }
 
-    var uuidSet = new Set(); // Use a Set to avoid duplicate UUIDs
+    Logger.log("✅ Using Firebase Token: ");  // Log full token for debugging
 
-    // Iterate over each timezone in the array
+    var uuidSet = new Set();
+
     timezones.forEach((timezone) => {
-        const formattedTimezone = timezone.replace(/\//g, '-'); // Ensure Firebase format
-        const firebaseUrl = `${FIREBASE_URL}/exec_time/${formattedTimezone}.json?auth=${FIREBASE_API_KEY}`;
+        const formattedTimezone = timezone.toLowerCase().replace(/\//g, '_');
+        console.log(`Fetching UUIDs for timezone: ${formattedTimezone}`);
+
+        const firebaseUrl = `${FIREBASE_URL}/exec_time/${formattedTimezone}.json?auth=${token}`;
 
         const options = {
             method: "get",
             headers: {
                 "Content-Type": "application/json",
-                Authorization: `Bearer ${FIREBASE_API_KEY}`
+                Authorization: `Bearer ${token}`
             },
-            muteHttpExceptions: true // Avoid throwing errors for non-200 responses
+            muteHttpExceptions: true
         };
 
         try {
             const response = UrlFetchApp.fetch(firebaseUrl, options);
-            const uuidData = JSON.parse(response.getContentText());
+            const statusCode = response.getResponseCode();
+
+            if (statusCode !== 200) {
+                Logger.log(`🚨 Error fetching data for timezone ${formattedTimezone}: HTTP ${statusCode}`);
+                Logger.log(`🚨 Response Body: ${response.getContentText()}`);
+                return;
+            }
+
+            let uuidData;
+            try {
+                uuidData = JSON.parse(response.getContentText());
+            } catch (jsonError) {
+                Logger.log(`🚨 JSON Parse Error for ${formattedTimezone}: ${jsonError.message}`);
+                Logger.log(`🚨 Malformed JSON Response: ${response.getContentText()}`);
+                return;
+            }
 
             if (uuidData && typeof uuidData === "object") {
-                Object.keys(uuidData).forEach((uuid) => uuidSet.add(uuid)); // Add UUIDs to Set
+                Object.keys(uuidData).forEach((uuid) => uuidSet.add(uuid));
             }
         } catch (error) {
-            Logger.log(`Error retrieving data for timezone ${timezone}: ${error.message}`);
+            Logger.log(`❌ Error retrieving data for timezone ${formattedTimezone}: ${error.message}`);
         }
     });
 
-    const uuidArr = Array.from(uuidSet); // Convert Set to array
-    Logger.log(`UUIDs with data for timezones ${JSON.stringify(timezones)}: ${JSON.stringify(uuidArr)}`);
+    const uuidArr = Array.from(uuidSet);
+    Logger.log(`✅ UUIDs with data for timezones ${JSON.stringify(timezones)}: ${JSON.stringify(uuidArr)}`);
 
     return uuidArr;
 }
 
 
+
 function getUUIDDataFromTrialCampaignTable() {
-    console.log(`getting UUIDs from TrialCampaignTable`);
+    console.log(`getUUIDDataFromTrialCampaignTable`);
     const firebaseUrl = `${FIREBASE_URL}/trial_campaign/.json?auth=${FIREBASE_API_KEY}`;
+    const token = getFirebaseIdToken("appscript@zodiaccurate.com", FIREBASE_PASSWORD);
+     console.log("=== token created");
 
     const options = {
         method: "get",
         headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${FIREBASE_API_KEY}`
+            Authorization: `Bearer ${token}`
         },
         muteHttpExceptions: true // Avoid throwing errors for non-200 responses
     };
@@ -669,15 +806,17 @@ function getUUIDDataFromTrialCampaignTable() {
 }
 
 function deleteUUIDFromTrialCampaignTable(uuid) {
-  console.log(`Deleting UUID: ${uuid} from the trial_campaign table.`);
+  console.log(`deleteUUIDFromTrialCampaignTable: ${uuid}`);
 
   const firebaseUrl = `${FIREBASE_URL}/trial_campaign/${uuid}.json?auth=${FIREBASE_API_KEY}`;
+    const token = getFirebaseIdToken("appscript@zodiaccurate.com", FIREBASE_PASSWORD);
+     console.log("=== token created");
 
   const options = {
     method: "delete",
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${FIREBASE_API_KEY}`,
+      Authorization: `Bearer ${token}`,
     },
     muteHttpExceptions: true, // Avoid throwing errors for non-200 responses
   };
@@ -703,6 +842,7 @@ function deleteUUIDFromTrialCampaignTable(uuid) {
  * @returns {void}
  */
 function saveHoroscopeToFirebase(jsonData, uuid, tomorrow) {
+    console.log("saveHoroscopeToFirebase");
   const daysOfWeek = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
   const today = new Date();
 
@@ -718,12 +858,17 @@ function saveHoroscopeToFirebase(jsonData, uuid, tomorrow) {
   const sanitizedData = sanitizeKeys(jsonData);
 
   const firebaseUrl = `${FIREBASE_URL}/zodiac/${uuid}/${dayOfWeek}.json?auth=${FIREBASE_API_KEY}`;
+  const token = getFirebaseIdToken("appscript@zodiaccurate.com", FIREBASE_PASSWORD);
+   console.log("=== token created");
 
   const options = {
     method: "put",
     contentType: "application/json",
     payload: JSON.stringify(sanitizedData[0]),
     muteHttpExceptions: true, // Moved here to make the options object self-contained
+    headers: {
+        Authorization: `Bearer ${token}`
+    }
   };
 
   try {
@@ -742,12 +887,24 @@ function saveHoroscopeToFirebase(jsonData, uuid, tomorrow) {
  * @returns {Object|null} - The zodiac data for today if found, otherwise null.
  */
 function getZodiacDataForToday(uuid) {
-    console.log("Getting zodiac data for today for uuid: ", uuid);
+    console.log("getZodiacDataForToday: ", uuid);
+    const token = getFirebaseIdToken("appscript@zodiaccurate.com", FIREBASE_PASSWORD);
+
   // Firebase URL to the zodiac table using the provided UUID
-  const url = `${FIREBASE_URL}/zodiac/${uuid}.json?auth=${FIREBASE_API_KEY}`;
+  const url = `${FIREBASE_URL}/zodiac/${uuid}.json?auth=${token}`;
+   console.log("=== token created");
+
+  const options = {
+        method: "GET",
+        contentType: "application/json",
+        headers: {
+            Authorization: `Bearer ${token}`
+        }
+    };
+
   try {
 
-    const response = UrlFetchApp.fetch(url);
+    const response = UrlFetchApp.fetch(url, options);
     const data = JSON.parse(response.getContentText());
 
     // Get the current day of the week
@@ -768,10 +925,20 @@ function getZodiacDataForToday(uuid) {
 }
 
 function getZodiacDataForTomorrow(uuid) {
-    uuid = TEST_USER;
-  console.log("Getting zodiac data for tomorrow");
+  console.log("getZodiacDataForTomorrow");
   // Firebase URL to the zodiac table using the provided UUID
   const url = `${FIREBASE_URL}/zodiac/${uuid}.json?auth=${FIREBASE_API_KEY}`;
+    const token = getFirebaseIdToken("appscript@zodiaccurate.com", FIREBASE_PASSWORD);
+     console.log("=== token created");
+
+    const options = {
+        method: "get",
+        contentType: "application/json",
+        headers: {
+            Authorization: `Bearer ${token}`
+        }
+    };
+
   try {
     const response = UrlFetchApp.fetch(url);
     const data = JSON.parse(response.getContentText());
@@ -800,49 +967,49 @@ function getZodiacDataForTomorrow(uuid) {
  * @param {string} uuid - The unique identifier for the user.
  * @returns {Object|null} - An object containing data for the last three days if found, otherwise null.
  */
-function getThreeDaysDataFromFirebase(uuid) {
-    console.log("getThreeDaysDataFromFirebase");
-    const firebaseUrl = `${FIREBASE_URL}/zodiac/${uuid}.json?auth=${FIREBASE_API_KEY}`;
+// function getThreeDaysDataFromFirebase(uuid) {
+//     console.log("getThreeDaysDataFromFirebase");
+//     const firebaseUrl = `${FIREBASE_URL}/zodiac/${uuid}.json?auth=${FIREBASE_API_KEY}`;
 
-    const options = {
-        method: "GET",
-        contentType: "application/json",
-        headers: {
-            Authorization: `Bearer ${FIREBASE_API_KEY}`
-        }
-    };
+//     const options = {
+//         method: "GET",
+//         contentType: "application/json",
+//         headers: {
+//             Authorization: `Bearer ${FIREBASE_API_KEY}`
+//         }
+//     };
 
-    try {
-        const response = UrlFetchApp.fetch(firebaseUrl, options);
-        const data = JSON.parse(response.getContentText());
-        const daysOfTheWeekData = {};
+//     try {
+//         const response = UrlFetchApp.fetch(firebaseUrl, options);
+//         const data = JSON.parse(response.getContentText());
+//         const daysOfTheWeekData = {};
 
-        if (data) {
-            Logger.log("Data retrieved for UUID: " + uuid);
+//         if (data) {
+//             Logger.log("Data retrieved for UUID: " + uuid);
 
-            const daysOfWeek = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
-            const today = new Date();
-            let dayIndex = today.getDay();
+//             const daysOfWeek = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
+//             const today = new Date();
+//             let dayIndex = today.getDay();
 
-            // Get the last 3 days' data
-            for (let i = 1; i <= 3; i++) {
-                dayIndex = (dayIndex - 1 + 7) % 7; // Calculate previous day index
-                const day = daysOfWeek[dayIndex];
-                if (data.hasOwnProperty(day)) {
-                    daysOfTheWeekData[day] = data[day];
-                    Logger.log(day + ": " + JSON.stringify(data[day]));
-                } else {
-                    Logger.log(day + ": No data available.");
-                }
-            }
+//             // Get the last 3 days' data
+//             for (let i = 1; i <= 3; i++) {
+//                 dayIndex = (dayIndex - 1 + 7) % 7; // Calculate previous day index
+//                 const day = daysOfWeek[dayIndex];
+//                 if (data.hasOwnProperty(day)) {
+//                     daysOfTheWeekData[day] = data[day];
+//                     Logger.log(day + ": " + JSON.stringify(data[day]));
+//                 } else {
+//                     Logger.log(day + ": No data available.");
+//                 }
+//             }
 
-            return daysOfTheWeekData;
-        } else {
-            Logger.log("No three days days found for UUID: " + uuid);
-            return null;
-        }
-    } catch (e) {
-        Logger.log("Error retrieving data from Firebase: " + e.message);
-        return null;
-    }
-}
+//             return daysOfTheWeekData;
+//         } else {
+//             Logger.log("No three days days found for UUID: " + uuid);
+//             return null;
+//         }
+//     } catch (e) {
+//         Logger.log("Error retrieving data from Firebase: " + e.message);
+//         return null;
+//     }
+// }
