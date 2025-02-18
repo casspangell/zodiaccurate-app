@@ -51,35 +51,23 @@ function onFormSubmitHandler(e) {
 
         if (!answer) continue; // Skip empty answers
 
-        switch (question) {
-            case "name":
-                timezoneJson["name"] = answer;
-                userData["name"] = answer;
-                name = answer;
-                break;
-
-            case "email":
-                timezoneJson["email"] = answer;
-                userData["email"] = answer;
-                email = answer;
-                break;
-
-            case "your current location":
-                Logger.log(`🌍 Fetching timezone for location: ${answer}`);
-                timezone = getTimeZoneFromLocation(answer, uuid);
-                if (!timezone) {
-                    Logger.log(`❌ Failed to determine timezone for location: ${answer}`);
-                } else {
-                    jsonData["timezone"] = timezone;
-                    userData["timezone"] = replaceSlashesWithDashes(timezone);
-                    Logger.log(`✅ Timezone determined: ${timezone}`);
-                }
-                break;
-
-            default:
-                jsonData[question] = answer;
-                break;
+        if (question === "name") {
+            userData["name"] = answer;
+            name = answer;
         }
+
+        if (question === "email") {
+            userData["email"] = answer;
+            email = answer;
+        }
+
+        if (question === "your current location") {
+            timezone = getTimeZoneFromLocation(answer, uuid);
+            userData["timezone"] = replaceSlashesWithDashes(timezone);
+            console.log("🌍 Updating Timezone: ", timezone);
+        }
+
+        jsonData[question] = answer;
     }
 
     // Validate extracted data
@@ -121,7 +109,7 @@ function onFormSubmitHandler(e) {
             Logger.log("✅ New User Saved in Firebase.");
             welcomeChatGPT(jsonData, uuid);
             setUpEmailCampaign(jsonData, uuid, name, email);
-            sendWelcomeEmailWithMailerSend(uuid, name, responseUrl, email);
+            sendWelcomeEmailWithMailerSend(name, responseUrl, email);
         } else {
             Logger.log("❌ Failed to save new user in Firebase.");
         }

@@ -197,10 +197,10 @@ function saveUserToUserTableFirebase(uuid, jsonData) {
 function saveEmailCampaignToFirebase(jsonData, uuid) {
       Logger.log("saveEmailCampaignToFirebase...", JSON.stringify(jsonData));
 
-    const firebaseUrl = `${FIREBASE_URL}/trial_campaign/${uuid}.json?auth=${FIREBASE_API_KEY}`;
-
  const token = getFirebaseIdToken("appscript@zodiaccurate.com", FIREBASE_PASSWORD);
      console.log("=== token created");
+
+    const firebaseUrl = `${FIREBASE_URL}/trial_campaign/${uuid}.json?auth=${FIREBASE_API_KEY}`;
 
     const options = {
         method: "patch",
@@ -427,12 +427,16 @@ function saveTimezoneToTimezoneArrayList(newTimezone) {
 
         let existingTimezones = JSON.parse(response.getContentText());
 
+        // Ensure it's an array; otherwise, initialize as an empty array
         if (!Array.isArray(existingTimezones)) {
-            existingTimezones = []; // Initialize as an empty array if missing
+            existingTimezones = [];
         }
 
+        // Remove all null and undefined values
+        existingTimezones = existingTimezones.filter(tz => tz !== null && tz !== undefined);
+
         // Ensure newTimezone is added only if it's not already in the array
-        if (!existingTimezones.includes(newTimezone)) {
+        if (newTimezone && !existingTimezones.includes(newTimezone)) {
             existingTimezones.push(newTimezone);
         }
 

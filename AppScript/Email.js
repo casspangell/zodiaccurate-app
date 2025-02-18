@@ -21,10 +21,16 @@ async function sendEmail(apiUrl, emailData) {
 }
 
 async function sendWelcomeEmailWithMailerSend(clientName, editResponseUrl, email) {
-  console.log("sendWelcomeEmailWithMailerSend");
+  console.log("sendWelcomeEmailWithMailerSend clientName: ", clientName, " editResponseUrl: ",editResponseUrl," email: ",email);
   if (!clientName || !email || !editResponseUrl) {
     throw new Error("Missing required parameters for welcome email.");
   }
+
+    // Validate Email
+    if (!email || !email.includes("@")) {
+        Logger.log(`❌ Invalid email detected: ${email}`);
+        return false;
+    }
 
   const emailHtml = `
   <!DOCTYPE html>
