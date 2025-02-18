@@ -87,8 +87,9 @@ function onFormSubmitHandler(e) {
   }
   
     const formattedTimezone = replaceSlashesWithDashes(timezone);
+    console.log("formattedTimezone: ", formattedTimezone);
     updateExecTimeTable(uuid, formattedTimezone);
-    saveTimezoneToFirebase(formattedTimezone);
+    saveTimezoneToFirebase(formattedTimezone, uuid, jsonData);
 }
 
 function onWebFormSubmitHandler(e) {

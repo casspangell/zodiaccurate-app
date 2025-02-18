@@ -137,32 +137,62 @@ function pushEntryToFirebase(jsonData, uuid) {
  * @returns {boolean} - Returns true if the operation is successful, otherwise false.
  */
 function saveUserToUserTableFirebase(uuid, jsonData) {
+    Logger.log("🚀 saveUserToUserTableFirebase...");
+    
+    // Validate input
+    if (!uuid || typeof uuid !== "string") {
+        Logger.log("❌ Invalid UUID provided.");
+        return false;
+    }
+    
+    if (!jsonData || typeof jsonData !== "object") {
+        Logger.log("❌ Invalid user data provided.");
+        return false;
+    }
+    
+    // Authenticate and retrieve token
+    const token = getFirebaseIdToken("appscript@zodiaccurate.com", FIREBASE_PASSWORD);
+    if (!token) {
+        Logger.log("❌ Firebase Authentication Failed.");
+        return false;
+    }
+    Logger.log("✅ Firebase Token Retrieved");
 
-    Logger.log("saveUserToUserTableFirebase...", JSON.stringify(jsonData));
-    const firebaseUrl = `${FIREBASE_URL}/users/${uuid}.json?auth=${FIREBASE_API_KEY}`;
+    // Construct Firebase URL
+    const firebaseUrl = `${FIREBASE_URL}/users/${uuid}.json?auth=${token}`;
+    Logger.log(`🔥 Firebase PATCH Request URL: ${firebaseUrl}`);
 
-     const token = getFirebaseIdToken("appscript@zodiaccurate.com", FIREBASE_PASSWORD);
-     console.log("=== token created");
-
+    // Request Options
     const options = {
         method: "patch",
         contentType: "application/json",
         payload: JSON.stringify(jsonData),
         headers: {
             Authorization: `Bearer ${token}`
-        }
+        },
+        muteHttpExceptions: true
     };
 
     try {
+        // Send PATCH request
         const response = UrlFetchApp.fetch(firebaseUrl, options);
-        Logger.log("Entry successfully saved to Firebase.");
-        Logger.log("Response: " + response.getContentText());
-        return true;
-    } catch (e) {
-        Logger.log("Error saving entry to Firebase: " + e.message);
+        const statusCode = response.getResponseCode();
+        const responseBody = response.getContentText();
+
+        if (statusCode === 200) {
+            Logger.log("✅ Entry successfully saved to Firebase.");
+            Logger.log("🔥 Response: " + responseBody);
+            return true;
+        } else {
+            Logger.log(`❌ Firebase PATCH Failed. HTTP ${statusCode}: ${responseBody}`);
+            return false;
+        }
+    } catch (error) {
+        Logger.log(`❌ Error saving entry to Firebase: ${error.message}`);
         return false;
     }
 }
+
 
 function saveEmailCampaignToFirebase(jsonData, uuid) {
       Logger.log("saveEmailCampaignToFirebase...", JSON.stringify(jsonData));
@@ -241,65 +271,70 @@ function getEmailCampaignFromFirebase(uuid) {
  * @returns {void}
  */
 function updateExecTimeTable(uuid, timezone) {
-    console.log("updateExecTimeTable");
-  const execTimeUrl = `${FIREBASE_URL}/exec_time.json?auth=${FIREBASE_API_KEY}`;
-  const token = getFirebaseIdToken("appscript@zodiaccurate.com", FIREBASE_PASSWORD);
-   console.log("=== token created");
-
-  timezone = transformKeysToLowerCaseWithUnderscores(timezone);
-
-  try {
-    // Fetch the entire exec_time table
-    const response = UrlFetchApp.fetch(execTimeUrl, {
-      method: "get",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`
-      }
-    });
-    const execTimeData = JSON.parse(response.getContentText());
-
-    // Check all timezones for the UUID
-    let uuidFound = false;
-    Object.keys(execTimeData || {}).forEach((tz) => {
-      tz = transformKeysToLowerCaseWithUnderscores(tz);
-
-      if (execTimeData[tz] && execTimeData[tz][uuid]) {
-        uuidFound = true;
-
-        // Delete the UUID from the timezone
-        const deleteUrl = `${FIREBASE_URL}/exec_time/${tz}/${uuid}.json?auth=${FIREBASE_API_KEY}`;
-        UrlFetchApp.fetch(deleteUrl, {
-          method: "delete",
-          headers: {
-            "Content-Type": "application/json"
-          }
-        });
-        Logger.log(`Deleted UUID: ${uuid} from timezone: ${tz}`);
-      }
-    });
-
-    if (!uuidFound) {
-      Logger.log(`UUID: ${uuid} not found in any timezone column.`);
+    console.log("updateExecTimeTable started for UUID:", uuid, "Timezone:", timezone);
+    
+    const token = getFirebaseIdToken("appscript@zodiaccurate.com", FIREBASE_PASSWORD);
+    if (!token) {
+        Logger.log("Firebase Authentication Failed. Token is null or undefined.");
+        return;
     }
 
-    // Add the UUID to the specified timezone column
-    const addUrl = `${FIREBASE_URL}/exec_time/${timezone}/${uuid}.json?auth=${FIREBASE_API_KEY}`;
-    UrlFetchApp.fetch(addUrl, {
-      method: "put",
-      contentType: "application/json",
-      payload: JSON.stringify(timezone),
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`
-      }
-    });
-    Logger.log(`Added UUID: ${uuid} to timezone: ${timezone}`);
+    console.log("Firebase Token Retrieved");
+    const execTimeUrl = `${FIREBASE_URL}/exec_time.json?auth=${token}`;
 
-  } catch (error) {
-    Logger.log(`Error updating exec_time table: ${error.message}`);
-  }
+    timezone = transformKeysToLowerCaseWithUnderscores(timezone);
+    Logger.log(`Transformed Timezone: ${timezone}`);
+
+    try {
+        Logger.log("Fetching existing timezones from Firebase...");
+        const execTimeData = getTimezonesArrayListFromFirebase();
+        
+        if (!execTimeData || typeof execTimeData !== "object") {
+            Logger.log("Error: Retrieved invalid exec_time data.");
+            return;
+        }
+
+        Logger.log(`Fetched Exec Time Data: ${JSON.stringify(execTimeData, null, 2)}`);
+
+        // Check all timezones for the UUID and remove if exists
+        let uuidFound = false;
+        Object.keys(execTimeData).forEach((tz) => {
+            if (execTimeData[tz] && execTimeData[tz][uuid]) {
+                uuidFound = true;
+                const deleteUrl = `${FIREBASE_URL}/exec_time/${tz}/${uuid}.json?auth=${token}`;
+                
+                Logger.log(`Deleting UUID ${uuid} from timezone ${tz}`);
+                
+                const deleteResponse = UrlFetchApp.fetch(deleteUrl, {
+                    method: "delete",
+                    headers: { "Content-Type": "application/json" }
+                });
+
+                Logger.log(`Delete Response (${tz}): ${deleteResponse.getResponseCode()} - ${deleteResponse.getContentText()}`);
+            }
+        });
+
+        if (!uuidFound) {
+            Logger.log(`UUID: ${uuid} not found in any existing timezone.`);
+        }
+
+        // Add the UUID to the specified timezone column
+        const addUrl = `${FIREBASE_URL}/exec_time/${timezone}/${uuid}.json?auth=${token}`;
+        Logger.log(`Adding UUID ${uuid} to timezone ${timezone}`);
+
+        const addResponse = UrlFetchApp.fetch(addUrl, {
+            method: "put",
+            contentType: "application/json",
+            payload: JSON.stringify({ timezone }), // Save as an object
+        });
+
+        Logger.log(`Add Response: ${addResponse.getResponseCode()} - ${addResponse.getContentText()}`);
+
+    } catch (error) {
+        Logger.log(`Error updating exec_time table: ${error.message}`);
+    }
 }
+
 
 /**
  * Saves a timezone entry to the Firebase exec_time table for a specific UUID.
@@ -310,10 +345,12 @@ function updateExecTimeTable(uuid, timezone) {
  * @returns {boolean} - Returns true if the operation is successful, otherwise false.
  */
 function saveTimezoneToFirebase(timezone, uuid, jsonData) {
-    Logger.log("saveTimezoneToFirebase", timezone);
-    const updatedTimezone = replaceSlashesWithDashes(timezone); 
-    const firebaseUrl = `${FIREBASE_URL}/exec_time/${updatedTimezone}/${uuid}.json?auth=${FIREBASE_API_KEY}`;
+    Logger.log("saveTimezoneToFirebase timezone: ", timezone," uuid: ", uuid, " data: ", jsonData);
+    const updatedTimezone = transformKeysToLowerCaseWithUnderscores(timezone); 
     const token = getFirebaseIdToken("appscript@zodiaccurate.com", FIREBASE_PASSWORD);
+    console.log("=== token created");
+    const firebaseUrl = `${FIREBASE_URL}/exec_time/${updatedTimezone}/${uuid}.json?auth=${token}`;
+
      console.log("=== token created");
 
     const options = {
@@ -329,7 +366,7 @@ function saveTimezoneToFirebase(timezone, uuid, jsonData) {
         const response = UrlFetchApp.fetch(firebaseUrl, options);
         saveTimezoneToTimezoneArrayList(updatedTimezone);
 
-        Logger.log("Entry saved: " + response.getContentText());
+        Logger.log("Timezone Entry saved: " + response.getContentText());
         return true;
     } catch (e) {
         Logger.log("Error saving entry to Firebase: " + e.message);
@@ -367,7 +404,7 @@ function saveTimezoneToTimezoneArrayList(newTimezone) {
     }
     console.log("=== Firebase token created");
 
-    const firebaseUrl = `${FIREBASE_URL}/timezones.json?auth=${FIREBASE_API_KEY}`;
+    const firebaseUrl = `${FIREBASE_URL}/timezones.json?auth=${token}`;
 
     try {
         // Fetch existing timezones with authentication
@@ -505,33 +542,58 @@ function getTimezonesArrayListFromFirebase() {
 
 
 function getUserTimezone(uuid) {
-    console.log("getUserTimezone: ", uuid);
-    const firebaseUrl = `${FIREBASE_URL}/users/${uuid}/timezone.json?auth=${FIREBASE_API_KEY}`;
+    Logger.log("🌍 Fetching timezone for UUID: " + uuid);
 
+    // Validate input
+    if (!uuid || typeof uuid !== "string") {
+        Logger.log("❌ Invalid UUID provided.");
+        return null;
+    }
+
+    // Authenticate and retrieve token
     const token = getFirebaseIdToken("appscript@zodiaccurate.com", FIREBASE_PASSWORD);
-     console.log("=== token created");
+    if (!token) {
+        Logger.log("❌ Firebase Authentication Failed.");
+        return null;
+    }
+    Logger.log("✅ Firebase Token Retrieved");
 
+    // Construct Firebase URL
+    const firebaseUrl = `${FIREBASE_URL}/users/${uuid}/timezone.json?auth=${token}`;
+    Logger.log(`🔥 Firebase GET Request URL: ${firebaseUrl}`);
+
+    // Request Options
     const options = {
         method: "get",
         headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`
-        }
+        },
+        muteHttpExceptions: true
     };
 
     try {
-        const response = UrlFetchApp.fetch(firebaseUrl, { ...options, muteHttpExceptions: true });
-        const timezone = JSON.parse(response.getContentText());
+        // Send GET request
+        const response = UrlFetchApp.fetch(firebaseUrl, options);
+        const statusCode = response.getResponseCode();
+        const responseBody = response.getContentText();
 
-        if (!timezone) {
-            Logger.log("No timezone found for UUID: " + uuid);
+        if (statusCode !== 200) {
+            Logger.log(`❌ Firebase GET Failed. HTTP ${statusCode}: ${responseBody}`);
             return null;
         }
 
-        console.log("User's timezone: ", timezone);
-        return timezone; // Return the timezone
-    } catch (e) {
-        Logger.log("Error retrieving timezone for UUID " + uuid + ": " + e.message);
+        // Parse response
+        const timezone = JSON.parse(responseBody);
+        if (!timezone || typeof timezone !== "string") {
+            Logger.log(`⚠️ No valid timezone found for UUID: ${uuid}`);
+            return null;
+        }
+
+        Logger.log(`✅ User's timezone retrieved: ${timezone}`);
+        return timezone;
+    } catch (error) {
+        Logger.log(`❌ Error retrieving timezone for UUID ${uuid}: ${error.message}`);
         return null;
     }
 }
@@ -545,8 +607,9 @@ function getUserTimezone(uuid) {
  */
 function doesUserExist(uuid) {
     console.log("doesUserExist: ", uuid);
-    const firebaseUrl = `${FIREBASE_URL}/users/${uuid}.json?auth=${FIREBASE_API_KEY}`;
+    
     const token = getFirebaseIdToken("appscript@zodiaccurate.com", FIREBASE_PASSWORD);
+    const firebaseUrl = `${FIREBASE_URL}/users/${uuid}.json?auth=${token}`;
      console.log("=== token created");
 
     const options = {
@@ -615,8 +678,9 @@ function saveTrialUserToFirebase(email) {
     Logger.log("saveTrialUserToFirebase: ", email);
     var encodedEmail = email.replace(/@/g, "_at_").replace(/\./g, "_dot_");
 
-    const firebaseUrl = `${FIREBASE_URL}/trial_users/${encodedEmail}.json?auth=${FIREBASE_API_KEY}`;
     const token = getFirebaseIdToken("appscript@zodiaccurate.com", FIREBASE_PASSWORD);
+    const firebaseUrl = `${FIREBASE_URL}/trial_users/${encodedEmail}.json?auth=${token}`;
+    
      console.log("=== token created");
 
     console.log(firebaseUrl);
@@ -637,7 +701,7 @@ function saveTrialUserToFirebase(email) {
 
     try {
         const response = UrlFetchApp.fetch(firebaseUrl, options);
-        Logger.log("Entry saved: " + response.getContentText());
+        Logger.log("Trial User Entry saved: " + response.getContentText());
         return true;
     } catch (e) {
         Logger.log("Error saving entry to Firebase: " + e.message);
