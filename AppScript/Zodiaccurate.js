@@ -79,12 +79,6 @@ for (let [data, user] of Object.entries(users)) {
         }
       }
 
-      // If zodiac data is still null, log and continue to next user
-      if (zodiacData == null) {
-        console.error(`Failed to generate zodiac data for UUID ${uuid}, skipping email.`);
-        continue;
-      }
-
       // Proceed if zodiac data exists and the nightly chat runs successfully
       const nightChat = await nightlyChatGPT(uuid, user);
 
