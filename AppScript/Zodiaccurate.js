@@ -30,69 +30,70 @@ async function runZodiaccurate() {
 
   Logger.log(JSON.stringify(users, null, 2));
 
-// Iterate over the object keys and values
-for (let [data, user] of Object.entries(users)) {
-    let email = user.email;
-    let name = user.name;
-    let editUrl = user.editURL || null; // Ensure the correct key
+for (const uuid of Object.keys(users)) {
+    let user = users[uuid];
+    let email = user?.email || null;
+    let name = user?.name || null;
     let userData = null;
 
-    // Ensure editUrl exists before splitting
-    if (editUrl) {
-        const uuidExtracted = editUrl.includes("edit2=") ? editUrl.split("edit2=")[1] : null;
-        if (uuidExtracted) {
-            uuid = uuidExtracted; // Update UUID if extracted
-        } else {
-            Logger.log(`Malformed editURL for UUID: ${uuid}`);
-            continue;
-        }
-    } else {
-        Logger.log(`Missing editURL for UUID: ${uuid}`);
-    }
+    Logger.log(`🔍 Checking user: ${uuid}`);
 
     // If email or name is missing, fetch from Firebase
     if (!name || !email) {
-        userData = getUserDataFromUserTableFirebase(uuid);
-        if (userData) {
-            email = userData.email || email;
-            name = userData.name || name;
-        } else {
-            Logger.log(`User data not found in Firebase for UUID: ${uuid}`);
+        try {
+            userData = getUserDataFromUserTableFirebase(uuid);
+            if (userData) {
+                email = userData.email || email;
+                name = userData.name || name;
+                Logger.log(`✅ Fetched user data from Firebase: ${name}, ${email}`);
+            } else {
+                Logger.log(`⚠️ User data not found in Firebase for UUID: ${uuid}`);
+                continue; // Skip user if essential data is missing
+            }
+        } catch (error) {
+            Logger.log(`❌ Error fetching user data from Firebase for UUID: ${uuid} - ${error.message}`);
             continue;
         }
     }
 
-    Logger.log(`Processing user: ${name}, Email: ${email}, UUID: ${uuid}`);
+    Logger.log(`🚀 Processing user: ${name}, Email: ${email}, UUID: ${uuid}`);
 
     try {
-      // Attempt to get today's Zodiac data
-      let zodiacData = await getZodiacDataForToday(uuid);
+        // Step 1: Fetch Zodiac Data
+        let zodiacData = await getZodiacDataForToday(uuid);
 
-      // If no data exists, create today's horoscope
-      if (zodiacData == null) {
-        console.log(`No zodiac data found for UUID ${uuid}, generating new horoscope.`);
-        const horoscopeCreated = await createTodaysHoroscopeChatGPT(uuid, user);
+        // Step 2: If no data exists, generate today's horoscope
+        if (!zodiacData) {
+            Logger.log(`📝 No zodiac data found for UUID ${uuid}, generating new horoscope.`);
+            const horoscopeCreated = await createTodaysHoroscopeChatGPT(uuid, user);
 
-        if (horoscopeCreated) {
-          // Fetch the newly created horoscope
-          zodiacData = await getZodiacDataForToday(uuid);
+            if (horoscopeCreated) {
+                Logger.log(`✅ Horoscope created for UUID ${uuid}, fetching new data.`);
+                zodiacData = await getZodiacDataForToday(uuid);
+            } else {
+                Logger.log(`❌ Failed to generate horoscope for UUID ${uuid}`);
+            }
         }
-      }
 
-      // Proceed if zodiac data exists and the nightly chat runs successfully
-      const nightChat = await nightlyChatGPT(uuid, user);
+        // Step 3: Run Nightly Chat (Parallel Execution with `Promise.all()`)
+        const [nightChat] = await Promise.all([
+            nightlyChatGPT(uuid, user)
+        ]);
 
-      if (nightChat === true) {
-        console.log(`Zodiac data for UUID ${uuid}: ${JSON.stringify(zodiacData, null, 2)}`);
-        console.log('Name: ', name," Email: ", email);
-        sendDailyEmailWithMailerSend(name, email, zodiacData, uuid);
-      }
+        // Step 4: If all required data exists, send email
+        if (zodiacData && nightChat) {
+            Logger.log(`📩 Sending daily email for UUID ${uuid}: Name: ${name}, Email: ${email}`);
+            sendDailyEmailWithMailerSend(name, email, zodiacData, uuid);
+        } else {
+            Logger.log(`⚠️ Skipping email for UUID ${uuid} due to missing data`);
+        }
     } catch (error) {
-      console.error(`An error occurred while processing user ${uuid}:`, error);
+        Logger.log(`❌ Error processing user ${uuid}: ${error.message}`);
     }
-  }
+}
 
-  console.log("Zodiaccurate processing complete.");
+Logger.log("✅ Zodiaccurate processing complete.");
+
 }
 
 
