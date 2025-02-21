@@ -131,7 +131,7 @@ async function sendWelcomeEmailWithMailerSend(clientName, editResponseUrl, email
 }
 
 async function sendDailyEmailWithMailerSend(clientName, email, prompt, uuid) {
-  console.log("sendDailyEmailWithMailerSend clientName ", clientName," email ", email, " prompt ", prompt, " uuid ", uuid);
+  console.log("sendDailyEmailWithMailerSend clientName ", clientName," email ", email, " uuid ", uuid);
 
   if (!clientName || !email || !prompt) {
     throw new Error("Missing required parameters for daily email.");
@@ -264,7 +264,7 @@ async function sendDailyEmailWithMailerSend(clientName, email, prompt, uuid) {
     subject: "Zodiaccurate Daily Guidance",
     html: emailHtml,
   };
-console.log("EMAIL: ",emailHtml);
+  
   return await sendEmail(MAILER_SEND_URL, emailData);
 }
 
@@ -462,7 +462,6 @@ async function sendTrialCampaignEmailWithMailerSend(name, email, prompt, subject
 </html>
 `;
 
-console.log("Trial Email Content ", emailHtml);
 console.log("Email: ", email, " Name: ", name, " Subject: ", subject);
   // Email payload
   const emailData = {

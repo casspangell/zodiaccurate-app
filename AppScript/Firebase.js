@@ -858,8 +858,8 @@ function getUUIDDataFromExecTimeTable(timezones) {
 
 function getUUIDDataFromTrialCampaignTable() {
     console.log(`getUUIDDataFromTrialCampaignTable`);
-    const firebaseUrl = `${FIREBASE_URL}/trial_campaign/.json?auth=${FIREBASE_API_KEY}`;
     const token = getFirebaseIdToken("appscript@zodiaccurate.com", FIREBASE_PASSWORD);
+    const firebaseUrl = `${FIREBASE_URL}/trial_campaign/.json?auth=${token}`;
 
     const options = {
         method: "get",
@@ -884,15 +884,13 @@ function getUUIDDataFromTrialCampaignTable() {
 
 function deleteUUIDFromTrialCampaignTable(uuid) {
   console.log(`deleteUUIDFromTrialCampaignTable: ${uuid}`);
-
-  const firebaseUrl = `${FIREBASE_URL}/trial_campaign/${uuid}.json?auth=${FIREBASE_API_KEY}`;
-    const token = getFirebaseIdToken("appscript@zodiaccurate.com", FIREBASE_PASSWORD);
+  const token = getFirebaseIdToken("appscript@zodiaccurate.com", FIREBASE_PASSWORD);
+  const firebaseUrl = `${FIREBASE_URL}/trial_campaign/${uuid}.json?auth=${token}`;
 
   const options = {
     method: "delete",
     headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json"
     },
     muteHttpExceptions: true, // Avoid throwing errors for non-200 responses
   };

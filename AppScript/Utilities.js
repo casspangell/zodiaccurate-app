@@ -68,7 +68,6 @@ function sanitizeJsonKeys(jsonData) {
  * @returns {Object|Array|string} - Transformed data with corrected keys or strings.
  */
 function transformKeysToLowerCaseWithUnderscores(inputJson) {
-    console.log("Original Input Data:", JSON.stringify(inputJson, null, 2));
 
     if (typeof inputJson === "string") {
         // Handle strings like "Asia/Calcutta" → "Asia_Calcutta"
@@ -109,7 +108,6 @@ function transformKeysToLowerCaseWithUnderscores(inputJson) {
 
             transformedObject[transformedKey] = inputJson[key];
         }
-        console.log("Transformed Object Data:", JSON.stringify(transformedObject, null, 2));
         return transformedObject;
     } 
     
