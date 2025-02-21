@@ -267,5 +267,42 @@ function getTomorrowDay() {
   return tomorrowDay;
 }
 
+// Returns
+// {
+//     "firstName": "Paul Fletcher",
+//     "partnerName": "Sau",
+//     "childrenNames": ["Elice"],
+//     "importantPersonNames": ["John Doe", "Jane Smith"]
+// }
+function getUserNames(jsonSinglePersonData) {
+    let userNames = {};
+
+    // Retrieve User's First Name
+    userNames["firstName"] = jsonSinglePersonData["name"] || "User";
+
+    // Retrieve Partner's Name
+    userNames["partnerName"] = jsonSinglePersonData["partner_name"] || "";
+
+    // Retrieve Children's Names (Handles multiple children dynamically)
+    let childrenNames = [];
+    let childIndex = 1;
+    while (jsonSinglePersonData[`child_${childIndex}_first_name`]) {
+        childrenNames.push(jsonSinglePersonData[`child_${childIndex}_first_name`].trim());
+        childIndex++;
+    }
+    userNames["childrenNames"] = childrenNames.length > 0 ? childrenNames : [];
+
+    // Retrieve Important People's Names (Modify if structure changes)
+    let importantPeopleNames = [];
+    let importantPersonIndex = 1;
+    while (jsonSinglePersonData[`important_person_${importantPersonIndex}_name`]) {
+        importantPeopleNames.push(jsonSinglePersonData[`important_person_${importantPersonIndex}_name`].trim());
+        importantPersonIndex++;
+    }
+    userNames["importantPersonNames"] = importantPeopleNames.length > 0 ? importantPeopleNames : [];
+
+    return userNames;
+}
+
 
 
