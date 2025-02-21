@@ -705,9 +705,8 @@ function saveTrialUserToFirebase(email) {
 
 function getUserDataFromTrialUserTableFirebase(email) {
     console.log("getUserDataFromTrialUserTableFirebase:", email);
-
-    const firebaseUrl = `${FIREBASE_URL}/users.json?auth=${FIREBASE_API_KEY}`;
     const token = getFirebaseIdToken("appscript@zodiaccurate.com", FIREBASE_PASSWORD);
+    const firebaseUrl = `${FIREBASE_URL}/users.json?auth=${token}`;
 
     const options = {
         method: "get",
@@ -752,8 +751,8 @@ function getUserDataFromTrialUserTableFirebase(email) {
 function getUserDataFromFirebase(uuid) {
     console.log("getUserDataFromFirebase: ", uuid);
 
-    const firebaseUrl = `${FIREBASE_URL}/responses/${uuid}.json?auth=${FIREBASE_API_KEY}`;
     const token = getFirebaseIdToken("appscript@zodiaccurate.com", FIREBASE_PASSWORD);
+    const firebaseUrl = `${FIREBASE_URL}/responses/${uuid}.json?auth=${token}`;
 
     const options = {
         method: "get",
