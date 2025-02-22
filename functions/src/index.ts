@@ -7,6 +7,7 @@ import { initializeApp } from 'firebase-admin/app';
 import { getDatabase } from "firebase-admin/database";
 import { Request, Response } from "express";
 import cors from "cors";
+import { v4 as uuidv4 } from "uuid";
 
 const client = new SecretManagerServiceClient();
 let stripeInstance: stripe.Stripe | null = null;
@@ -360,11 +361,11 @@ export const handleFormSubmission = onRequest(async (request: Request, response:
                 return;
             }
 
-            // Encode email to use as Firebase key (replace @ and .)
-            const encodedEmail = formData.email.replace(/[@.]/g, "_");
+            // Generate a new UUID for this submission
+            const submissionId = uuidv4();
 
-            // Save to Firebase under "form_submissions/{encodedEmail}"
-            const formRef = db.ref(`form_submissions/${encodedEmail}`);
+            // Save to Firebase under "form_submissions/{submissionId}"
+            const formRef = db.ref(`form_submissions/${submissionId}`);
             await formRef.set({ ...formData, timestamp: new Date().toISOString() });
 
             logger.info("✅ Data saved to Firebase successfully!");
