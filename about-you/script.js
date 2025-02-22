@@ -26,7 +26,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
     const progressContainer = document.querySelector(".progress-container");
 
-    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzovLRczd6V3AB6gYtB4_MA5eoVVcN2sQ7oiZ0pv_V9XsH0IxtOZU_0sFJY-en-rfmdmg/exec";
     const FIREBASE_FUNCTIONS_URL = "https://handleformsubmission-feti3ggk7q-uc.a.run.app";
 
     let partnerCount = 1;
@@ -60,6 +59,18 @@ document.addEventListener("DOMContentLoaded", function () {
         10: "important_people",
         11: "final"
     };
+
+    // const buttons = document.querySelectorAll("button");
+
+    // buttons.forEach(button => {
+    //     button.removeEventListener("click", handleButtonClick);
+    //     button.addEventListener("click", handleButtonClick, { once: true });
+    // });
+
+    // function handleButtonClick(event) {
+    //     event.preventDefault();
+    //     console.log(`Button clicked: ${event.target.textContent}`);
+    // }
 
     // Load saved form data from localStorage
     let formData = JSON.parse(localStorage.getItem("formData")) || {};
@@ -191,27 +202,27 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
     // Validate all required fields on "Save & Continue" click
-    document.getElementById("saveContinueBtn").addEventListener("click", function () {
-        const currentSection = document.querySelector(".section.active");
-        const requiredFields = currentSection.querySelectorAll("input[required], select[required], textarea[required]");
-        let isValid = true;
+    // document.getElementById("saveContinueBtn").addEventListener("click", function () {
+    //     const currentSection = document.querySelector(".section.active");
+    //     const requiredFields = currentSection.querySelectorAll("input[required], select[required], textarea[required]");
+    //     let isValid = true;
 
-        requiredFields.forEach(field => {
-            if (!field.value.trim()) {
-                isValid = false;
-                field.classList.add("error");
-                validateTextField(field);
-            } else {
-                field.classList.remove("error");
-            }
-        });
+    //     requiredFields.forEach(field => {
+    //         if (!field.value.trim()) {
+    //             isValid = false;
+    //             field.classList.add("error");
+    //             validateTextField(field);
+    //         } else {
+    //             field.classList.remove("error");
+    //         }
+    //     });
 
-        if (isValid) {
-            saveFormData();
-        } else {
-            alert("Please fill out all required fields before continuing.");
-        }
-    });
+    //     if (isValid) {
+    //         saveFormData();
+    //     } else {
+    //         alert("Please fill out all required fields before continuing.");
+    //     }
+    // });
 
     function updateProgressBar(index) {
         const steps = document.querySelectorAll(".step");
@@ -305,6 +316,7 @@ printSectionsWithVisibility();
 
     nextButtons.forEach((button) => {
         button.addEventListener("click", function () {
+            console.log(`Button clicked`);
             if (!validateSection()) {
                 alert("Please fill out all required fields before continuing.");
                 return;
@@ -660,22 +672,22 @@ function collectFormData() {
 
         console.log("Filtered Form Data before sending:", formDataObject);
 
-        // try {
-        //     const response = await fetch(FIREBASE_FUNCTIONS_URL, {
-        //         method: "POST",
-        //         headers: { "Content-Type": "application/json" },
-        //         body: JSON.stringify(formDataObject),
-        //     });
+        try {
+            const response = await fetch(FIREBASE_FUNCTIONS_URL, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(formDataObject),
+            });
 
-        //     const result = await response.json();
-        //     console.log("Server Response:", result);
-        //     alert(result.message || "Form submitted successfully!");
-
-        // } catch (error) {
-        //     console.error("Error submitting form:", error);
-        //     alert("There was an error submitting the form.");
-        // }
+            const result = await response.json();
+            console.log("Server Response:", result);
+            alert(result.message || "Form submitted successfully!");
+        } catch (error) {
+            console.error("Error submitting form:", error);
+            alert("There was an error submitting the form.");
+        }
     });
+
 
 });
 

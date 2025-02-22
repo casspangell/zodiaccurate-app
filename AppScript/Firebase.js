@@ -389,14 +389,11 @@ function saveTimezoneToTimezoneArrayList(newTimezone) {
         return false;
     }
 
-    Logger.log(`Adding new timezone to Firebase: ${newTimezone}`);
-
     const token = getFirebaseIdToken("appscript@zodiaccurate.com", FIREBASE_PASSWORD);
     if (!token) {
         Logger.log("Failed to authenticate with Firebase.");
         return false;
     }
-    console.log("=== Firebase token created");
 
     const firebaseUrl = `${FIREBASE_URL}/timezones.json?auth=${token}`;
 
@@ -433,8 +430,6 @@ function saveTimezoneToTimezoneArrayList(newTimezone) {
         if (newTimezone && !existingTimezones.includes(newTimezone)) {
             existingTimezones.push(newTimezone);
         }
-
-        Logger.log(`Updated timezones: ${JSON.stringify(existingTimezones)}`);
 
         // Save the updated array back to Firebase with authentication
         const putOptions = {
@@ -486,8 +481,6 @@ function getTimezonesArrayListFromFirebase() {
         
             // Convert all to lowercase and replace slashes with underscores
             timezones = timezones.map(tz => replaceSlashesWithDashes(tz));
-
-            Logger.log(`Cleaned timezones: ${JSON.stringify(timezones)}`);
             return timezones;
         } else {
             Logger.log("Invalid or empty timezone data retrieved.");

@@ -14,6 +14,10 @@ let stripeInstance: stripe.Stripe | null = null;
 
 const app = initializeApp();
 const db = getDatabase(app);
+// Allow only https://zodiaccurate.app (or use "*" for all origins)
+const corsHandler = cors({ origin: "https://zodiaccurate.app" });
+
+const appScriptUrl = "https://script.google.com/macros/s/AKfycbw4lQLoxN_Uq6HQEar2cJkp_dxTjy6yY-J3sH2LQuC4bhvVxlqQ9h1IW8i-0jei0a01gg/exec";
 
 // Retrieve secret from Google Cloud Secret Manager
 async function getSecret(secretName: string): Promise<string> {
@@ -30,7 +34,7 @@ async function getSecret(secretName: string): Promise<string> {
 
 async function getStripeApiKey() {
   try {
-    const response = await axios.get("https://script.google.com/macros/s/AKfycbzovLRczd6V3AB6gYtB4_MA5eoVVcN2sQ7oiZ0pv_V9XsH0IxtOZU_0sFJY-en-rfmdmg/exec");
+    const response = await axios.get(appScriptUrl);
     return response.data.stripeApiKey;
   } catch (error) {
     console.error("Error fetching API key:", error);
@@ -44,8 +48,6 @@ export const webhookHandler = onRequest(
   { rawBody: true } as any, // Cast to bypass type issues
 
   async (request, response) => {
-
-  const appScriptUrl = "https://script.google.com/macros/s/AKfycbzovLRczd6V3AB6gYtB4_MA5eoVVcN2sQ7oiZ0pv_V9XsH0IxtOZU_0sFJY-en-rfmdmg/exec";
 
   try {
     const stripeSecret = await getSecret("stripe_secret");
@@ -155,7 +157,6 @@ export const webhookHandler = onRequest(
 
 export const handleEmailConfirmation = onRequest(
   async (request, response) => {
-    const appScriptUrl = "https://script.google.com/macros/s/AKfycbzovLRczd6V3AB6gYtB4_MA5eoVVcN2sQ7oiZ0pv_V9XsH0IxtOZU_0sFJY-en-rfmdmg/exec";
 
     try {
       const email = request.query.email as string;
@@ -344,48 +345,96 @@ export const handleEmailConfirmation = onRequest(
 
 // Handle Form Submission
 export const handleFormSubmission = onRequest(async (request: Request, response: Response) => {
-  const appScriptUrl = "https://script.google.com/macros/s/AKfycbzovLRczd6V3AB6gYtB4_MA5eoVVcN2sQ7oiZ0pv_V9XsH0IxtOZU_0sFJY-en-rfmdmg/exec";
-    try {
-        // Enable CORS
-        cors()(request, response, async () => {
-            if (request.method !== "POST") {
-                response.status(405).send("Method Not Allowed");
-                return;
-            }
-
-            const formData = request.body; // Get form data
-            logger.info("Received form submission:", formData);
-
-            if (!formData.email || !formData.name) {
-                response.status(400).send("Error: Missing required fields (email or name).");
-                return;
-            }
-
-            // Generate a new UUID for this submission
-            const submissionId = uuidv4();
-
-            // Save to Firebase under "form_submissions/{submissionId}"
-            const formRef = db.ref(`form_submissions/${submissionId}`);
-            await formRef.set({ ...formData, timestamp: new Date().toISOString() });
-
-            logger.info("✅ Data saved to Firebase successfully!");
-
-            // Send the data to Google Apps Script
-            try {
-                const appScriptResponse = await axios.post(appScriptUrl, formData, {
-                    headers: { "Content-Type": "application/json" },
-                });
-
-                logger.info("✅ Data sent to Google Apps Script successfully!", appScriptResponse.data);
-                response.status(200).json({ message: "Form submitted successfully!", data: formData });
-
-            } catch (error: any) {
-                logger.error("❌ Error sending data to Google Apps Script:", error.message);
-                response.status(500).json({ message: "Error sending data to Google Apps Script", error: error.message });
-            }
-        });
-    } catch (error: any) {
-        logger.error("❌ Error processing form submission:", error.message);
-        response.status(500).send("Internal Server Error");
+  logger.log("Firebase Function Triggered");
+  corsHandler(request, response, async () => {
+    if (request.method !== "POST") {
+      response.status(405).send("Method Not Allowed");
+      return;
     }
+
+    const submissionId = uuidv4();
+    const formData = request.body;
+    formData.submissionId = submissionId;
+    const payload = { formData,
+      "source": "intakeForm",
+      "uuid": submissionId,
+      "email": formData.email,
+      "name": formData.name
+    };
+
+    logger.info(payload);
+
+    try {
+      const appScriptResponse = await axios.post(appScriptUrl, payload, {
+        headers: { "Content-Type": "application/json" },
+      });
+      logger.info("Apps Script response:", appScriptResponse.data);
+      response.status(200).json(appScriptResponse.data);
+    } catch (error: any) {
+      logger.error(error.message);
+      response.status(500).send("Internal Server Error");
+    }
+  });
 });
+
+
+
+// // Handle Form Submission
+// export const handleFormSubmission = onRequest(async (request: Request, response: Response) => {
+//   const appScriptUrl = "https://script.google.com/macros/s/AKfycbzovLRczd6V3AB6gYtB4_MA5eoVVcN2sQ7oiZ0pv_V9XsH0IxtOZU_0sFJY-en-rfmdmg/exec";
+//     try {
+//         // Enable CORS
+//         cors()(request, response, async () => {
+//             if (request.method !== "POST") {
+//                 response.status(405).send("Method Not Allowed");
+//                 return;
+//             }
+
+//             const formData = request.body; // Get form data
+//             logger.info("Received form submission:", formData);
+
+//             if (!formData.email || !formData.name) {
+//                 response.status(400).send("Error: Missing required fields (email or name).");
+//                 return;
+//             }
+
+//             // Generate a new UUID for this submission
+//             const submissionId = uuidv4();
+
+//             // // Save to Firebase under "form_submissions/{submissionId}"
+//             // const formRef = db.ref(`form_submissions/${submissionId}`);
+//             // await formRef.set({ ...formData, timestamp: new Date().toISOString() });
+
+//             // logger.info("✅ Data saved to Firebase successfully!");
+
+//             // // Send the data to Google Apps Script
+//             // try {
+//             //     const appScriptResponse = await axios.post(appScriptUrl, formData, {
+//             //         headers: { "Content-Type": "application/json" },
+//             //     });
+
+//             //     logger.info("✅ Data sent to Google Apps Script successfully!", appScriptResponse.data);
+//             //     response.status(200).json({ message: "Form submitted successfully!", data: formData });
+
+//             // } catch (error: any) {
+//             //     logger.error("❌ Error sending data to Google Apps Script:", error.message);
+//             //     response.status(500).json({ message: "Error sending data to Google Apps Script", error: error.message });
+//             // }
+
+//             // Add the identifier to your formData payload
+//             formData.webhook_source = "firebase";
+
+//             axios.post(webAppUrl, formData)
+//               .then(response => {
+//                 res.status(200).send("Apps Script triggered successfully: " + response.data);
+//               })
+//               .catch(error => {
+//                 res.status(500).send("Error triggering Apps Script: " + error);
+//               });
+//             });
+
+//     } catch (error: any) {
+//         logger.error("❌ Error processing form submission:", error.message);
+//         response.status(500).send("Internal Server Error");
+//     }
+// });

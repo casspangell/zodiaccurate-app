@@ -72,7 +72,6 @@ function transformKeysToLowerCaseWithUnderscores(inputJson) {
     if (typeof inputJson === "string") {
         // Handle strings like "Asia/Calcutta" → "Asia_Calcutta"
         const transformedString = inputJson.toLowerCase().replace(/\//g, "_");
-        console.log("Transformed String:", transformedString);
         return transformedString;
     } 
     
