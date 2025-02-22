@@ -872,7 +872,7 @@ function getUUIDDataFromTrialCampaignTable() {
     try {
         const response = UrlFetchApp.fetch(firebaseUrl, options);
         const uuidData = JSON.parse(response.getContentText());
-        Logger.log(`UUIDs with data: ${JSON.stringify(uuidData)}`);
+        Logger.log(`UUIDs with data: ${Object.keys(uuidData)}`);
         return uuidData;
 
     } catch (error) {
@@ -996,8 +996,9 @@ function getZodiacDataForToday(uuid) {
 function getZodiacDataForTomorrow(uuid) {
   console.log("getZodiacDataForTomorrow");
   // Firebase URL to the zodiac table using the provided UUID
-  const url = `${FIREBASE_URL}/zodiac/${uuid}.json?auth=${FIREBASE_API_KEY}`;
-    const token = getFirebaseIdToken("appscript@zodiaccurate.com", FIREBASE_PASSWORD);
+      const token = getFirebaseIdToken("appscript@zodiaccurate.com", FIREBASE_PASSWORD);
+  const url = `${FIREBASE_URL}/zodiac/${uuid}.json?auth=${token}`;
+
 
     const options = {
         method: "get",
@@ -1035,49 +1036,51 @@ function getZodiacDataForTomorrow(uuid) {
  * @param {string} uuid - The unique identifier for the user.
  * @returns {Object|null} - An object containing data for the last three days if found, otherwise null.
  */
-// function getThreeDaysDataFromFirebase(uuid) {
-//     console.log("getThreeDaysDataFromFirebase");
-//     const firebaseUrl = `${FIREBASE_URL}/zodiac/${uuid}.json?auth=${FIREBASE_API_KEY}`;
+function getThreeDaysDataFromFirebase(uuid) {
+    console.log("getThreeDaysDataFromFirebase");
+  const token = getFirebaseIdToken("appscript@zodiaccurate.com", FIREBASE_PASSWORD);
+    const firebaseUrl = `${FIREBASE_URL}/zodiac/${uuid}.json?auth=${token}`;
 
-//     const options = {
-//         method: "GET",
-//         contentType: "application/json",
-//         headers: {
-//             Authorization: `Bearer ${FIREBASE_API_KEY}`
-//         }
-//     };
+    const options = {
+        method: "GET",
+        contentType: "application/json",
+        headers: {
+            Authorization: `Bearer ${token}`
+        }
+    };
 
-//     try {
-//         const response = UrlFetchApp.fetch(firebaseUrl, options);
-//         const data = JSON.parse(response.getContentText());
-//         const daysOfTheWeekData = {};
+    try {
+        const response = UrlFetchApp.fetch(firebaseUrl, options);
+        const data = JSON.parse(response.getContentText());
+        const daysOfTheWeekData = {};
 
-//         if (data) {
-//             Logger.log("Data retrieved for UUID: " + uuid);
+        if (data) {
+            Logger.log("Data retrieved for UUID: " + uuid);
 
-//             const daysOfWeek = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
-//             const today = new Date();
-//             let dayIndex = today.getDay();
+            const daysOfWeek = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
+            const today = new Date();
+            let dayIndex = today.getDay();
 
-//             // Get the last 3 days' data
-//             for (let i = 1; i <= 3; i++) {
-//                 dayIndex = (dayIndex - 1 + 7) % 7; // Calculate previous day index
-//                 const day = daysOfWeek[dayIndex];
-//                 if (data.hasOwnProperty(day)) {
-//                     daysOfTheWeekData[day] = data[day];
-//                     Logger.log(day + ": " + JSON.stringify(data[day]));
-//                 } else {
-//                     Logger.log(day + ": No data available.");
-//                 }
-//             }
+            // Get the last 3 days' data
+            for (let i = 1; i <= 3; i++) {
+                dayIndex = (dayIndex - 1 + 7) % 7; // Calculate previous day index
+                const day = daysOfWeek[dayIndex];
+                if (data.hasOwnProperty(day)) {
+                    daysOfTheWeekData[day] = data[day];
+                    console.log("Retrieved data for: ", daysOfTheWeekData[day]);
+                    // Logger.log(day + ": " + JSON.stringify(data[day]));
+                } else {
+                    Logger.log(day + ": No data available.");
+                }
+            }
 
-//             return daysOfTheWeekData;
-//         } else {
-//             Logger.log("No three days days found for UUID: " + uuid);
-//             return null;
-//         }
-//     } catch (e) {
-//         Logger.log("Error retrieving data from Firebase: " + e.message);
-//         return null;
-//     }
-// }
+            return daysOfTheWeekData;
+        } else {
+            Logger.log("No three days days found for UUID: " + uuid);
+            return null;
+        }
+    } catch (e) {
+        Logger.log("Error retrieving data from Firebase: " + e.message);
+        return null;
+    }
+}

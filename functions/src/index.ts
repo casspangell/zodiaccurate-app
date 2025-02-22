@@ -5,6 +5,8 @@ import { SecretManagerServiceClient } from "@google-cloud/secret-manager";
 import axios from "axios";
 import { initializeApp } from 'firebase-admin/app';
 import { getDatabase } from "firebase-admin/database";
+import { Request, Response } from "express";
+import cors from "cors";
 
 const client = new SecretManagerServiceClient();
 let stripeInstance: stripe.Stripe | null = null;
@@ -338,3 +340,51 @@ export const handleEmailConfirmation = onRequest(
     }
   }
 );
+
+// Handle Form Submission
+export const handleFormSubmission = onRequest(async (request: Request, response: Response) => {
+  const appScriptUrl = "https://script.google.com/macros/s/AKfycbzovLRczd6V3AB6gYtB4_MA5eoVVcN2sQ7oiZ0pv_V9XsH0IxtOZU_0sFJY-en-rfmdmg/exec";
+    try {
+        // Enable CORS
+        cors()(request, response, async () => {
+            if (request.method !== "POST") {
+                response.status(405).send("Method Not Allowed");
+                return;
+            }
+
+            const formData = request.body; // Get form data
+            logger.info("Received form submission:", formData);
+
+            if (!formData.email || !formData.name) {
+                response.status(400).send("Error: Missing required fields (email or name).");
+                return;
+            }
+
+            // Encode email to use as Firebase key (replace @ and .)
+            const encodedEmail = formData.email.replace(/[@.]/g, "_");
+
+            // Save to Firebase under "form_submissions/{encodedEmail}"
+            const formRef = db.ref(`form_submissions/${encodedEmail}`);
+            await formRef.set({ ...formData, timestamp: new Date().toISOString() });
+
+            logger.info("✅ Data saved to Firebase successfully!");
+
+            // Send the data to Google Apps Script
+            try {
+                const appScriptResponse = await axios.post(appScriptUrl, formData, {
+                    headers: { "Content-Type": "application/json" },
+                });
+
+                logger.info("✅ Data sent to Google Apps Script successfully!", appScriptResponse.data);
+                response.status(200).json({ message: "Form submitted successfully!", data: formData });
+
+            } catch (error: any) {
+                logger.error("❌ Error sending data to Google Apps Script:", error.message);
+                response.status(500).json({ message: "Error sending data to Google Apps Script", error: error.message });
+            }
+        });
+    } catch (error: any) {
+        logger.error("❌ Error processing form submission:", error.message);
+        response.status(500).send("Internal Server Error");
+    }
+});

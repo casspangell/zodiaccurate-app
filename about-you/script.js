@@ -27,6 +27,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const progressContainer = document.querySelector(".progress-container");
 
     const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzovLRczd6V3AB6gYtB4_MA5eoVVcN2sQ7oiZ0pv_V9XsH0IxtOZU_0sFJY-en-rfmdmg/exec";
+    const FIREBASE_FUNCTIONS_URL = "https://handleformsubmission-feti3ggk7q-uc.a.run.app";
 
     let partnerCount = 1;
     let childCount = 0;
@@ -640,27 +641,38 @@ function collectFormData() {
         );
     }
 
-    async function sendToGoogleAppsScript(formDataObject) {
-        try {
+    function collectFormData() {
+        const formData = new FormData(form);
+        const dataObject = {};
 
-            formDataObject["source"] = "webForm";
+        formData.forEach((value, key) => {
+            dataObject[key] = value;
+        });
 
-            const response = await fetch(GOOGLE_SCRIPT_URL, {
-                method: "POST",
-                mode: "no-cors",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify(formDataObject)
-            });
-
-            console.log("Data sent successfully to Google Apps Script:", formDataObject);
-        } catch (error) {
-            console.error("Error sending data:", error);
-        }
+        return dataObject;
     }
 
-    submitButton.addEventListener("click", function (event) {
+    // async function sendToGoogleAppsScript(formDataObject) {
+    //     try {
+
+    //         formDataObject["source"] = "webForm";
+
+    //         const response = await fetch(GOOGLE_SCRIPT_URL, {
+    //             method: "POST",
+    //             mode: "no-cors",
+    //             headers: {
+    //                 "Content-Type": "application/json"
+    //             },
+    //             body: JSON.stringify(formDataObject)
+    //         });
+
+    //         console.log("Data sent successfully to Google Apps Script:", formDataObject);
+    //     } catch (error) {
+    //         console.error("Error sending data:", error);
+    //     }
+    // }
+
+    submitButton.addEventListener("click", async function (event) {
         event.preventDefault();
 
         let formDataObject = collectFormData();
@@ -668,8 +680,21 @@ function collectFormData() {
 
         console.log("Filtered Form Data before sending:", formDataObject);
 
-        // Send data to Google Apps Script with "source": "webForm"
-        sendToGoogleAppsScript(formDataObject);
+        try {
+            const response = await fetch(FIREBASE_FUNCTIONS_URL, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(formDataObject),
+            });
+
+            const result = await response.json();
+            console.log("Server Response:", result);
+            alert(result.message || "Form submitted successfully!");
+
+        } catch (error) {
+            console.error("Error submitting form:", error);
+            alert("There was an error submitting the form.");
+        }
     });
 
 });
