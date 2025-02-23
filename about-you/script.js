@@ -1,61 +1,8 @@
 const FIREBASE_FUNCTIONS_URL = "https://handleformsubmission-feti3ggk7q-uc.a.run.app";
 const FIREBASE_GET_DATA_URL = "https://handleformdataretrieval-feti3ggk7q-uc.a.run.app";
 
-async function fetchData() {
-  const uuid = getUUIDFromUrl();
-  try {
-    const response = await fetch(`${FIREBASE_GET_DATA_URL}?uuid=${encodeURIComponent(uuid)}`, {
-      method: "GET",
-      headers: { "Content-Type": "application/json" },
-    });
-    const result = await response.json();
-    populateFormFields(result);
-    updateLocalStorageWithData(result);
-    console.log("Server Response:", result);
-  } catch (error) {
-    console.error("Error fetching data:", error);
-  }
-}
 
-function populateFormFields(data) {
-  // Loop through each key-value pair in the data object.
-  Object.entries(data).forEach(([fieldId, value]) => {
-    // Find the element with the given id.
-    const field = document.getElementById(fieldId);
-    if (field) {
-      // If it's an input, textarea, or select, set its value.
-      if (
-        field instanceof HTMLInputElement ||
-        field instanceof HTMLTextAreaElement ||
-        field instanceof HTMLSelectElement
-      ) {
-        field.value = value;
-      } else {
-        // Otherwise, update its text content.
-        field.textContent = value;
-      }
-    }
-  });
-}
-
-// Overwrite local storage data with the new data.
-function updateLocalStorageWithData(data) {
-  Object.entries(data).forEach(([key, value]) => {
-    // If value is an object, store it as JSON; otherwise, store the string representation.
-    localStorage.setItem(key, typeof value === "object" ? JSON.stringify(value) : value);
-  });
-}
-
-function getUUIDFromUrl() {
-  // window.location.search returns a string like "?5dee1b8e-a2f5-4613-8655-f9667561cead"
-  const query = window.location.search;
-  if (query && query.length > 1) {
-    return query.substring(1);
-  }
-  return null;
-}
-
-document.addEventListener("DOMContentLoaded", fetchData);
+// document.addEventListener("DOMContentLoaded", fetchData);
 
 document.addEventListener("DOMContentLoaded", function () {
     let currentSection = 0;
@@ -85,6 +32,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
     const progressContainer = document.querySelector(".progress-container");
 
+    let dbData = {};
+
 
 //------------------
 
@@ -94,7 +43,7 @@ document.addEventListener("DOMContentLoaded", function () {
       return;
     }
 
-
+fetchData();
 
 //------------------
 
@@ -129,6 +78,138 @@ document.addEventListener("DOMContentLoaded", function () {
         10: "important_people",
         11: "final"
     };
+
+
+async function fetchData() {
+  const uuid = getUUIDFromUrl();
+  try {
+    const response = await fetch(`${FIREBASE_GET_DATA_URL}?uuid=${encodeURIComponent(uuid)}`, {
+      method: "GET",
+      headers: { "Content-Type": "application/json" },
+    });
+    const result = await response.json();
+    dbData = result;
+    populateFormFields(result);
+    updateLocalStorageWithData(result);
+    console.log("Server Response:", result);
+  } catch (error) {
+    console.error("Error fetching data:", error);
+  }
+}
+
+function populateFormFields(data) {
+
+  // Loop through each key-value pair in the data object.
+  Object.entries(data).forEach(([fieldId, value]) => {
+    // Find the element with the given id.
+    const field = document.getElementById(fieldId);
+    if (field) {
+      // If it's an input, textarea, or select, set its value.
+      if (
+        field instanceof HTMLInputElement ||
+        field instanceof HTMLTextAreaElement ||
+        field instanceof HTMLSelectElement
+      ) {
+        field.value = value;
+      } else {
+        // Otherwise, update its text content.
+        field.textContent = value;
+      }
+    }
+  });
+}
+
+function populateImportantPersons(data) {
+  // Collect indices from keys starting with "important_person_name_"
+  const indices = [];
+  Object.keys(data).forEach((key) => {
+    if (key.startsWith("important_person_name_")) {
+      // E.g. key = "important_person_name_1" gives index "1"
+      const parts = key.split("_");
+      const idx = parts[parts.length - 1];
+      if (!indices.includes(idx)) {
+        indices.push(idx);
+      }
+    }
+  });
+  
+  // If we found any important person entries, unhide the section.
+  if (indices.length > 0) {
+    document.getElementById("important-person-section").style.display = "block";
+  }
+  
+  // Sort indices numerically so they appear in order.
+  indices.sort((a, b) => parseInt(a) - parseInt(b));
+  
+  // For each detected index, add a card and prefill it.
+  indices.forEach((dataIndex) => {
+    // Call your function to add a new important person card.
+    addImportantPerson();
+    // The new card's index corresponds to the current value of the global variable.
+    const currentIndex = importantPersonCount;
+    
+    // List the field names you want to prefill.
+    const fields = [
+      "name",
+      "birthdate",
+      "birth_time",
+      "birth_city",
+      "relation",
+      "impact",
+      "stress",
+      "appreciation",
+      "improvement"
+    ];
+    
+    // For each field, build the data key (from Firebase) and the corresponding input selector.
+    fields.forEach((field) => {
+      const dataKey = `important_person_${field}_${dataIndex}`;
+      // The newly created card has inputs with names based on currentIndex.
+      const selector = `#important-person-${currentIndex} input[name="important_person_${field}_${currentIndex}"]`;
+      const inputElem = document.querySelector(selector);
+      if (inputElem && data[dataKey] !== undefined) {
+        inputElem.value = data[dataKey];
+      }
+    });
+    
+    // Handle checkboxes (e.g. conflict preferences) if your data contains them.
+    const conflictKey = `important_person_conflict_${dataIndex}`;
+    if (data[conflictKey]) {
+      // Accept either an array or a comma-separated string.
+      const values = Array.isArray(data[conflictKey])
+        ? data[conflictKey]
+        : data[conflictKey].split(",").map(v => v.trim());
+      // Select checkboxes in the current card.
+      const checkboxes = document.querySelectorAll(
+        `#important-person-${currentIndex} input[name="important_person_conflict_${currentIndex}"]`
+      );
+      checkboxes.forEach((checkbox) => {
+        if (values.includes(checkbox.value)) {
+          checkbox.checked = true;
+        }
+      });
+    }
+  });
+}
+
+
+
+// Overwrite local storage data with the new data.
+function updateLocalStorageWithData(data) {
+  Object.entries(data).forEach(([key, value]) => {
+    // If value is an object, store it as JSON; otherwise, store the string representation.
+    localStorage.setItem(key, typeof value === "object" ? JSON.stringify(value) : value);
+  });
+}
+
+function getUUIDFromUrl() {
+  // window.location.search returns a string like "?5dee1b8e-a2f5-4613-8655-f9667561cead"
+  const query = window.location.search;
+  if (query && query.length > 1) {
+    return query.substring(1);
+  }
+  return null;
+}
 
     // Load saved form data from localStorage
     let formData = JSON.parse(localStorage.getItem("formData")) || {};
@@ -233,7 +314,6 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
-
     function validateSection() {
         const currentSectionElement = document.querySelector(".section.active");
         const requiredFields = currentSectionElement.querySelectorAll("input[required], select[required], textarea[required]");
@@ -258,29 +338,6 @@ document.addEventListener("DOMContentLoaded", function () {
         input.addEventListener("change", saveFormData);
         input.addEventListener("blur", saveFormData);
     });
-
-    // Validate all required fields on "Save & Continue" click
-    // document.getElementById("saveContinueBtn").addEventListener("click", function () {
-    //     const currentSection = document.querySelector(".section.active");
-    //     const requiredFields = currentSection.querySelectorAll("input[required], select[required], textarea[required]");
-    //     let isValid = true;
-
-    //     requiredFields.forEach(field => {
-    //         if (!field.value.trim()) {
-    //             isValid = false;
-    //             field.classList.add("error");
-    //             validateTextField(field);
-    //         } else {
-    //             field.classList.remove("error");
-    //         }
-    //     });
-
-    //     if (isValid) {
-    //         saveFormData();
-    //     } else {
-    //         alert("Please fill out all required fields before continuing.");
-    //     }
-    // });
 
     function updateProgressBar(index) {
         const steps = document.querySelectorAll(".step");
@@ -318,6 +375,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     function showSection(index) {
+        if (index == 10) { populateImportantPersons(dbData); }
         sections.forEach((section, i) => {
             section.style.display = i === index ? "block" : "none";
         });
@@ -677,6 +735,8 @@ function removeImportantPerson(personElement) {
     importantPersonCount--;
     console.log(`Important Person removed. Remaining count: ${importantPersonCount}`);
 }
+
+
 
 function collectFormData() {
         const formData = {};
