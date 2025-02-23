@@ -9,10 +9,32 @@ async function fetchData() {
       headers: { "Content-Type": "application/json" },
     });
     const result = await response.json();
+    populateFormFields(result);
     console.log("Server Response:", result);
   } catch (error) {
     console.error("Error fetching data:", error);
   }
+}
+
+function populateFormFields(data) {
+  // Loop through each key-value pair in the data object.
+  Object.entries(data).forEach(([fieldId, value]) => {
+    // Find the element with the given id.
+    const field = document.getElementById(fieldId);
+    if (field) {
+      // If it's an input, textarea, or select, set its value.
+      if (
+        field instanceof HTMLInputElement ||
+        field instanceof HTMLTextAreaElement ||
+        field instanceof HTMLSelectElement
+      ) {
+        field.value = value;
+      } else {
+        // Otherwise, update its text content.
+        field.textContent = value;
+      }
+    }
+  });
 }
 
 function getUUIDFromUrl() {
