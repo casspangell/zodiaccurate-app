@@ -56,6 +56,7 @@ function getUUIDFromUrl() {
 }
 
 document.addEventListener("DOMContentLoaded", fetchData);
+
 document.addEventListener("DOMContentLoaded", function () {
     let currentSection = 0;
     const navigationHistory = [];
@@ -342,17 +343,17 @@ document.addEventListener("DOMContentLoaded", function () {
         showSection(currentSection);
     }
 
-    function printSections() {
-    const sections = document.querySelectorAll(".section");
+//     function printSections() {
+//     const sections = document.querySelectorAll(".section");
     
-    sections.forEach((section, index) => {
-        const sectionTitle = section.querySelector("h2")?.textContent.trim() || "Unnamed Section";
-        console.log(`Index: ${index}, Section: ${sectionTitle}`);
-    });
-}
+//     sections.forEach((section, index) => {
+//         const sectionTitle = section.querySelector("h2")?.textContent.trim() || "Unnamed Section";
+//         console.log(`Index: ${index}, Section: ${sectionTitle}`);
+//     });
+// }
 
 // Call the function to print the section list
-printSections();
+// printSections();
 
 function printSectionsWithVisibility() {
     const sections = document.querySelectorAll(".section");
@@ -728,10 +729,15 @@ function collectFormData() {
         let formDataObject = collectFormData();
         formDataObject = removeEmptyValues(formDataObject);
 
+        const uuid = getUUIDFromUrl();
+        if (uuid) {
+            formDataObject.uuid = uuid;
+        }
+
         console.log("Filtered Form Data before sending:", formDataObject);
 
         try {
-            const response = await fetch(FIREBASE_GET_DATA_URL, {
+            const response = await fetch(FIREBASE_FUNCTIONS_URL, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(formDataObject),
