@@ -119,6 +119,74 @@ function populateFormFields(data) {
   });
 }
 
+function populateChildren(data) {
+  // Gather indices by checking for keys that start with "child_name_"
+  const indices = [];
+  Object.keys(data).forEach(key => {
+    if (key.startsWith("child_name_")) {
+      // E.g., key "child_name_1" yields index "1"
+      const parts = key.split("_");
+      const idx = parts[parts.length - 1];
+      if (!indices.includes(idx)) {
+        indices.push(idx);
+      }
+    }
+  });
+  
+  // If any child data is found, unhide the Children Section
+  if (indices.length > 0) {
+    document.getElementById("children-section").style.display = "block";
+  }
+  
+  // Sort indices numerically to maintain the order
+  indices.sort((a, b) => parseInt(a) - parseInt(b));
+  
+  // For each index, add a new child entry and prefill its fields
+  indices.forEach(dataIndex => {
+    // Call your existing addChild() function
+    addChild();
+    // The new card’s index corresponds to the current value of the global childCount
+    const currentIndex = childCount;
+    
+    // List the text fields to prefill
+    const fields = [
+      "name",
+      "birth_place",
+      "birth_date",
+      "birth_time",
+      "activities",
+      "stress",
+      "joy",
+      "concerns"
+    ];
+    
+    fields.forEach(field => {
+      // Build the key from the Firebase data (for example: child_name_1)
+      const dataKey = `child_${field}_${dataIndex}`;
+      // Build a selector for the input in the new card (note: the new card's inputs use the currentIndex)
+      const selector = `#child-${currentIndex} input[name="child_${field}_${currentIndex}"]`;
+      const inputElem = document.querySelector(selector);
+      if (inputElem && data[dataKey] !== undefined) {
+        inputElem.value = data[dataKey];
+      }
+    });
+    
+    // Handle radio buttons for child gender
+    const genderKey = `child_gender_${dataIndex}`;
+    if (data[genderKey]) {
+      const radios = document.querySelectorAll(
+        `#child-${currentIndex} input[name="child_gender_${currentIndex}"]`
+      );
+      radios.forEach(radio => {
+        if (radio.value === data[genderKey]) {
+          radio.checked = true;
+        }
+      });
+    }
+  });
+}
+
+
 function populateImportantPersons(data) {
   // Collect indices from keys starting with "important_person_name_"
   const indices = [];
@@ -376,6 +444,7 @@ function getUUIDFromUrl() {
 
     function showSection(index) {
         if (index == 10) { populateImportantPersons(dbData); }
+        if (index == 9) { populateChildren(dbData); }
         sections.forEach((section, i) => {
             section.style.display = i === index ? "block" : "none";
         });
