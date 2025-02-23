@@ -6,8 +6,7 @@
     <title>ZodiAccurate Form</title>
     <link rel="stylesheet" href="styles.css">    
     <script type="module" src="script.js"></script>
-
-
+    <script type="module" src="firebase.js"></script>
 </head>
 <body>
 <div>
@@ -90,12 +89,12 @@
                 <div class="question-group">
                     <p class="description">How would you rate your overall health?</p>
                     <div class="main-radio-group multi-column">
-                        <label><input type="radio" name="overall_health" value="Excellent" required> Excellent</label>
-                        <label><input type="radio" name="overall_health" value="Very Good"> Very Good</label>
-                        <label><input type="radio" name="overall_health" value="Pretty Good"> Pretty Good</label>
-                        <label><input type="radio" name="overall_health" value="Needs Some Improvement"> Needs Some Improvement</label>
-                        <label><input type="radio" name="overall_health" value="Needs a Lot of Improvement"> Needs A Lot of Improvement</label>
-                        <label><input type="radio" name="overall_health" value="Poor"> Poor</label>
+                        <label><input type="radio" name="overall_health" value="excellent" required> Excellent</label>
+                        <label><input type="radio" name="overall_health" value="very_good"> Very Good</label>
+                        <label><input type="radio" name="overall_health" value="pretty_good"> Pretty Good</label>
+                        <label><input type="radio" name="overall_health" value="needs_some_improvement"> Needs Some Improvement</label>
+                        <label><input type="radio" name="overall_health" value="needs_a_lot_of_improvement"> Needs A Lot of Improvement</label>
+                        <label><input type="radio" name="overall_health" value="poor"> Poor</label>
                     </div>
                 </div>
 
@@ -139,32 +138,33 @@
                 <div class="question-group">
                     <label>Sexual Orientation</label>
                     <p class="description">What is your sexual orientation?</p>
-                    <div class="main-radio-group multi-column">
-                        <label><input type="radio" name="orientation" value="Not Interested"> Not Interested</label>
-                        <label><input type="radio" name="orientation" value="Prefer Male"> Prefer Male</label>
-                        <label><input type="radio" name="orientation" value="Prefer Female"> Prefer Female</label>
-                        <label><input type="radio" name="orientation" value="Bisexual"> Bisexual</label>
-                        <label><input type="radio" name="orientation" value="Asexual"> Asexual</label>
-                        <label><input type="radio" name="orientation" value="Pansexual"> Pansexual</label>
-                        <label><input type="radio" name="orientation" value="Other"> Other</label>
-                    </div>
+                 <div class="main-radio-group multi-column">
+                    <label><input type="radio" name="orientation" value="not_interested"> Not Interested</label>
+                    <label><input type="radio" name="orientation" value="prefer_male"> Prefer Male</label>
+                    <label><input type="radio" name="orientation" value="prefer_female"> Prefer Female</label>
+                    <label><input type="radio" name="orientation" value="bisexual"> Bisexual</label>
+                    <label><input type="radio" name="orientation" value="asexual"> Asexual</label>
+                    <label><input type="radio" name="orientation" value="pansexual"> Pansexual</label>
+                    <label><input type="radio" name="orientation" value="other"> Other</label>
+                </div>
+
                 </div>
 
                 <div class="question-group">
                 <label>Belief System</label>
                     <p class="description">If your beliefs influence your decisions, sharing them can help personalize your guidance.</p>
                     <div class="main-radio-group multi-column">
-                        <label><input type="radio" name="belief_system" value="Christian"> Christian</label>
-                        <label><input type="radio" name="belief_system" value="Mormon"> Mormon</label>
-                        <label><input type="radio" name="belief_system" value="Buddhist"> Buddhist</label>
-                        <label><input type="radio" name="belief_system" value="Islam"> Islam</label>
-                        <label><input type="radio" name="belief_system" value="Jewish"> Jewish</label>
-                        <label><input type="radio" name="belief_system" value="Hindu"> Hindu</label>
-                        <label><input type="radio" name="belief_system" value="Spiritual"> Spiritual</label>
+                        <label><input type="radio" name="belief_system" value="christian"> Christian</label>
+                        <label><input type="radio" name="belief_system" value="mormon"> Mormon</label>
+                        <label><input type="radio" name="belief_system" value="buddhist"> Buddhist</label>
+                        <label><input type="radio" name="belief_system" value="islam"> Islam</label>
+                        <label><input type="radio" name="belief_system" value="jewish"> Jewish</label>
+                        <label><input type="radio" name="belief_system" value="hindu"> Hindu</label>
+                        <label><input type="radio" name="belief_system" value="spiritual"> Spiritual</label>
                         <label><input type="radio" name="belief_system" value="Atheist"> Atheist</label>
-                        <label><input type="radio" name="belief_system" value="Agnostic"> Agnostic</label>
-                        <label><input type="radio" name="belief_system" value="Pagan"> Pagan</label>
-                        <label><input type="radio" name="belief_system" value="Other"> Other</label>
+                        <label><input type="radio" name="belief_system" value="agnostic"> Agnostic</label>
+                        <label><input type="radio" name="belief_system" value="pagan"> Pagan</label>
+                        <label><input type="radio" name="belief_system" value="other"> Other</label>
                     </div>
                 </div>
                 <div class="nav-button-container">
@@ -208,12 +208,13 @@
                         <label>Partner's Stress: <input type="text" name="partner_stress_1"></label><br>
                         <div class="question-group">
                             <label>How do you handle conflicts in your relationship?</label><br>
-                            <div class="main-checkbox-group multi-column">
-                                <label><input type="checkbox" name="partner_conflict_1" value="Address Immediately"> Address Immediately</label>
-                                <label><input type="checkbox" name="partner_conflict_1" value="Cool Down First"> Cool Down First</label>
-                                <label><input type="checkbox" name="partner_conflict_1" value="Avoid Conflict"> Avoid Conflict</label>
-                                <label><input type="checkbox" name="partner_conflict_1" value="Seek a Third-Party Opinion"> Seek a Third-Party Opinion</label>
-                            </div>
+                         <div class="main-checkbox-group multi-column">
+                            <label><input type="checkbox" name="partner_conflict_1" value="address_immediately"> Address Immediately</label>
+                            <label><input type="checkbox" name="partner_conflict_1" value="cool_down_first"> Cool Down First</label>
+                            <label><input type="checkbox" name="partner_conflict_1" value="avoid_conflict"> Avoid Conflict</label>
+                            <label><input type="checkbox" name="partner_conflict_1" value="seek_a_third_party_opinion"> Seek a Third-Party Opinion</label>
+                        </div>
+
                         </div>
                         <br>
                         <label>List 3-5 things you love about your partner: <input type="text" name="partner_love_1"></label><br>
@@ -254,76 +255,78 @@
                 <h2>Future Partner Preferences</h2>
 
                 <div class="question-group">
-                <label>What qualities do you want in a partner?</label><br>
+                    <label>What qualities do you want in a partner?</label><br>
                     <div class="main-checkbox-group multi-column">
-                        <label><input type="checkbox"> Loyalty</label>
-                        <label><input type="checkbox"> Honesty</label>
-                        <label><input type="checkbox"> Humor</label>
-                        <label><input type="checkbox"> Ambition</label>
-                        <label><input type="checkbox"> Compassion</label>
-                        <label><input type="checkbox"> Open Heart</label>
-                        <label><input type="checkbox"> Communicative</label>
-                        <label><input type="checkbox"> Introspective</label>
-                        <label><input type="checkbox"> Strong-Willed</label>
-                        <label><input type="checkbox"> Calm</label>
+                        <label><input type="checkbox" value="loyalty"> Loyalty</label>
+                        <label><input type="checkbox" value="honesty"> Honesty</label>
+                        <label><input type="checkbox" value="humor"> Humor</label>
+                        <label><input type="checkbox" value="ambition"> Ambition</label>
+                        <label><input type="checkbox" value="compassion"> Compassion</label>
+                        <label><input type="checkbox" value="open_heart"> Open Heart</label>
+                        <label><input type="checkbox" value="communicative"> Communicative</label>
+                        <label><input type="checkbox" value="introspective"> Introspective</label>
+                        <label><input type="checkbox" value="strong_willed"> Strong-Willed</label>
+                        <label><input type="checkbox" value="calm"> Calm</label>
                     </div>
                 </div>
                 <br>
                 <div class="question-group">
                     <label>How would you describe your lifestyle?</label><br>
                     <div class="main-checkbox-group multi-column">
-                        <label><input type="checkbox"> Busy & Hectic</label>
-                        <label><input type="checkbox"> Balanced & Steady</label>
-                        <label><input type="checkbox"> Relaxed & Easygoing</label>
+                        <label><input type="checkbox" value="busy_and_hectic"> Busy &amp; Hectic</label>
+                        <label><input type="checkbox" value="balanced_and_steady"> Balanced &amp; Steady</label>
+                        <label><input type="checkbox" value="relaxed_and_easygoing"> Relaxed &amp; Easygoing</label>
                     </div>
                 </div>
                 <br>
                 <div class="question-group">
                     <label>How do you usually meet people?</label><br>
                     <div class="main-checkbox-group multi-column">
-                        <label><input type="checkbox"> Through Friends</label>
-                        <label><input type="checkbox"> Social Activities</label>
-                        <label><input type="checkbox"> Online Dating</label>
-                        <label><input type="checkbox"> Random Encounters</label>
+                        <label><input type="checkbox" value="through_friends"> Through Friends</label>
+                        <label><input type="checkbox" value="social_activities"> Social Activities</label>
+                        <label><input type="checkbox" value="online_dating"> Online Dating</label>
+                        <label><input type="checkbox" value="random_encounters"> Random Encounters</label>
                     </div>
                 </div>
                 <br>
                 <div class="question-group">
                     <label>How do you like to spend your weekends?</label><br>
                     <div class="main-checkbox-group multi-column">
-                        <label><input type="checkbox"> Outdoor Activities</label>
-                        <label><input type="checkbox"> Relaxing at Home</label>
-                        <label><input type="checkbox"> Socializing</label>
-                        <label><input type="checkbox"> Engaging in a Hobby</label>
+                        <label><input type="checkbox" value="outdoor_activities"> Outdoor Activities</label>
+                        <label><input type="checkbox" value="relaxing_at_home"> Relaxing at Home</label>
+                        <label><input type="checkbox" value="socializing"> Socializing</label>
+                        <label><input type="checkbox" value="engaging_in_a_hobby"> Engaging in a Hobby</label>
                     </div>
                 </div>
                 <br>
                 <div class="question-group">
                     <label>What is your love language?</label><br>
                     <div class="main-checkbox-group multi-column">
-                        <label><input type="checkbox"> Words of Affirmation</label>
-                        <label><input type="checkbox"> Acts of Service</label>
-                        <label><input type="checkbox"> Giving/Receiving Gifts</label>
-                        <label><input type="checkbox"> Quality Time</label>
-                        <label><input type="checkbox"> Physical Touch</label>
+                        <label><input type="checkbox" value="words_of_affirmation"> Words of Affirmation</label>
+                        <label><input type="checkbox" value="acts_of_service"> Acts of Service</label>
+                        <label><input type="checkbox" value="giving_receiving_gifts"> Giving/Receiving Gifts</label>
+                        <label><input type="checkbox" value="quality_time"> Quality Time</label>
+                        <label><input type="checkbox" value="physical_touch"> Physical Touch</label>
                     </div>
                 </div>
                 <br>
                 <div class="question-group">
                     <label>How important is physical attraction in a relationship?</label><br>
                     <div class="main-checkbox-group multi-column">
-                        <label><input type="checkbox"> Very Important</label>
-                        <label><input type="checkbox"> Somewhat Important</label>
-                        <label><input type="checkbox"> Not Very Important</label>
-                        <label><input type="checkbox"> Not Important at All</label>
+                        <label><input type="checkbox" value="very_important"> Very Important</label>
+                        <label><input type="checkbox" value="somewhat_important"> Somewhat Important</label>
+                        <label><input type="checkbox" value="not_very_important"> Not Very Important</label>
+                        <label><input type="checkbox" value="not_important_at_all"> Not Important at All</label>
                     </div>
                 </div>
                 <br>
                 <div class="nav-button-container">
                     <button type="button" class="prev">Back</button>
-                    <button type="button" class="next">Save & Continue</button>
+                    <button type="button" class="next">Save &amp; Continue</button>
                 </div>
             </section>
+
+
 
             <!-- EMPLOYMENT STATUS SECTION -->
             <section id="employment-status-section" class="section">
