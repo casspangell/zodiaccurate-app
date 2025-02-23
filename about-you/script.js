@@ -1,3 +1,30 @@
+const FIREBASE_FUNCTIONS_URL = "https://handleformsubmission-feti3ggk7q-uc.a.run.app";
+const FIREBASE_GET_DATA_URL = "https://handleformdataretrieval-feti3ggk7q-uc.a.run.app";
+
+async function fetchData() {
+  const uuid = getUUIDFromUrl();
+  try {
+    const response = await fetch(`${FIREBASE_GET_DATA_URL}?uuid=${encodeURIComponent(uuid)}`, {
+      method: "GET",
+      headers: { "Content-Type": "application/json" },
+    });
+    const result = await response.json();
+    console.log("Server Response:", result);
+  } catch (error) {
+    console.error("Error fetching data:", error);
+  }
+}
+
+function getUUIDFromUrl() {
+  // window.location.search returns a string like "?5dee1b8e-a2f5-4613-8655-f9667561cead"
+  const query = window.location.search;
+  if (query && query.length > 1) {
+    return query.substring(1);
+  }
+  return null;
+}
+
+document.addEventListener("DOMContentLoaded", fetchData);
 document.addEventListener("DOMContentLoaded", function () {
     let currentSection = 0;
     const navigationHistory = [];
@@ -26,7 +53,18 @@ document.addEventListener("DOMContentLoaded", function () {
 
     const progressContainer = document.querySelector(".progress-container");
 
-    const FIREBASE_FUNCTIONS_URL = "https://handleformsubmission-feti3ggk7q-uc.a.run.app";
+
+//------------------
+
+    const uuid = getUUIDFromUrl();
+    if (!uuid) {
+      console.warn("No UUID found in the URL.");
+      return;
+    }
+
+
+
+//------------------
 
     let partnerCount = 1;
     let childCount = 0;
@@ -59,18 +97,6 @@ document.addEventListener("DOMContentLoaded", function () {
         10: "important_people",
         11: "final"
     };
-
-    // const buttons = document.querySelectorAll("button");
-
-    // buttons.forEach(button => {
-    //     button.removeEventListener("click", handleButtonClick);
-    //     button.addEventListener("click", handleButtonClick, { once: true });
-    // });
-
-    // function handleButtonClick(event) {
-    //     event.preventDefault();
-    //     console.log(`Button clicked: ${event.target.textContent}`);
-    // }
 
     // Load saved form data from localStorage
     let formData = JSON.parse(localStorage.getItem("formData")) || {};
@@ -664,6 +690,7 @@ function collectFormData() {
         return dataObject;
     }
 
+
     submitButton.addEventListener("click", async function (event) {
         event.preventDefault();
 
@@ -673,7 +700,7 @@ function collectFormData() {
         console.log("Filtered Form Data before sending:", formDataObject);
 
         try {
-            const response = await fetch(FIREBASE_FUNCTIONS_URL, {
+            const response = await fetch(FIREBASE_GET_DATA_URL, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(formDataObject),

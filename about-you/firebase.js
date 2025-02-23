@@ -1,22 +1,36 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-import { getDatabase } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
-import { getAuth } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-import { getFirestore } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    // Handle Form Data Retrieval
+    export const handleFormSubmission = onRequest(async (request: Request, response: Response) => {
+      const appScriptUrl = "https://script.google.com/macros/s/AKfycbw4lQLoxN_Uq6HQEar2cJkp_dxTjy6yY-J3sH2LQuC4bhvVxlqQ9h1IW8i-0jei0a01gg/exec";
+        try {
+            // Enable CORS
+            cors()(request, response, async () => {
+                if (request.method !== "GET") {
+                    response.status(405).send("Method Not Allowed");
+                    return;
+                }
 
-// Initialize Firebase
-const firebaseConfig = {
-    apiKey: "YOUR_API_KEY",
-    authDomain: "YOUR_PROJECT.firebaseapp.com",
-    databaseURL: "https://YOUR_PROJECT.firebaseio.com",
-    projectId: "YOUR_PROJECT",
-    storageBucket: "YOUR_PROJECT.appspot.com",
-    messagingSenderId: "YOUR_SENDER_ID",
-    appId: "YOUR_APP_ID"
-};
+                const formData = request.body; // Get form data
+                logger.info("Received form submission:", formData);
 
-const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
-const auth = getAuth(app);
-const firestore = getFirestore(app);
+                if (!formData.email || !formData.name) {
+                    response.status(400).send("Error: Missing required fields (email or name).");
+                    return;
+                }
 
-export { db, auth, firestore };
+                // Add the identifier to your formData payload
+                formData.webhook_source = "firebase-data";
+
+                axios.post(webAppUrl, formData)
+                  .then(response => {
+                    res.status(200).send("Apps Script triggered successfully: " + response.data);
+                  })
+                  .catch(error => {
+                    res.status(500).send("Error triggering Apps Script: " + error);
+                  });
+                });
+
+        } catch (error: any) {
+            logger.error("❌ Error processing form submission:", error.message);
+            response.status(500).send("Internal Server Error");
+        }
+    });

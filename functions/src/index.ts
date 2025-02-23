@@ -1,10 +1,11 @@
 import { onRequest } from "firebase-functions/v2/https";
 import * as logger from "firebase-functions/logger";
+import { initializeApp } from 'firebase-admin/app';
+import { getDatabase } from "firebase-admin/database";
+
 import * as stripe from "stripe";
 import { SecretManagerServiceClient } from "@google-cloud/secret-manager";
 import axios from "axios";
-import { initializeApp } from 'firebase-admin/app';
-import { getDatabase } from "firebase-admin/database";
 import { Request, Response } from "express";
 import cors from "cors";
 import { v4 as uuidv4 } from "uuid";
@@ -14,6 +15,7 @@ let stripeInstance: stripe.Stripe | null = null;
 
 const app = initializeApp();
 const db = getDatabase(app);
+
 // Allow only https://zodiaccurate.app (or use "*" for all origins)
 const corsHandler = cors({ origin: "https://zodiaccurate.app" });
 
@@ -377,6 +379,38 @@ export const handleFormSubmission = onRequest(async (request: Request, response:
   });
 });
 
+export const handleFormDataRetrieval = onRequest(async (request: Request, response: Response) => {
+  logger.log("handleFormDataRetrieval function triggered");
+
+  // Wrap in CORS handler
+  corsHandler(request, response, async () => {
+    if (request.method !== "GET") {
+      response.status(405).send("Method Not Allowed");
+      return;
+    }
+
+    const uuid = request.query.uuid as string | undefined;
+    if (!uuid) {
+      response.status(400).send("UUID is required");
+      return;
+    }
+
+    try {
+      const snapshot = await db.ref(`/responses/${uuid}`).once("value");
+      const responseData = snapshot.val();
+
+      if (!responseData) {
+        response.status(404).send("Response data not found.");
+        return;
+      }
+
+      response.status(200).json(responseData);
+    } catch (error: any) {
+      logger.error(error.message);
+      response.status(500).send("Internal Server Error");
+    }
+  });
+});
 
 
 // // Handle Form Submission
