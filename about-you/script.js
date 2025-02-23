@@ -726,6 +726,11 @@ function collectFormData() {
     submitButton.addEventListener("click", async function (event) {
         event.preventDefault();
 
+          submitButton.disabled = true;
+          submitButton.style.pointerEvents = "none"
+          submitButton.textContent = "Processing...";
+          submitButton.style.backgroundColor = "#ccc";
+
         let formDataObject = collectFormData();
         formDataObject = removeEmptyValues(formDataObject);
 
@@ -747,8 +752,23 @@ function collectFormData() {
             console.log("Server Response:", result);
             alert(result.message || "Form submitted successfully!");
         } catch (error) {
+            submitButton.disabled = false;
+            submitButton.style.pointerEvents = ""
             console.error("Error submitting form:", error);
             alert("There was an error submitting the form.");
+        } finally {
+            document.querySelectorAll(".prev").forEach((button) => {
+             button.style.display = "none";
+            });
+              document.querySelectorAll("input[type='checkbox']").forEach((checkbox) => {
+            checkbox.disabled = true;
+            checkbox.style.pointerEvents = "none"
+           });
+
+            submitButton.style.pointerEvents = "none"
+            submitButton.textContent = "Submitted";
+            submitButton.style.color = "#5a3e85";
+            submitButton.style.backgroundColor = "#f5d76e";
         }
     });
 
