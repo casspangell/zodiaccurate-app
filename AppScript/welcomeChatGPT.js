@@ -15,10 +15,10 @@ async function welcomeChatGPT(jsonSinglePersonData, uuid) {
         const zodiaccurateData = await getChatGPTResponse(prompt, uuid);
         const editUrl = findKeyValue(userData, "editURL");
         const { name, email } = jsonSinglePersonData;
-        console.log("EDITURL: ", editUrl);
+
         console.log("welcomechat zodiac pull", zodiaccurateData);
       await Promise.all([
-        sendWelcomeEmailWithMailerSend(name, editUrl, email),
+        sendWelcomeEmailWithMailerSend(name, uuid, email),
         sendDailyEmailWithMailerSend(name, email, zodiaccurateData, uuid),
         saveHoroscopeToFirebase(zodiaccurateData, uuid)
       ]);

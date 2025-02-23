@@ -91,7 +91,7 @@ async function fetchData() {
     dbData = result;
     populateFormFields(result);
     updateLocalStorageWithData(result);
-    console.log("Server Response:", result);
+
   } catch (error) {
     console.error("Error fetching data:", error);
   }
@@ -490,7 +490,6 @@ function printSectionsWithVisibility() {
         section.style.display = "block"; // Temporarily show it
 
         const sectionTitle = section.querySelector("h2")?.textContent.trim() || "Unnamed Section";
-        console.log(`Index: ${index}, Section: ${sectionTitle}, ID: ${section.id}`);
 
         if (wasHidden) section.style.display = "none"; // Restore original state
     });
@@ -501,7 +500,6 @@ printSectionsWithVisibility();
 
     nextButtons.forEach((button) => {
         button.addEventListener("click", function () {
-            console.log(`Button clicked`);
             if (!validateSection()) {
                 alert("Please fill out all required fields before continuing.");
                 return;
@@ -526,27 +524,21 @@ printSectionsWithVisibility();
                     const status = selectedStatus.value;
 
                     if (["married", "committed", "separated_fix"].includes(status)) {
-                        console.log("go to partner");
                         goToSection(3);
                     } else if (["future_partner", "divorced", "separated_differences"].includes(status)) {
-                        console.log("go to future partner");
                         goToSection(4);
                     } else {
-                        console.log("goto important_people");
                         goToSection(10);
                     }
                     break;
                 case "partner":
                 case "future_partner":
-                    console.log("goto important_people");
                     goToSection(10);
                     break
                 case "important_people":
-                    console.log("goto children");
                     goToSection(9);
                     break;
                 case "children":
-                    console.log("goto employment_status");
                     goToSection(5);
                     break;
                 case "employment_status":
@@ -555,20 +547,16 @@ printSectionsWithVisibility();
                     const employmentStatus = selectedEmployment.value;
 
                     if (["employed", "business_owner", "entrepreneur", "self_employed"].includes(employmentStatus)) {
-                        console.log("goto employed");
                         goToSection(6);
                     } else if (employmentStatus === "unemployed") {
-                        console.log("goto unemployed");
                         goToSection(7);
                     } else if (employmentStatus === "retired") {
-                        console.log("goto retired");
                         goToSection(8);
                     }
                     break;
                 case "employed":
                 case "unemployed":
                 case "retired":
-                    console.log("goto final");
                     goToSection(11);
                     break;
 
@@ -590,8 +578,6 @@ printSectionsWithVisibility();
                 currentSection = 0;
                 showSection(0);
             }
-
-            console.log(`Back to Section ${currentSection}`);
         });
     });
 
@@ -693,7 +679,6 @@ printSectionsWithVisibility();
     if (addChildButton) {
         if (!addChildButton.dataset.listener) {  // Prevent duplicate event listeners
             addChildButton.addEventListener("click", function () {
-                console.log(`Adding Child ${childCount + 1}`);
                 addChild();
             });
             addChildButton.dataset.listener = "true";  // Mark event as added
@@ -730,17 +715,14 @@ printSectionsWithVisibility();
     `;
 
     childContainer.appendChild(newChild);
-    console.log(`Child ${childCount} added successfully.`);
     // Attach remove event to the button immediately after adding the child
     newChild.querySelector(".remove-child-btn").addEventListener("click", function () {
         removeChild(newChild);
     });
 }
 function removeChild(childElement) {
-    console.log(`Removing ${childElement.id}`);
     childElement.remove();
     childCount--;
-    console.log(`Child removed successfully.`);
 }
 
 // Prevent duplicate event listeners
@@ -753,7 +735,6 @@ if (!document.getElementById("add-important-person").dataset.listener) {
 
 function addImportantPerson() {
     importantPersonCount++;
-    console.log(`Adding Important Person ${importantPersonCount}`);
     const newPerson = document.createElement("div");
     newPerson.classList.add("important-person-entry");
     newPerson.setAttribute("id", `important-person-${importantPersonCount}`);
@@ -791,7 +772,6 @@ function addImportantPerson() {
         </div>
     `;
     document.getElementById("important-person-container").appendChild(newPerson);
-    console.log(`Important Person ${importantPersonCount} added successfully.`);
     newPerson.querySelector(".remove-important-person-btn").addEventListener("click", function () {
         removeImportantPerson(newPerson);
     });
@@ -799,10 +779,8 @@ function addImportantPerson() {
 
 // Function to remove an important person section
 function removeImportantPerson(personElement) {
-    console.log(`Removing ${personElement.id}`);
     personElement.remove();
     importantPersonCount--;
-    console.log(`Important Person removed. Remaining count: ${importantPersonCount}`);
 }
 
 
@@ -868,7 +846,7 @@ function collectFormData() {
             formDataObject.uuid = uuid;
         }
 
-        console.log("Filtered Form Data before sending:", formDataObject);
+        // console.log("Filtered Form Data before sending:", formDataObject);
 
         try {
             const response = await fetch(FIREBASE_FUNCTIONS_URL, {
@@ -878,7 +856,7 @@ function collectFormData() {
             });
 
             const result = await response.json();
-            console.log("Server Response:", result);
+
             alert(result.message || "Form submitted successfully!");
         } catch (error) {
             submitButton.disabled = false;

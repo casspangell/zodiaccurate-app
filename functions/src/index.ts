@@ -19,7 +19,7 @@ const db = getDatabase(app);
 // Allow only https://zodiaccurate.app (or use "*" for all origins)
 const corsHandler = cors({ origin: "https://zodiaccurate.app" });
 
-const appScriptUrl = "https://script.google.com/macros/s/AKfycbw4lQLoxN_Uq6HQEar2cJkp_dxTjy6yY-J3sH2LQuC4bhvVxlqQ9h1IW8i-0jei0a01gg/exec";
+const appScriptUrl = "https://script.google.com/macros/s/AKfycbytLSFPZ74rf8p4KAPK-04ZNxg4lgBozUQh3yOfkmgrECq4R8xbydEvPsD3oy351owkRw/exec";
 
 // Retrieve secret from Google Cloud Secret Manager
 async function getSecret(secretName: string): Promise<string> {
@@ -207,7 +207,7 @@ export const handleEmailConfirmation = onRequest(
           </strong>.<br/>You have <strong>${daysLeft}</strong> day(s) left in your trial.</p><br><br>
           <strong>If you need to fill out About You Questionaire:</strong> 
           <div class="button-container">
-          <a href="https://zodiaccurate.com/about-you" class="button">Get Started</a>
+          <a href="https://zodiaccurate.app/about-you" class="button">Get Started</a>
         </div>
         <p>If you already have done so, an update information link is at the bottom of your daily Zodiaccurate email.</p>`;
         }
@@ -224,7 +224,7 @@ export const handleEmailConfirmation = onRequest(
           "en-US"
         )}</strong>.</p>
         <div class="button-container">
-          <a href="https://zodiaccurate.com/about-you" class="button">Get Started</a>
+          <a href="https://zodiaccurate.app/about-you" class="button">Get Started</a>
         </div>`;
       }
 
@@ -400,7 +400,7 @@ export const handleFormDataRetrieval = onRequest(async (request: Request, respon
       const responseData = snapshot.val();
 
       if (!responseData) {
-        response.status(404).send("Response data not found.");
+        response.status(200).json({ message: "No data found.", data: null });
         return;
       }
 

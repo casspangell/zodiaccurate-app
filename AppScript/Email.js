@@ -20,9 +20,9 @@ async function sendEmail(apiUrl, emailData) {
   }
 }
 
-async function sendWelcomeEmailWithMailerSend(clientName, editResponseUrl, email) {
-  console.log("sendWelcomeEmailWithMailerSend clientName: ", clientName, " editResponseUrl: ",editResponseUrl," email: ",email);
-  if (!clientName || !email || !editResponseUrl) {
+async function sendWelcomeEmailWithMailerSend(clientName, uuid, email) {
+  console.log("sendWelcomeEmailWithMailerSend clientName: ", clientName, " uuid: ",uuid," email: ",email);
+  if (!clientName || !email || !uuid) {
     throw new Error("Missing required parameters for welcome email.");
   }
 
@@ -88,7 +88,7 @@ async function sendWelcomeEmailWithMailerSend(clientName, editResponseUrl, email
               <p>Hi ${clientName},</p>
               <p>Welcome to Zodiaccurate! We're thrilled that you've decided to join our community.</p>
               <p>Every day at 6 AM, you'll receive a personalized astrological reading tailored specifically to the details you've shared with us. Our goal is to provide you with insights that not only assist you to better navigate guide your daily decisions but also align that guidance with your personal life conditions, struggles and successes!<br></p>
-              <p>If you ever need to update your Zodiaccurate “current life” information, you can easily do so by <a href="${editResponseUrl}">Clicking Here</a><br></p>
+              <p>If you ever need to update your Zodiaccurate “current life” information, you can easily do so by <a href="https://zodiaccurate.app/about-you/?${uuid}">Clicking Here</a><br></p>
               <p>We look forward to being a part of your challenging, miraculous, creative, life.<br><br></p>
 
               <p>Please add us to your contacts and confirm your email address to complete your registration and start receiving personalized astrological insights tailored to you.</p>
@@ -140,7 +140,6 @@ async function sendDailyEmailWithMailerSend(clientName, email, prompt, uuid) {
 
   console.log("Daily prompt: ", dailyPrompt);
   const formattedDate = formatDateForUser(uuid);
-  const editResponseUrl = EDIT_RESPONSE_URL_PRIME + uuid;
 
   const emailHtml = `
   <!DOCTYPE html>
@@ -237,7 +236,7 @@ async function sendDailyEmailWithMailerSend(clientName, email, prompt, uuid) {
             <p>Best Regards,<br/>Your Zodiaccurate Team</p>
         </div>
         <div class="info">
-            <p>If you ever need to update your Zodiaccurate “current life” information, you can easily do so by <a href="${editResponseUrl}">Clicking Here</a>.</p>
+            <p>If you ever need to update your Zodiaccurate “current life” information, you can easily do so by <a href="https://zodiaccurate.app/about-you/?${uuid}">Clicking Here</a>.</p>
             <p>You can change your CC information or cancel anytime via this <a href="${STRIPE_LINK}">Link</a>.</p>
             <p>If you have any questions, please contact us at <a href="mailto:support@zodiaccurate.com">support@zodiaccurate.com</a>.</p>
         </div>
