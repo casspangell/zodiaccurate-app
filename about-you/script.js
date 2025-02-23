@@ -10,6 +10,7 @@ async function fetchData() {
     });
     const result = await response.json();
     populateFormFields(result);
+    updateLocalStorageWithData(result);
     console.log("Server Response:", result);
   } catch (error) {
     console.error("Error fetching data:", error);
@@ -34,6 +35,14 @@ function populateFormFields(data) {
         field.textContent = value;
       }
     }
+  });
+}
+
+// Overwrite local storage data with the new data.
+function updateLocalStorageWithData(data) {
+  Object.entries(data).forEach(([key, value]) => {
+    // If value is an object, store it as JSON; otherwise, store the string representation.
+    localStorage.setItem(key, typeof value === "object" ? JSON.stringify(value) : value);
   });
 }
 
