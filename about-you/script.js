@@ -572,6 +572,7 @@ function getUUIDFromUrl() {
                 case "employed":
                 case "unemployed":
                 case "retired":
+                    populateEmploymentData(dbData);
                     goToSection(11);
                     break;
 
@@ -934,6 +935,58 @@ function addImportantPerson() {
 
         return dataObject;
     }
+
+    function populateEmploymentData(data) {
+        console.log("Employment Data:", data); // Debugging output
+
+        // Handle the job_title field (text input)
+        const jobTitleField = document.querySelector('input[name="job_title"]');
+        if (jobTitleField && data.job_title !== undefined) {
+            jobTitleField.value = data.job_title;
+        } else {
+            console.warn("job_title field not found or undefined in data.");
+        }
+
+        // List of employment-related checkboxes and radio buttons
+        const checkableFields = [
+            "job_satisfaction",
+            "career_goals",
+            "work_stress",
+            "work_environment",
+            "career_decision",
+            "work_life_balance",
+            "financial_security"
+        ];
+
+        // Loop through each checkable field (radio buttons & checkboxes)
+        checkableFields.forEach((field) => {
+            const fieldData = data[field]; // Get the value from data
+            const elements = document.querySelectorAll(`input[name="${field}"]`);
+
+            if (!elements.length) {
+                console.warn(`Field not found: ${field}`);
+                return;
+            }
+
+            elements.forEach((element) => {
+                if (element.type === "radio") {
+                    // Match single value for radio buttons
+                    if (fieldData === element.value) {
+                        element.checked = true;
+                    }
+                } else if (element.type === "checkbox") {
+                    // Handle checkboxes with array or string values
+                    if (Array.isArray(fieldData) && fieldData.includes(element.value)) {
+                        element.checked = true;
+                    } else if (typeof fieldData === "string" && fieldData.split(",").includes(element.value)) {
+                        element.checked = true;
+                    }
+                }
+            });
+        });
+    }
+
+
 
     submitButton.addEventListener("click", async function (event) {
         event.preventDefault();
