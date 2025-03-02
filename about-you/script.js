@@ -2,10 +2,8 @@ const FIREBASE_FUNCTIONS_URL = "https://handleformsubmission-feti3ggk7q-uc.a.run
 const FIREBASE_GET_DATA_URL = "https://handleformdataretrieval-feti3ggk7q-uc.a.run.app";
 
 // document.addEventListener("DOMContentLoaded", fetchData);
-
 document.addEventListener("DOMContentLoaded", function () {
-    console.log("Initializing dom");
-    
+
     let currentSection = 0;
     const navigationHistory = [];
     const form = document.getElementById("multiStepForm");
@@ -38,28 +36,26 @@ document.addEventListener("DOMContentLoaded", function () {
         "Computing horoscope insights...",
         "Synchronizing astral events...",
         "Finalizing astrological analysis..."
-      ];
+    ];
+
+
 
     const progressBar = document.createElement("div");
-    progressBar.classList.add("progress-bar-active");
     document.querySelector(".progress-container").appendChild(progressBar);
-
+    progressBar.classList.add("progress-bar-active");
+    const progressContainer = document.querySelector(".progress-container");
     const emailInput = document.getElementById("email");
 
-    const progressContainer = document.querySelector(".progress-container");
+
 
     let dbData = {};
 
-
 //------------------
 
-    const uuid = getUUIDFromUrl();
-    if (!uuid) {
-      console.warn("No UUID found in the URL.");
-      return;
-    }
-
-fetchData();
+const uuid = getUUIDFromUrl();
+if (uuid) {
+  fetchData();
+}
 
 //------------------
 
@@ -276,8 +272,6 @@ function populateImportantPersons(data) {
   });
 }
 
-
-
 // Overwrite local storage data with the new data.
 function updateLocalStorageWithData(data) {
   Object.entries(data).forEach(([key, value]) => {
@@ -452,7 +446,6 @@ function getUUIDFromUrl() {
         });
     }
 
-
     function scrollToTop() {
         window.scrollTo({ top: 0, behavior: "smooth" });
         progressContainer.style.display = "block"; // Ensure progress bar is visible
@@ -498,21 +491,20 @@ function getUUIDFromUrl() {
 // Call the function to print the section list
 // printSections();
 
-function printSectionsWithVisibility() {
-    const sections = document.querySelectorAll(".section");
+// function printSectionsWithVisibility() {
+//     const sections = document.querySelectorAll(".section");
 
-    sections.forEach((section, index) => {
-        const wasHidden = section.style.display === "none";
-        section.style.display = "block"; // Temporarily show it
+//     sections.forEach((section, index) => {
+//         const wasHidden = section.style.display === "none";
+//         section.style.display = "block"; // Temporarily show it
 
-        const sectionTitle = section.querySelector("h2")?.textContent.trim() || "Unnamed Section";
+//         const sectionTitle = section.querySelector("h2")?.textContent.trim() || "Unnamed Section";
 
-        if (wasHidden) section.style.display = "none"; // Restore original state
-    });
-}
+//         if (wasHidden) section.style.display = "none"; // Restore original state
+//     });
+// }
 
-printSectionsWithVisibility();
-
+// printSectionsWithVisibility();
 
     nextButtons.forEach((button) => {
         button.addEventListener("click", function () {
@@ -793,15 +785,13 @@ function addImportantPerson() {
     });
 }
 
-// Function to remove an important person section
-function removeImportantPerson(personElement) {
-    personElement.remove();
-    importantPersonCount--;
-}
+    // Function to remove an important person section
+    function removeImportantPerson(personElement) {
+        personElement.remove();
+        importantPersonCount--;
+    }
 
-
-
-function collectFormData() {
+    function collectFormData() {
         const formData = {};
         const inputs = form.querySelectorAll("input, select, textarea");
 
@@ -844,10 +834,6 @@ function collectFormData() {
 
         return dataObject;
     }
-
-      
-
-
 
     submitButton.addEventListener("click", async function (event) {
         event.preventDefault();
@@ -913,7 +899,5 @@ function collectFormData() {
           }
         }
       }
-
-
 });
 
