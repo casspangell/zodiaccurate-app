@@ -35,7 +35,7 @@ document.addEventListener("DOMContentLoaded", function () {
         "Updating celestial positions...",
         "Computing horoscope insights...",
         "Synchronizing astral events...",
-        "Finalizing astrological analysis..."
+        "Finalizing astrological analysis (this may take a moment)..."
     ];
 
 

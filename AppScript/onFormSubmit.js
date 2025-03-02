@@ -91,7 +91,7 @@ function onWebFormSubmitHandler(e) {
         if (saveResult && userSaveResult) {
             Logger.log("✅ New User Saved in Firebase.");
             welcomeChatGPT(e.formData, uuid);
-            setUpEmailCampaign(e.formData, uuid, name, email);
+            
         } else {
             Logger.log("❌ Failed to save new user in Firebase.");
         }

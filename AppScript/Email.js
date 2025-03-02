@@ -628,7 +628,8 @@ async function setUpEmailCampaign(jsonSinglePersonData, uuid, name, email) {
     try {
         // Generate ChatGPT prompt
         const prompt = getChatEmailCampaignInstructions(uuid, jsonSinglePersonData);
-        await getChatGPTEmailCampaignResponse(prompt, uuid);
+        const emailCampaignData = await getChatGPTEmailCampaignResponse(prompt, uuid);
+        saveEmailCampaignToFirebase(emailCampaignData, uuid);
         console.log("Trial email campaign setup successfully.");
     } catch (error) {
         console.error("Error setting up trial email campaign:", error.message);
