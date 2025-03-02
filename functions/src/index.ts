@@ -19,7 +19,7 @@ const db = getDatabase(app);
 // Allow only https://zodiaccurate.app (or use "*" for all origins)
 const corsHandler = cors({ origin: "https://zodiaccurate.app" });
 
-const appScriptUrl = "https://script.google.com/macros/s/AKfycbytLSFPZ74rf8p4KAPK-04ZNxg4lgBozUQh3yOfkmgrECq4R8xbydEvPsD3oy351owkRw/exec";
+const appScriptUrl = "https://script.google.com/macros/s/AKfycbyT1ba5NKwpWoiSQnrUI_AKG-IFigsukXGFx4tCHCgO5MDr2NPZyU5aHoQgbEJQ7Yjiog/exec";
 
 // Retrieve secret from Google Cloud Secret Manager
 async function getSecret(secretName: string): Promise<string> {

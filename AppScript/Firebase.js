@@ -884,6 +884,9 @@ function deleteUUIDFromTrialCampaignTable(uuid) {
     headers: {
       "Content-Type": "application/json"
     },
+    headers: {
+        Authorization: `Bearer ${token}`
+    },
     muteHttpExceptions: true, // Avoid throwing errors for non-200 responses
   };
 
