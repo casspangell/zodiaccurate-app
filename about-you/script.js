@@ -166,8 +166,6 @@ function populateChildren(data) {
   
   // For each index, add a new child entry and prefill its fields
   indices.forEach(dataIndex => {
-    // Call your existing addChild() function
-    addChild();
     // The new card’s index corresponds to the current value of the global childCount
     const currentIndex = childCount;
     
@@ -211,77 +209,75 @@ function populateChildren(data) {
 
 
 function populateImportantPersons(data) {
-  // Collect indices from keys starting with "important_person_name_"
-  const indices = [];
-  Object.keys(data).forEach((key) => {
-    if (key.startsWith("important_person_name_")) {
-      // E.g. key = "important_person_name_1" gives index "1"
-      const parts = key.split("_");
-      const idx = parts[parts.length - 1];
-      if (!indices.includes(idx)) {
-        indices.push(idx);
-      }
-    }
-  });
-  
-  // If we found any important person entries, unhide the section.
-  if (indices.length > 0) {
-    document.getElementById("important-person-section").style.display = "block";
-  }
-  
-  // Sort indices numerically so they appear in order.
-  indices.sort((a, b) => parseInt(a) - parseInt(b));
-  
-  // For each detected index, add a card and prefill it.
-  indices.forEach((dataIndex) => {
-    // Call your function to add a new important person card.
-    addImportantPerson();
-    // The new card's index corresponds to the current value of the global variable.
-    const currentIndex = importantPersonCount;
-    
-    // List the field names you want to prefill.
-    const fields = [
-      "name",
-      "birthdate",
-      "birth_time",
-      "birth_city",
-      "relation",
-      "impact",
-      "stress",
-      "appreciation",
-      "improvement"
-    ];
-    
-    // For each field, build the data key (from Firebase) and the corresponding input selector.
-    fields.forEach((field) => {
-      const dataKey = `important_person_${field}_${dataIndex}`;
-      // The newly created card has inputs with names based on currentIndex.
-      const selector = `#important-person-${currentIndex} input[name="important_person_${field}_${currentIndex}"]`;
-      const inputElem = document.querySelector(selector);
-      if (inputElem && data[dataKey] !== undefined) {
-        inputElem.value = data[dataKey];
-      }
-    });
-    
-    // Handle checkboxes (e.g. conflict preferences) if your data contains them.
-    const conflictKey = `important_person_conflict_${dataIndex}`;
-    if (data[conflictKey]) {
-      // Accept either an array or a comma-separated string.
-      const values = Array.isArray(data[conflictKey])
-        ? data[conflictKey]
-        : data[conflictKey].split(",").map(v => v.trim());
-      // Select checkboxes in the current card.
-      const checkboxes = document.querySelectorAll(
-        `#important-person-${currentIndex} input[name="important_person_conflict_${currentIndex}"]`
-      );
-      checkboxes.forEach((checkbox) => {
-        if (values.includes(checkbox.value)) {
-          checkbox.checked = true;
+    // Collect indices from keys starting with "important_person_name_"
+    const indices = [];
+    Object.keys(data).forEach((key) => {
+        if (key.startsWith("important_person_name_")) {
+            const parts = key.split("_");
+            const idx = parts[parts.length - 1];
+            if (!indices.includes(idx)) {
+                indices.push(idx);
+            }
         }
-      });
+    });
+
+    // If we found any important person entries, unhide the section.
+    if (indices.length > 0) {
+        document.getElementById("important-person-section").style.display = "block";
     }
-  });
+
+    // Sort indices numerically so they appear in order.
+    indices.sort((a, b) => parseInt(a) - parseInt(b));
+
+    // For each detected index, add a card and prefill it.
+    indices.forEach((dataIndex) => {
+        // Call function to add a new important person card.
+        addImportantPerson();
+        const currentIndex = importantPersonCount;
+
+        // List of fields to populate
+        const fields = [
+            "name",
+            "birthdate",
+            "birth_time",
+            "birth_city",
+            "relation",
+            "impact",
+            "stress",
+            "appreciation",
+            "improvement"
+        ];
+
+        // Update both input and textarea fields
+        fields.forEach((field) => {
+            const dataKey = `important_person_${field}_${dataIndex}`;
+            const selector = `#important-person-${currentIndex} [name="important_person_${field}_${currentIndex}"]`;
+
+            const element = document.querySelector(selector);
+            if (element && data[dataKey] !== undefined) {
+                element.value = data[dataKey];
+            }
+        });
+
+        // Handle checkboxes (e.g., conflict preferences)
+        const conflictKey = `important_person_conflict_${dataIndex}`;
+        if (data[conflictKey]) {
+            const values = Array.isArray(data[conflictKey])
+                ? data[conflictKey]
+                : data[conflictKey].split(",").map(v => v.trim());
+
+            const checkboxes = document.querySelectorAll(
+                `#important-person-${currentIndex} input[name="important_person_conflict_${currentIndex}"]`
+            );
+            checkboxes.forEach((checkbox) => {
+                if (values.includes(checkbox.value)) {
+                    checkbox.checked = true;
+                }
+            });
+        }
+    });
 }
+
 
 // Overwrite local storage data with the new data.
 function updateLocalStorageWithData(data) {
@@ -705,51 +701,125 @@ function getUUIDFromUrl() {
     }
 
     function addChild() {
-    childCount++;
-    const newChild = document.createElement("div");
-    newChild.classList.add("child-entry");
-    newChild.setAttribute("id", `child-${childCount}`);
-    newChild.innerHTML = `
-        <div class="child-card">
-            <h3>Child ${childCount} Information</h3>
-            <label>Child's First Name: <input type="text" id="child_name_${childCount}" name="child_name_${childCount}" placeholder="Example: Emily"></label><br>
-            <label>Child's Birth Place: <input type="text" id="child_name_${childCount}" name="child_birth_place_${childCount}" placeholder="Example: Los Angeles, California, USA"></label><br>
-            <label>Child's Birth Date: <input type="text" id="child_name_${childCount}" name="child_birth_date_${childCount}" placeholder="Example: May 25, 2019"></label><br>
-            <label>Child's Birth Time: <input type="text" id="child_name_${childCount}" name="child_birth_time_${childCount}" placeholder="Example: 1:30 PM"></label><br>
-            
-            <label>What is your child’s gender?</label><br>
-            <div class="main-radio-group multi-column">
-               <label><input type="radio" id="child_gender_${childCount}" name="child_gender_${childCount}" value="Male"> Male</label>
-                <label><input type="radio" id="child_gender_${childCount}" name="child_gender_${childCount}" value="Female"> Female</label>
-                <label><input type="radio" id="child_gender_${childCount}" name="child_gender_${childCount}" value="Prefer Not to Say"> Prefer Not to Say</label>
-                <label><input type="radio" id="child_gender_${childCount}" name="child_gender_${childCount}" value="Other"> Other</label>
+        childCount++;
+        const newChild = document.createElement("div");
+        newChild.classList.add("child-entry");
+        newChild.setAttribute("id", `child-${childCount}`);
+        newChild.innerHTML = `
+            <div class="child-card">
+                <h3>Child ${childCount} Information</h3>
+                <label>Child's First Name: <input type="text" id="child_name_${childCount}" name="child_name_${childCount}" placeholder="Example: Emily"></label><br>
+                <label>Child's Birth Place: <input type="text" id="child_name_${childCount}" name="child_birth_place_${childCount}" placeholder="Example: Los Angeles, California, USA"></label><br>
+                <label>Child's Birth Date: <input type="text" id="child_name_${childCount}" name="child_birth_date_${childCount}" placeholder="Example: May 25, 2019"></label><br>
+                <label>Child's Birth Time: <input type="text" id="child_name_${childCount}" name="child_birth_time_${childCount}" placeholder="Example: 1:30 PM"></label><br>
+                
+                <label>What is your child’s gender?</label><br>
+                <div class="main-radio-group multi-column">
+                   <label><input type="radio" id="child_gender_${childCount}" name="child_gender_${childCount}" value="Male"> Male</label>
+                    <label><input type="radio" id="child_gender_${childCount}" name="child_gender_${childCount}" value="Female"> Female</label>
+                    <label><input type="radio" id="child_gender_${childCount}" name="child_gender_${childCount}" value="Prefer Not to Say"> Prefer Not to Say</label>
+                    <label><input type="radio" id="child_gender_${childCount}" name="child_gender_${childCount}" value="Other"> Other</label>
+                </div>
+                <br>
+                <label for="child_activities_${childCount}">Child's Primary Activities:</label>
+                <textarea id="child_activities_${childCount}" name="child_activities_${childCount}" class="text-large auto-expand" placeholder="Example: Playing soccer, reading books, and drawing."></textarea>
+
+                <label for="child_stress_${childCount}">Child's Stress:</label>
+                <textarea id="child_stress_${childCount}" name="child_stress_${childCount}" class="text-large auto-expand" placeholder="Example: 1. Adjusting to school. 2. Difficulty making friends. 3. Feeling overwhelmed with homework."></textarea>
+
+                <label for="child_joy_${childCount}">Child's Joy and Satisfaction:</label>
+                <textarea id="child_joy_${childCount}" name="child_joy_${childCount}" class="text-large auto-expand" placeholder="Example: Playing with friends, spending time with family, and exploring nature."></textarea>
+
+
+                <label for="joy_satisfaction">Child's Long-Term Concerns:</label>
+                <textarea type="text" id="child_concerns_${childCount}" name="child_concerns_${childCount}" class="text-large auto-expand" placeholder="Example: 1. Struggling with confidence. 2. Adapting to new environments. 3. Balancing school and extracurricular activities."></textarea>
+                <button type="button" class="remove-child-btn" data-child-id="${childCount}">Remove Child</button>
             </div>
-            <br>
-            <label for="joy_satisfaction">Child's Primary Activities:</label>
-            <textarea type="text" id="child_activities_${childCount}" name="child_activities_${childCount}" class="text-large auto-expand" placeholder="Example: Playing soccer, reading books, and drawing."></textarea>
-            
-            <label for="joy_satisfaction">Child's Stress:</label>
-            <textarea type="text" id="child_stress_${childCount}" name="child_stress_${childCount}" class="text-large auto-expand" placeholder="Example: 1. Adjusting to school. 2. Difficulty making friends. 3. Feeling overwhelmed with homework."></textarea>
+        `;
 
-            <label for="joy_satisfaction">Child's Joy and Satisfaction:</label>
-            <textarea type="text" id="child_joy_${childCount}" name="child_joy_${childCount}" class="text-large auto-expand" placeholder="Example: Playing with friends, spending time with family, and exploring nature."></textarea>
-
-            <label for="joy_satisfaction">Child's Long-Term Concerns:</label>
-            <textarea type="text" id="child_concerns_${childCount}" name="child_concerns_${childCount}" class="text-large auto-expand" placeholder="Example: 1. Struggling with confidence. 2. Adapting to new environments. 3. Balancing school and extracurricular activities."></textarea>
-            <button type="button" class="remove-child-btn" data-child-id="${childCount}">Remove Child</button>
-        </div>
-    `;
-
-    childContainer.appendChild(newChild);
-    // Attach remove event to the button immediately after adding the child
-    newChild.querySelector(".remove-child-btn").addEventListener("click", function () {
-        removeChild(newChild);
+        childContainer.appendChild(newChild);
+        // Attach remove event to the button immediately after adding the child
+        newChild.querySelector(".remove-child-btn").addEventListener("click", function () {
+            removeChild(newChild);
     });
 }
+
 function removeChild(childElement) {
     childElement.remove();
     childCount--;
 }
+
+function populateChildren(data) {
+    // Gather indices by checking for keys that start with "child_name_"
+    const indices = [];
+    Object.keys(data).forEach(key => {
+        if (key.startsWith("child_name_")) {
+            // E.g., key "child_name_1" yields index "1"
+            const parts = key.split("_");
+            const idx = parts[parts.length - 1];
+            if (!indices.includes(idx)) {
+                indices.push(idx);
+            }
+        }
+    });
+    
+    // If any child data is found, unhide the Children Section
+    if (indices.length > 0) {
+        document.getElementById("children-section").style.display = "block";
+    }
+    
+    // Sort indices numerically to maintain the order
+    indices.sort((a, b) => parseInt(a) - parseInt(b));
+    
+    // For each index, add a new child entry and prefill its fields
+    indices.forEach(dataIndex => {
+        // Call your existing addChild() function
+        addChild();
+        // The new card’s index corresponds to the current value of the global childCount
+        const currentIndex = childCount;
+        
+        // List the text fields to prefill
+        const fields = [
+            "name",
+            "birth_place",
+            "birth_date",
+            "birth_time",
+            "activities",
+            "stress",
+            "joy",
+            "concerns",
+            "activities"
+        ];
+        
+        fields.forEach(field => {
+            // Build the key from the Firebase data (for example: child_name_1)
+            const dataKey = `child_${field}_${dataIndex}`;
+
+            // Select both input and textarea fields
+            const selector = `#child-${currentIndex} input[name="child_${field}_${currentIndex}"], 
+                              #child-${currentIndex} textarea[name="child_${field}_${currentIndex}"]`;
+            
+            const inputElem = document.querySelector(selector);
+            if (inputElem && data[dataKey] !== undefined) {
+                inputElem.value = data[dataKey];
+            }
+        });
+        
+        // Handle radio buttons for child gender
+        const genderKey = `child_gender_${dataIndex}`;
+        if (data[genderKey]) {
+            const radios = document.querySelectorAll(
+                `#child-${currentIndex} input[name="child_gender_${currentIndex}"]`
+            );
+            radios.forEach(radio => {
+                if (radio.value === data[genderKey]) {
+                    radio.checked = true;
+                }
+            });
+        }
+    });
+}
+
 
 // Prevent duplicate event listeners
 if (!document.getElementById("add-important-person").dataset.listener) {
@@ -782,13 +852,13 @@ function addImportantPerson() {
             </div>
             <br>
             <label for="joy_satisfaction">Describe how this person affects your daily life:</label>
-            <textarea type="text" id="important_person_impact_${importantPersonCount}" name="important_person_impact_${importantPersonCount}" class="text-large auto-expand" placeholder="Example: This person inspires me to work harder and stay positive, but they can also add stress when we disagree."></textarea>
+            <textarea id="important_person_impact_${importantPersonCount}" name="important_person_impact_${importantPersonCount}" class="text-large auto-expand" placeholder="Example: This person inspires me to work harder and stay positive, but they can also add stress when we disagree."></textarea>
 
-            <label for="important_person_impact_${importantPersonCount}">List 3-5 sources of stress related to this person</label>
-            <textarea type="text" id="important_person_impact_${importantPersonCount}" name="important_person_impact_${importantPersonCount}" class="text-large auto-expand" placeholder="Example: 1. Miscommunication. 2. Different priorities. 3. Financial disagreements."></textarea>
+            <label for="important_person_stress_${importantPersonCount}">List 3-5 sources of stress related to this person</label>
+            <textarea id="important_person_stress_${importantPersonCount}" name="important_person_stress_${importantPersonCount}" class="text-large auto-expand" placeholder="Example: 1. Miscommunication. 2. Different priorities. 3. Financial disagreements."></textarea>
             
             <label for="important_person_appreciation_${importantPersonCount}">List 3-5 things you appreciate about this person:</label>
-            <textarea type="text" id="important_person_appreciation_${importantPersonCount}" name="important_person_appreciation_${importantPersonCount}" class="text-large auto-expand" placeholder="Example: 1. Their loyalty. 2. Their sense of humor. 3. Their ability to listen. 4. Their dedication to family. 5. Their honesty."></textarea>
+            <textarea id="important_person_appreciation_${importantPersonCount}" name="important_person_appreciation_${importantPersonCount}" class="text-large auto-expand" placeholder="Example: 1. Their loyalty. 2. Their sense of humor. 3. Their ability to listen. 4. Their dedication to family. 5. Their honesty."></textarea>
 
             <label>How do you typically handle disagreements with this person?</label><br>
             <div class="main-checkbox-group multi-column">
@@ -800,7 +870,7 @@ function addImportantPerson() {
             <br>
 
             <label for="important_person_improvement_${importantPersonCount}">List 3-5 ways you want to improve your relationship with this person (Optional):</label>
-            <textarea type="text" id="important_person_improvement_${importantPersonCount}" name="important_person_improvement_${importantPersonCount}" class="text-large auto-expand" placeholder="Example: 1. Their loyalty. 2. Their sense of humor. 3. Their ability to listen. 4. Their dedication to family. 5. Their honesty."></textarea>
+            <textarea id="important_person_improvement_${importantPersonCount}" name="important_person_improvement_${importantPersonCount}" class="text-large auto-expand" placeholder="Example: 1. Their loyalty. 2. Their sense of humor. 3. Their ability to listen. 4. Their dedication to family. 5. Their honesty."></textarea>
 
             <button type="button" class="remove-important-person-btn" data-person-id="${importantPersonCount}">Remove This Person</button>
         </div>
