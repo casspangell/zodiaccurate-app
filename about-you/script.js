@@ -701,8 +701,8 @@ function getUUIDFromUrl() {
     newChild.innerHTML = `
         <div class="child-card">
             <h3>Child ${childCount} Information</h3>
-            <label>Child's First Name: <input type="text" name="child_name_${childCount}"></label><br>
-            <label>Child's Birth Place: <input type="text" name="child_birth_place_${childCount}"></label><br>
+            <label>Child's First Name: <input type="text" name="child_name_${childCount}" placeholder="Example: Emily"></label><br>
+            <label>Child's Birth Place: <input type="text" name="child_birth_place_${childCount}" placeholder="Example: Los Angeles, California, USA"></label><br>
             <label>Child's Birth Date: <input type="text" name="child_birth_date_${childCount}" placeholder="Example: May 25, 2019"></label><br>
             <label>Child's Birth Time: <input type="text" name="child_birth_time_${childCount}" placeholder="Example: 1:30 PM"></label><br>
             
@@ -714,10 +714,17 @@ function getUUIDFromUrl() {
                 <label><input type="radio" name="child_gender_${childCount}" value="Other"> Other</label>
             </div>
             <br>
-            <label>Child's Primary Activities: <input type="text" name="child_activities_${childCount}"></label><br>
-            <label>Child's Stress: <input type="text" name="child_stress_${childCount}"></label><br>
-            <label>Child's Joy and Satisfaction: <input type="text" name="child_joy_${childCount}"></label><br>
-            <label>Child's Long-Term Concerns: <input type="text" name="child_concerns_${childCount}"></label><br>
+            <label for="joy_satisfaction">Child's Primary Activities:</label>
+            <textarea type="text" id="child_activities_${childCount}" name="child_activities_${childCount}" class="text-large auto-expand" placeholder="Example: Playing soccer, reading books, and drawing."></textarea>
+            
+            <label for="joy_satisfaction">Child's Stress:</label>
+            <textarea type="text" id="child_stress_${childCount}" name="child_stress_${childCount}" class="text-large auto-expand" placeholder="Example: 1. Adjusting to school. 2. Difficulty making friends. 3. Feeling overwhelmed with homework."></textarea>
+
+            <label for="joy_satisfaction">Child's Joy and Satisfaction:</label>
+            <textarea type="text" id="child_joy_${childCount}" name="child_joy_${childCount}" class="text-large auto-expand" placeholder="Example: Playing with friends, spending time with family, and exploring nature."></textarea>
+
+            <label for="joy_satisfaction">Child's Long-Term Concerns:</label>
+            <textarea type="text" id="child_concerns_${childCount}" name="child_concerns_${childCount}" class="text-large auto-expand" placeholder="Example: 1. Struggling with confidence. 2. Adapting to new environments. 3. Balancing school and extracurricular activities."></textarea>
             <button type="button" class="remove-child-btn" data-child-id="${childCount}">Remove Child</button>
         </div>
     `;
@@ -749,7 +756,7 @@ function addImportantPerson() {
     newPerson.innerHTML = `
         <div class="important-person-card">
             <h3>Person ${importantPersonCount} Information</h3>
-            <label>First Name: <input type="text" name="important_person_name_${importantPersonCount}"></label><br>
+            <label>First Name: <input type="text" name="important_person_name_${importantPersonCount}" placeholder="Example: John"></label><br>
             <label>Birthdate: <input type="text" name="important_person_birthdate_${importantPersonCount}" placeholder="Example: May 25, 1984 or 'Unknown'"></label><br>
             <label>Birth Time: <input type="text" name="important_person_birth_time_${importantPersonCount}" placeholder="Example: 1:30 PM or 'Unknown'"></label><br>
             <label>Birth City: <input type="text" name="important_person_birth_city_${importantPersonCount}" placeholder="City, State, Country or 'Unknown'"></label><br>
@@ -763,9 +770,15 @@ function addImportantPerson() {
                 <label><input type="radio" name="important_person_relation_${importantPersonCount}" value="Other"> Other</label>
             </div>
             <br>
-            <label>Describe how this person affects your daily life: <input type="text" name="important_person_impact_${importantPersonCount}"></label><br>
-            <label>List 3-5 sources of stress related to this person (if any): <input type="text" name="important_person_stress_${importantPersonCount}"></label><br>
-            <label>List 3-5 things you appreciate about this person: <input type="text" name="important_person_appreciation_${importantPersonCount}"></label><br>
+            <label for="joy_satisfaction">Describe how this person affects your daily life:</label>
+            <textarea type="text" id="important_person_impact_${importantPersonCount}" name="important_person_impact_${importantPersonCount}" class="text-large auto-expand" placeholder="Example: This person inspires me to work harder and stay positive, but they can also add stress when we disagree."></textarea>
+
+            <label for="important_person_impact_${importantPersonCount}">List 3-5 sources of stress related to this person</label>
+            <textarea type="text" id="important_person_impact_${importantPersonCount}" name="important_person_impact_${importantPersonCount}" class="text-large auto-expand" placeholder="Example: 1. Miscommunication. 2. Different priorities. 3. Financial disagreements."></textarea>
+            
+            <label for="important_person_appreciation_${importantPersonCount}">List 3-5 things you appreciate about this person:</label>
+            <textarea type="text" id="important_person_appreciation_${importantPersonCount}" name="important_person_appreciation_${importantPersonCount}" class="text-large auto-expand" placeholder="Example: 1. Their loyalty. 2. Their sense of humor. 3. Their ability to listen. 4. Their dedication to family. 5. Their honesty."></textarea>
+
             <label>How do you typically handle disagreements with this person?</label><br>
             <div class="main-checkbox-group multi-column">
                 <label><input type="checkbox" name="important_person_conflict_${importantPersonCount}" value="Address Immediately"> Address Immediately</label>
@@ -775,7 +788,9 @@ function addImportantPerson() {
             </div>
             <br>
 
-            <label>List 3-5 ways you want to improve your relationship with this person (Optional): <input type="text" name="important_person_improvement_${importantPersonCount}"></label><br>
+            <label for="important_person_improvement_${importantPersonCount}">List 3-5 ways you want to improve your relationship with this person (Optional):</label>
+            <textarea type="text" id="important_person_improvement_${importantPersonCount}" name="important_person_improvement_${importantPersonCount}" class="text-large auto-expand" placeholder="Example: 1. Their loyalty. 2. Their sense of humor. 3. Their ability to listen. 4. Their dedication to family. 5. Their honesty."></textarea>
+
             <button type="button" class="remove-important-person-btn" data-person-id="${importantPersonCount}">Remove This Person</button>
         </div>
     `;
