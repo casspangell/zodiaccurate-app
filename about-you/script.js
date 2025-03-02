@@ -1,7 +1,6 @@
 const FIREBASE_FUNCTIONS_URL = "https://handleformsubmission-feti3ggk7q-uc.a.run.app";
 const FIREBASE_GET_DATA_URL = "https://handleformdataretrieval-feti3ggk7q-uc.a.run.app";
 
-// document.addEventListener("DOMContentLoaded", fetchData);
 document.addEventListener("DOMContentLoaded", function () {
 
     let currentSection = 0;
@@ -93,7 +92,6 @@ if (uuid) {
 
 
 async function fetchData() {
-  console.log("Fetching user data");
   const loadingOverlay = document.getElementById("loadingOverlay");
   loadingOverlay.style.display = "flex";
   const uuid = getUUIDFromUrl();
@@ -104,6 +102,7 @@ async function fetchData() {
     });
     const result = await response.json();
     dbData = result;
+    console.log("User found. Fetching data.");
     populateFormFields(result);
     updateLocalStorageWithData(result);
 
@@ -116,26 +115,32 @@ async function fetchData() {
 }
 
 function populateFormFields(data) {
-
-  // Loop through each key-value pair in the data object.
-  Object.entries(data).forEach(([fieldId, value]) => {
-    // Find the element with the given id.
-    const field = document.getElementById(fieldId);
-    if (field) {
-      // If it's an input, textarea, or select, set its value.
-      if (
-        field instanceof HTMLInputElement ||
-        field instanceof HTMLTextAreaElement ||
-        field instanceof HTMLSelectElement
-      ) {
-        field.value = value;
-      } else {
-        // Otherwise, update its text content.
-        field.textContent = value;
-      }
-    }
-  });
+    // Loop through each key-value pair in the data object.
+    Object.entries(data).forEach(([fieldName, value]) => {
+        // Handle radio buttons separately
+        if (document.querySelector(`input[type="radio"][name="${fieldName}"]`)) {
+            const radioButton = document.querySelector(`input[type="radio"][name="${fieldName}"][value="${value}"]`);
+            if (radioButton) {
+                radioButton.checked = true;
+            }
+        } else {
+            // Find the element with the given ID for other input types
+            const field = document.getElementById(fieldName);
+            if (field) {
+                if (
+                    field instanceof HTMLInputElement ||
+                    field instanceof HTMLTextAreaElement ||
+                    field instanceof HTMLSelectElement
+                ) {
+                    field.value = value;
+                } else {
+                    field.textContent = value;
+                }
+            }
+        }
+    });
 }
+
 
 function populateChildren(data) {
   // Gather indices by checking for keys that start with "child_name_"
@@ -707,17 +712,17 @@ function getUUIDFromUrl() {
     newChild.innerHTML = `
         <div class="child-card">
             <h3>Child ${childCount} Information</h3>
-            <label>Child's First Name: <input type="text" name="child_name_${childCount}" placeholder="Example: Emily"></label><br>
-            <label>Child's Birth Place: <input type="text" name="child_birth_place_${childCount}" placeholder="Example: Los Angeles, California, USA"></label><br>
-            <label>Child's Birth Date: <input type="text" name="child_birth_date_${childCount}" placeholder="Example: May 25, 2019"></label><br>
-            <label>Child's Birth Time: <input type="text" name="child_birth_time_${childCount}" placeholder="Example: 1:30 PM"></label><br>
+            <label>Child's First Name: <input type="text" id="child_name_${childCount}" name="child_name_${childCount}" placeholder="Example: Emily"></label><br>
+            <label>Child's Birth Place: <input type="text" id="child_name_${childCount}" name="child_birth_place_${childCount}" placeholder="Example: Los Angeles, California, USA"></label><br>
+            <label>Child's Birth Date: <input type="text" id="child_name_${childCount}" name="child_birth_date_${childCount}" placeholder="Example: May 25, 2019"></label><br>
+            <label>Child's Birth Time: <input type="text" id="child_name_${childCount}" name="child_birth_time_${childCount}" placeholder="Example: 1:30 PM"></label><br>
             
             <label>What is your child’s gender?</label><br>
             <div class="main-radio-group multi-column">
-               <label><input type="radio" name="child_gender_${childCount}" value="Male"> Male</label>
-                <label><input type="radio" name="child_gender_${childCount}" value="Female"> Female</label>
-                <label><input type="radio" name="child_gender_${childCount}" value="Prefer Not to Say"> Prefer Not to Say</label>
-                <label><input type="radio" name="child_gender_${childCount}" value="Other"> Other</label>
+               <label><input type="radio" id="child_gender_${childCount}" name="child_gender_${childCount}" value="Male"> Male</label>
+                <label><input type="radio" id="child_gender_${childCount}" name="child_gender_${childCount}" value="Female"> Female</label>
+                <label><input type="radio" id="child_gender_${childCount}" name="child_gender_${childCount}" value="Prefer Not to Say"> Prefer Not to Say</label>
+                <label><input type="radio" id="child_gender_${childCount}" name="child_gender_${childCount}" value="Other"> Other</label>
             </div>
             <br>
             <label for="joy_satisfaction">Child's Primary Activities:</label>
@@ -768,12 +773,12 @@ function addImportantPerson() {
             <label>Birth City: <input type="text" name="important_person_birth_city_${importantPersonCount}" placeholder="City, State, Country or 'Unknown'"></label><br>
             <label>What is your relationship with this person?</label><br>
             <div class="main-radio-group multi-column">
-                <label><input type="radio" name="important_person_relation_${importantPersonCount}" value="Family Member"> Family Member</label>
-                <label><input type="radio" name="important_person_relation_${importantPersonCount}" value="Roommate"> Roommate</label>
-                <label><input type="radio" name="important_person_relation_${importantPersonCount}" value="Friend"> Friend</label>
-                <label><input type="radio" name="important_person_relation_${importantPersonCount}" value="Business Partner"> Business Partner</label>
-                <label><input type="radio" name="important_person_relation_${importantPersonCount}" value="Ex-Partner"> Ex-Partner</label>
-                <label><input type="radio" name="important_person_relation_${importantPersonCount}" value="Other"> Other</label>
+                <label><input type="radio" id="important_person_relation_${importantPersonCount}" name="important_person_relation_${importantPersonCount}" value="Family Member"> Family Member</label>
+                <label><input type="radio" id="important_person_relation_${importantPersonCount}" name="important_person_relation_${importantPersonCount}" value="Roommate"> Roommate</label>
+                <label><input type="radio" id="important_person_relation_${importantPersonCount}" name="important_person_relation_${importantPersonCount}" value="Friend"> Friend</label>
+                <label><input type="radio" id="important_person_relation_${importantPersonCount}" name="important_person_relation_${importantPersonCount}" value="Business Partner"> Business Partner</label>
+                <label><input type="radio" id="important_person_relation_${importantPersonCount}" name="important_person_relation_${importantPersonCount}" value="Ex-Partner"> Ex-Partner</label>
+                <label><input type="radio" id="important_person_relation_${importantPersonCount}" name="important_person_relation_${importantPersonCount}" value="Other"> Other</label>
             </div>
             <br>
             <label for="joy_satisfaction">Describe how this person affects your daily life:</label>
@@ -787,10 +792,10 @@ function addImportantPerson() {
 
             <label>How do you typically handle disagreements with this person?</label><br>
             <div class="main-checkbox-group multi-column">
-                <label><input type="checkbox" name="important_person_conflict_${importantPersonCount}" value="Address Immediately"> Address Immediately</label>
-                <label><input type="checkbox" name="important_person_conflict_${importantPersonCount}" value="Take Time to Cool Down"> Take Time to Cool Down</label>
-                <label><input type="checkbox" name="important_person_conflict_${importantPersonCount}" value="Avoid Confrontation"> Avoid Confrontation</label>
-                <label><input type="checkbox" name="important_person_conflict_${importantPersonCount}" value="Seek a Third-Party Opinion"> Seek a Third-Party Opinion</label>
+                <label><input type="checkbox" id="important_person_conflict_${importantPersonCount}" name="important_person_conflict_${importantPersonCount}" value="Address Immediately"> Address Immediately</label>
+                <label><input type="checkbox" id="important_person_conflict_${importantPersonCount}" name="important_person_conflict_${importantPersonCount}" value="Take Time to Cool Down"> Take Time to Cool Down</label>
+                <label><input type="checkbox" id="important_person_conflict_${importantPersonCount}" name="important_person_conflict_${importantPersonCount}" value="Avoid Confrontation"> Avoid Confrontation</label>
+                <label><input type="checkbox" id="important_person_conflict_${importantPersonCount}" name="important_person_conflict_${importantPersonCount}" value="Seek a Third-Party Opinion"> Seek a Third-Party Opinion</label>
             </div>
             <br>
 
@@ -814,7 +819,7 @@ function addImportantPerson() {
 
     function collectFormData() {
         const formData = {};
-        const inputs = form.querySelectorAll("input, select, textarea");
+        const inputs = document.querySelectorAll("input, select, textarea");
 
         inputs.forEach((input) => {
             if (input.type === "checkbox") {
@@ -825,6 +830,10 @@ function addImportantPerson() {
                     formData[input.name].push(input.value);
                 }
             } else if (input.type === "radio") {
+                // Ensure each radio group is captured, even if nothing is selected
+                if (!(input.name in formData)) {
+                    formData[input.name] = ""; // Default empty string for unselected radios
+                }
                 if (input.checked) {
                     formData[input.name] = input.value;
                 }
@@ -920,5 +929,27 @@ function addImportantPerson() {
           }
         }
       }
+
+    function validateRadioGroup(groupName) {
+        const checkedRadio = document.querySelector(`input[name="${groupName}"]:checked`);
+        const errorMessage = document.getElementById(`${groupName}-error`);
+
+        if (!checkedRadio) {
+            if (errorMessage) {
+                errorMessage.style.display = "block";
+                errorMessage.textContent = "Please select an option.";
+            } else {
+                console.error(`No error message element found for: ${groupName}`);
+            }
+            return false;
+        } else {
+            if (errorMessage) {
+                errorMessage.style.display = "none";
+                errorMessage.textContent = "";
+            }
+            return true;
+        }
+    }
+
 });
 
