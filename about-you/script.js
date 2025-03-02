@@ -145,7 +145,9 @@ function populateImportantPersons(data) {
     // Collect indices from keys starting with "important_person_name_"
     const indices = [];
     Object.keys(data).forEach((key) => {
+        console.log(key);
         if (key.startsWith("important_person_name_")) {
+
             const parts = key.split("_");
             const idx = parts[parts.length - 1];
             if (!indices.includes(idx)) {
