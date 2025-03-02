@@ -560,6 +560,7 @@ function getUUIDFromUrl() {
                     const selectedEmployment = document.querySelector('input[name="employment_status"]:checked');
                     if (!selectedEmployment) return;
                     const employmentStatus = selectedEmployment.value;
+                    updateEmploymentSections(employmentStatus);
 
                     if (["employed", "business_owner", "entrepreneur", "self_employed"].includes(employmentStatus)) {
                         goToSection(6);
@@ -936,6 +937,42 @@ function addImportantPerson() {
         return dataObject;
     }
 
+    function clearEmploymentData(status) {
+        // If user selects "Unemployed" or "Retired", clear job-related fields
+        if (status === "unemployed" || status === "retired") {
+            console.log("Clearing job-related fields...");
+            const jobFields = ["job_title", "job_satisfaction", "career_goals", "work_stress", "work_environment", "career_decision", "work_life_balance", "financial_security"];
+
+            jobFields.forEach(field => {
+                const inputElements = document.querySelectorAll(`[name="${field}"]`);
+                inputElements.forEach(input => {
+                    if (input.type === "checkbox" || input.type === "radio") {
+                        input.checked = false;
+                    } else {
+                        input.value = "";
+                    }
+                });
+            });
+        }
+
+        // If user selects "Employed", clear unemployment/retirement-related fields
+        if (status === "employed" || status === "business_owner" || status === "entrepreneur" || status === "self_employed") {
+            console.log("Clearing unemployment & retirement-related fields...");
+            const clearFields = ["job_focus", "retirement_focus", "retirement_transition", "retirement_activity", "social_connections", "sense_of_purpose"];
+
+            clearFields.forEach(field => {
+                const inputElements = document.querySelectorAll(`[name="${field}"]`);
+                inputElements.forEach(input => {
+                    if (input.type === "checkbox" || input.type === "radio") {
+                        input.checked = false;
+                    } else {
+                        input.value = "";
+                    }
+                });
+            });
+        }
+    }
+
     function populateEmploymentData(data) {
         console.log("Employment Data:", data); // Debugging output
 
@@ -984,6 +1021,60 @@ function addImportantPerson() {
                 }
             });
         });
+    }
+
+    function updateEmploymentSections(status) {
+        console.log("Employment Status Selected:", status);
+
+        // Show or hide sections based on employment status
+        document.getElementById("current-employment-section").style.display = 
+            (status === "employed" || status === "business_owner" || status === "entrepreneur" || status === "self_employed") 
+            ? "block" : "none";
+
+        document.getElementById("unemployed-section").style.display = 
+            (status === "unemployed") ? "block" : "none";
+
+        document.getElementById("retired-section").style.display = 
+            (status === "retired") ? "block" : "none";
+
+        // Remove conflicting data when status changes
+        clearEmploymentData(status);
+    }
+
+    function clearEmploymentData(status) {
+        // If user selects "Unemployed" or "Retired", clear job-related fields
+        if (status === "unemployed" || status === "retired") {
+            console.log("Clearing job-related fields...");
+            const jobFields = ["job_title", "job_satisfaction", "career_goals", "work_stress", "work_environment", "career_decision", "work_life_balance", "financial_security"];
+
+            jobFields.forEach(field => {
+                const inputElements = document.querySelectorAll(`[name="${field}"]`);
+                inputElements.forEach(input => {
+                    if (input.type === "checkbox" || input.type === "radio") {
+                        input.checked = false;
+                    } else {
+                        input.value = "";
+                    }
+                });
+            });
+        }
+
+        // If user selects "Employed", clear unemployment/retirement-related fields
+        if (status === "employed" || status === "business_owner" || status === "entrepreneur" || status === "self_employed") {
+            console.log("Clearing unemployment & retirement-related fields...");
+            const clearFields = ["job_focus", "retirement_focus", "retirement_transition", "retirement_activity", "social_connections", "sense_of_purpose"];
+
+            clearFields.forEach(field => {
+                const inputElements = document.querySelectorAll(`[name="${field}"]`);
+                inputElements.forEach(input => {
+                    if (input.type === "checkbox" || input.type === "radio") {
+                        input.checked = false;
+                    } else {
+                        input.value = "";
+                    }
+                });
+            });
+        }
     }
 
 
