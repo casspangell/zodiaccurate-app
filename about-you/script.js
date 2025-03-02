@@ -93,6 +93,9 @@ if (uuid) {
 
 
 async function fetchData() {
+  console.log("Fetching user data");
+  const loadingOverlay = document.getElementById("loadingOverlay");
+  loadingOverlay.style.display = "flex";
   const uuid = getUUIDFromUrl();
   try {
     const response = await fetch(`${FIREBASE_GET_DATA_URL}?uuid=${encodeURIComponent(uuid)}`, {
@@ -106,6 +109,9 @@ async function fetchData() {
 
   } catch (error) {
     console.error("Error fetching data:", error);
+  } finally {
+    // Hide overlay when data is loaded or in case of an error
+    loadingOverlay.style.display = "none";
   }
 }
 
