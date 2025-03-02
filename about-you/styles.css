@@ -678,6 +678,9 @@ input[type="checkbox"]:focus {
         width: 100%;
     }
 
+
+
+
     /* Progress Bar Moves to the Top */
     .progress-container {
         display: none !important;

@@ -1,10 +1,11 @@
 const FIREBASE_FUNCTIONS_URL = "https://handleformsubmission-feti3ggk7q-uc.a.run.app";
 const FIREBASE_GET_DATA_URL = "https://handleformdataretrieval-feti3ggk7q-uc.a.run.app";
 
-
 // document.addEventListener("DOMContentLoaded", fetchData);
 
 document.addEventListener("DOMContentLoaded", function () {
+    console.log("Initializing dom");
+    
     let currentSection = 0;
     const navigationHistory = [];
     const form = document.getElementById("multiStepForm");
@@ -23,6 +24,21 @@ document.addEventListener("DOMContentLoaded", function () {
     const partnerContainer = document.getElementById("partner-container");
     const addChildButton = document.getElementById("add-child");
     const childContainer = document.getElementById("child-container");
+
+    const rotatingTextDiv = document.getElementById("rotatingText");
+
+    const rotatingStrings = [
+        "Initializing astrological data...",
+        "Fetching celestial coordinates...",
+        "Calculating planetary alignments...",
+        "Analyzing natal charts...",
+        "Loading zodiac sign information...",
+        "Processing transit cycles...",
+        "Updating celestial positions...",
+        "Computing horoscope insights...",
+        "Synchronizing astral events...",
+        "Finalizing astrological analysis..."
+      ];
 
     const progressBar = document.createElement("div");
     progressBar.classList.add("progress-bar-active");
@@ -829,6 +845,9 @@ function collectFormData() {
         return dataObject;
     }
 
+      
+
+
 
     submitButton.addEventListener("click", async function (event) {
         event.preventDefault();
@@ -849,6 +868,8 @@ function collectFormData() {
         // console.log("Filtered Form Data before sending:", formDataObject);
 
         try {
+            updateText();
+            setInterval(updateText, 3000);
             const response = await fetch(FIREBASE_FUNCTIONS_URL, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -869,15 +890,29 @@ function collectFormData() {
             });
               document.querySelectorAll("input[type='checkbox']").forEach((checkbox) => {
             checkbox.disabled = true;
-            checkbox.style.pointerEvents = "none"
+            checkbox.style.pointerEvents = "none";
            });
 
-            submitButton.style.pointerEvents = "none"
+            rotatingTextDiv.style.display = "none";
+            submitButton.style.pointerEvents = "none";
             submitButton.textContent = "Submitted";
             submitButton.style.color = "#5a3e85";
             submitButton.style.backgroundColor = "#f5d76e";
         }
     });
+
+    let currentIndex = 0;
+    function updateText() {
+        if (currentIndex < rotatingStrings.length) {
+          rotatingTextDiv.textContent = rotatingStrings[currentIndex];
+          currentIndex++;
+
+          if (currentIndex < rotatingStrings.length) {
+            const randomDelay = (Math.floor(Math.random() * 3) + 1) * 500;
+            setTimeout(updateText, randomDelay);
+          }
+        }
+      }
 
 
 });
