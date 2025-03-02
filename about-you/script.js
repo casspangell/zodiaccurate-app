@@ -182,7 +182,6 @@ function populateImportantPersons(data) {
             "appreciation",
             "improvement"
         ];
-
         // Update both input and textarea fields
         fields.forEach((field) => {
             const dataKey = `important_person_${field}_${dataIndex}`;
@@ -190,7 +189,17 @@ function populateImportantPersons(data) {
 
             const element = document.querySelector(selector);
             if (element && data[dataKey] !== undefined) {
-                element.value = data[dataKey];
+                // Handle radio buttons separately
+                if (element.type === "radio") {
+                    const radioButtons = document.querySelectorAll(selector);
+                    radioButtons.forEach((radio) => {
+                        if (radio.value === data[dataKey]) {
+                            radio.checked = true;
+                        }
+                    });
+                } else {
+                    element.value = data[dataKey]; // For text inputs and textareas
+                }
             }
         });
 
@@ -210,6 +219,7 @@ function populateImportantPersons(data) {
                 }
             });
         }
+
     });
 }
 
