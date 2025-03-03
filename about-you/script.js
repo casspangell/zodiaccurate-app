@@ -1,5 +1,12 @@
 const FIREBASE_FUNCTIONS_URL = "https://handleformsubmission-feti3ggk7q-uc.a.run.app";
 const FIREBASE_GET_DATA_URL = "https://handleformdataretrieval-feti3ggk7q-uc.a.run.app";
+import { validateRelationshipStatus, validateEmploymentStatus, validateFinalConsent } from "./validate.js";
+
+// Make functions globally accessible for HTML inline onclick attributes
+window.validateRelationshipStatus = validateRelationshipStatus;
+window.validateEmploymentStatus = validateEmploymentStatus;
+window.validateFinalConsent = validateFinalConsent;
+
 
 document.addEventListener("DOMContentLoaded", function () {
 
@@ -11,6 +18,8 @@ document.addEventListener("DOMContentLoaded", function () {
     const nextButtons = document.querySelectorAll(".next");
     const prevButtons = document.querySelectorAll(".prev");
     const submitButton = document.querySelector(".submit");
+    const consentCheckbox = document.getElementById("consent-checkbox");
+    const emailCheckbox = document.getElementById("agree-checkbox");
 
     const steps = document.querySelectorAll(".step");
 
@@ -182,6 +191,7 @@ function populateImportantPersons(data) {
             "appreciation",
             "improvement"
         ];
+
         // Update both input and textarea fields
         fields.forEach((field) => {
             const dataKey = `important_person_${field}_${dataIndex}`;
@@ -189,17 +199,7 @@ function populateImportantPersons(data) {
 
             const element = document.querySelector(selector);
             if (element && data[dataKey] !== undefined) {
-                // Handle radio buttons separately
-                if (element.type === "radio") {
-                    const radioButtons = document.querySelectorAll(selector);
-                    radioButtons.forEach((radio) => {
-                        if (radio.value === data[dataKey]) {
-                            radio.checked = true;
-                        }
-                    });
-                } else {
-                    element.value = data[dataKey]; // For text inputs and textareas
-                }
+                element.value = data[dataKey];
             }
         });
 
@@ -219,7 +219,6 @@ function populateImportantPersons(data) {
                 }
             });
         }
-
     });
 }
 
@@ -953,32 +952,21 @@ function addImportantPerson() {
         ];
 
         // Loop through each checkable field (radio buttons & checkboxes)
-        checkableFields.forEach((field) => {
-            const fieldData = data[field]; // Get the value from data
-            const elements = document.querySelectorAll(`input[name="${field}"]`);
+        checkableFields.forEach(field => {
+            // Build the key from the Firebase data (for example: child_name_1)
+            const dataKey = `job_${field}`;
 
-            if (!elements.length) {
-                console.warn(`Field not found: ${field}`);
-                return;
+            // Select both input and textarea fields
+            const selector = `#job-${currentIndex} input[name="job_${field}_${currentIndex}"], 
+                              #job-${currentIndex} textarea[name="job_${field}_${currentIndex}"]`;
+            
+            const inputElem = document.querySelector(selector);
+            if (inputElem && data[dataKey] !== undefined) {
+                inputElem.value = data[dataKey];
             }
-
-            elements.forEach((element) => {
-                if (element.type === "radio") {
-                    // Match single value for radio buttons
-                    if (fieldData === element.value) {
-                        element.checked = true;
-                    }
-                } else if (element.type === "checkbox") {
-                    // Handle checkboxes with array or string values
-                    if (Array.isArray(fieldData) && fieldData.includes(element.value)) {
-                        element.checked = true;
-                    } else if (typeof fieldData === "string" && fieldData.split(",").includes(element.value)) {
-                        element.checked = true;
-                    }
-                }
-            });
         });
     }
+
 
     function updateEmploymentSections(status) {
         console.log("Employment Status Selected:", status);
@@ -1034,58 +1022,56 @@ function addImportantPerson() {
         }
     }
 
-
-
     submitButton.addEventListener("click", async function (event) {
-        event.preventDefault();
+        //   event.preventDefault();
 
-          submitButton.disabled = true;
-          submitButton.style.pointerEvents = "none"
-          submitButton.textContent = "Processing...";
-          submitButton.style.backgroundColor = "#ccc";
+        //   submitButton.disabled = true;
+        //   submitButton.style.pointerEvents = "none"
+        //   submitButton.textContent = "Processing...";
+        //   submitButton.style.backgroundColor = "#ccc";
 
-        let formDataObject = collectFormData();
-        formDataObject = removeEmptyValues(formDataObject);
+        // let formDataObject = collectFormData();
+        // formDataObject = removeEmptyValues(formDataObject);
 
-        const uuid = getUUIDFromUrl();
-        if (uuid) {
-            formDataObject.uuid = uuid;
-        }
+        // const uuid = getUUIDFromUrl();
+        // if (uuid) {
+        //     formDataObject.uuid = uuid;
+        // }
 
         // console.log("Filtered Form Data before sending:", formDataObject);
 
-        try {
-            updateText();
-            setInterval(updateText, 3000);
-            const response = await fetch(FIREBASE_FUNCTIONS_URL, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(formDataObject),
-            });
+        // try {
+        //     updateText();
+        //     setInterval(updateText, 3000);
+        //     const response = await fetch(FIREBASE_FUNCTIONS_URL, {
+        //         method: "POST",
+        //         headers: { "Content-Type": "application/json" },
+        //         body: JSON.stringify(formDataObject),
+        //     });
 
-            const result = await response.json();
+        //     const result = await response.json();
 
-            alert(result.message || "Form submitted successfully!");
-        } catch (error) {
-            submitButton.disabled = false;
-            submitButton.style.pointerEvents = ""
-            console.error("Error submitting form:", error);
-            alert("There was an error submitting the form.");
-        } finally {
-            document.querySelectorAll(".prev").forEach((button) => {
-             button.style.display = "none";
-            });
-              document.querySelectorAll("input[type='checkbox']").forEach((checkbox) => {
-            checkbox.disabled = true;
-            checkbox.style.pointerEvents = "none";
-           });
+        //     alert(result.message || "Form submitted successfully!");
+        // } catch (error) {
+        //     submitButton.disabled = false;
+        //     submitButton.style.pointerEvents = ""
+        //     console.error("Error submitting form:", error);
+        //     alert("There was an error submitting the form.");
+        // } finally {
+        //     document.querySelectorAll(".prev").forEach((button) => {
+        //      button.style.display = "none";
+        //     });
+        //       document.querySelectorAll("input[type='checkbox']").forEach((checkbox) => {
+        //     checkbox.disabled = true;
+        //     checkbox.style.pointerEvents = "none";
+        //    });
 
-            rotatingTextDiv.style.display = "none";
-            submitButton.style.pointerEvents = "none";
-            submitButton.textContent = "Submitted";
-            submitButton.style.color = "#5a3e85";
-            submitButton.style.backgroundColor = "#f5d76e";
-        }
+        //     rotatingTextDiv.style.display = "none";
+        //     submitButton.style.pointerEvents = "none";
+        //     submitButton.textContent = "Submitted";
+        //     submitButton.style.color = "#5a3e85";
+        //     submitButton.style.backgroundColor = "#f5d76e";
+        // }
     });
 
     let currentIndex = 0;

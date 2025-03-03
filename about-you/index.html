@@ -189,10 +189,11 @@
                         <label><input type="radio" name="relationship_status" value="divorced"> Divorced</label>
                         <label><input type="radio" name="relationship_status" value="not_interested"> Not Interested in a Relationship</label>
                     </div>
+                    <p id="relationship-status-error" style="color: red; display: none;">Please select a relationship status.</p>
                 </div>
                 <div class="nav-button-container">
                     <button type="button" class="prev">Back</button>
-                    <button type="button" class="next">Save & Continue</button>
+                    <button type="button" class="next" onclick="validateRelationshipStatus()">Save & Continue</button>
                 </div>
             </div>
 
@@ -574,7 +575,7 @@
                     <label>Consent Policies</label>
                     <p class="description">Your information is secure and encrypted. Please agree to the <a href="https://zodiaccurate.com/privacy-policy">ZodiAccurate GDPR Privacy Policy</a>.</p>
                     <div class="main-checkbox-group">
-                        <label><input type="checkbox" required>I agree</label>
+                        <label><input name="consent_agree" id="consent_agree" type="checkbox" required>I agree</label>
                     </div>
                 </div>
 
@@ -582,19 +583,21 @@
                     <label>Email Agreement</label>
                     <p class="description">By selecting "Yes," you agree to receive daily email guidance from ZodiAccurate.</p>
                     <div class="main-checkbox-group">
-                        <label><input type="checkbox" required>Yes</label>
+                        <label><input name="email_agree" id="email_agree" type="checkbox" required>Yes</label>
                     </div>
                 </div>
                 
                 <div class="button-group">
                     <button type="button" class="prev">Back</button>
                     <div id="rotatingText"></div>
-                    <button type="submit" class="submit">Submit</button>
+                    <button type="submit" class="submit" onclick="validateFinalConsent(event)">Submit</button>
                 </div>
             </div>
+            <p id="consent-error" style="color: red; display: none;">You must agree to both policies before submitting.</p>
         </form>
     </div>
     <script type="module" src="script.js"></script>
     <script type="module" src="firebase.js"></script>
+    <script type="module" src="validate.js"></script>
 </body>
 </html>

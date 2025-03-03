@@ -34,7 +34,7 @@ export function validateEmploymentStatus() {
     }
 }
 
-export function validateFinalConsent(event) {
+export function validateFinalConsent() {
     const consentAgree = document.getElementById("consent_agree");
     const emailAgree = document.getElementById("email_agree");
     const errorMessage = document.getElementById("consent-error");
