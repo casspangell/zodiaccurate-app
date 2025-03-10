@@ -628,7 +628,7 @@ function setUpEmailCampaign(jsonSinglePersonData, uuid, name, email) {
 
     try {
         // Generate ChatGPT prompt
-        const prompt = getChatEmailCampaignInstructions(uuid, jsonSinglePersonData);
+        const prompt = getChatEmailCampaignInstructions(uuid, jsonSinglePersonData, email);
         const emailCampaignData = getChatGPTEmailCampaignResponse(prompt, uuid);
         saveEmailCampaignToFirebase(emailCampaignData, uuid);
         console.log("Trial email campaign setup successfully.");
@@ -638,12 +638,12 @@ function setUpEmailCampaign(jsonSinglePersonData, uuid, name, email) {
 }
 
 
-function getChatEmailCampaignInstructions(uuid, jsonSinglePersonData) {
+function getChatEmailCampaignInstructions(uuid, jsonSinglePersonData, email) {
   console.log("GET CHAT CAMPAIGN INSTRUCTIONS");
   const campaignDate = formatDateForUser(uuid);
   const serverDate = new Date();
     const prompt = `
-        Here is user data: ${JSON.stringify(jsonSinglePersonData)}, Campaign_Date = ${campaignDate}, Server_Date = ${Date().serverDate}. Our company is Zodiaccurate. If you wish to use this name, place it as the Zodiaccurate Team or Zodiaccurate.
+        Here is user data: ${JSON.stringify(jsonSinglePersonData)}, Campaign_Date = ${campaignDate}, Email = ${email}. Our company is Zodiaccurate. If you wish to use this name, place it as the Zodiaccurate Team or Zodiaccurate.
 Your task is to create a 4-day personalized email campaign for this person, incorporating astrological insights to help the user decide to subscribe to our services on Days 3, 5, 7, and 9 into their trial program. Add a timestamp of today's date. Do not add [Dear User] or [From Zodiaccurate]. The email needs to bait the user into subscribing for the app. Use predictions on how using this unique astrology app will enhance their overall life, wellness, and wellbeing. Incorporate what you would be used in an astrology prediction into their life to enhance their metaphysical outlook.
 
 Focus on these sections and generate a CSV file containing the following columns and data:
@@ -656,7 +656,6 @@ Focus on these sections and generate a CSV file containing the following columns
 - Subject_4
 - Email_4
 - Campaign_Date
-- Server_Date
 - Name
 - Email
 
