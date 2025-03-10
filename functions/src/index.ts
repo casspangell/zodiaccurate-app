@@ -314,7 +314,7 @@ export const handleEmailConfirmation = onRequest(
         <body>
             <div class="container">
                 <div class="header">
-                    <img src="https://taohealinggroup.com/zodiaccurate/zodiaccurate_logo.png" alt="Zodiaccurate">
+                    <img src="https://zodiaccurate.app/zodiaccurate_logo.png" alt="Zodiaccurate">
                 </div>
                 <div class="content">
                     <h2>Thank you, ${name}!</h2>
