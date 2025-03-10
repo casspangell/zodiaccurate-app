@@ -1,17 +1,12 @@
 function testChatPrompt() {
-    const uuid = "a323baee-0828-433f-9502-5d24d633d2ea";
-    const instructions = getChatInstructions(TEST_USER_DATA_NO_CHILD_NO_PARTNER, uuid);
+    const uuid = "be5dc835-5459-43fb-b09e-988d144cf514";
+    const instructions = getChatInstructions(TEST_USER_DATA, uuid);
     const output = getChatGPTResponse(instructions, uuid);
 }
 
 /**
- * Constructs a ChatGPT prompt using user data and modifiers.
- * Conditionally includes sections based on available user data.
- * Fixed to use proper markdown code block syntax.
- *
- * @param {Object} jsonSinglePersonData - The user data object containing relevant information.
- * @param {string} uuid - The unique identifier for the user.
- * @returns {string} - A formatted prompt string for ChatGPT.
+ * Enhanced getChatInstructions with comprehensive relationship guidance
+ * Including intimate connection for partners and guidance for those seeking relationships
  */
 function getChatInstructions(jsonSinglePersonData, uuid) {
     console.log("GET CHAT INSTRUCTIONS");
@@ -19,52 +14,177 @@ function getChatInstructions(jsonSinglePersonData, uuid) {
     const user = getUserNames(jsonSinglePersonData);
     const getWeekData = getThreeDaysDataFromFirebase(uuid);
     
-    // Always include these base sections
+    // Get current astrological data
+    const astroData = getDailyAstrologicalData();
+    
+    // Get current date for reference
+    const today = new Date();
+    const dateString = today.toISOString().split('T')[0];
+    const dayOfWeek = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"][today.getDay()];
+    
+    // Select a prediction timeframe for today's horoscope (varies by day)
+    const predictionTimeframes = [
+        "in the next 24 hours", 
+        "this week", 
+        "within the next three days", 
+        "before the next full moon",
+        "by the end of this month",
+        "before the next Mercury retrograde", 
+        "within the next lunar cycle"
+    ];
+    const todaysPredictionTimeframe = predictionTimeframes[today.getDay()];
+    
+    // Generate a unique seed for this horoscope request
+    const uniqueHoroscopeSeed = `${dateString}-${uuid}-${Math.random().toString(36).substring(2, 8)}`;
+    
+    // Check relationship status to determine appropriate guidance
+    const isInRelationship = user.partnerName && user.partnerName.trim() !== "";
+    const isSingle = jsonSinglePersonData.relationship_status && 
+                   (jsonSinglePersonData.relationship_status.toLowerCase().includes("single") || 
+                    jsonSinglePersonData.relationship_status.toLowerCase().includes("divorced") ||
+                    jsonSinglePersonData.relationship_status.toLowerCase().includes("widowed") ||
+                    jsonSinglePersonData.relationship_status.toLowerCase().includes("seeking"));
+    
+    // Create section templates with built-in variability, predictions, and psychic elements
     let sections = [
-        `- Career and Finances: 5-7 sentences. Use ${user.firstName}'s birth chart on daily finances and provide predictive astrological guidance. Strategies for professional and financial growth. Include specific small but meaningful steps the person can take, phrased in an empowering and open-ended tone to encourage autonomy. Tailor advice based on the individual's career status (employed, job-seeking, entrepreneurial, or retired) and any financial considerations or struggles they've shared.(${modifiers.careerAndFinances})`,
+        `- Career and Finances: Begin with a SPECIFIC PREDICTION about a career or financial opportunity that will manifest for ${user.firstName} ${todaysPredictionTimeframe}. This prediction should reference how ${astroData.currentPlanetaryPositions} influences their work life. Describe a SPECIFIC COLOR, SYMBOL, or NUMBER that will be significant for them in career matters today (like "Notice the color blue in your workspace as it signals opportunity" or "The number 7 appears in financial transactions that will be favorable"). Include one concrete challenge ${user.firstName} may face at work and how today's unique planetary positions can help overcome it. Focus on ${jsonSinglePersonData.career_goals || "professional growth"} and incorporate ${modifiers.careerAndFinances}. End with a specific financial insight that feels intuitive and prescient.`,
         
-        `- Health: 5-7 sentences. Holistic well-being with practical health tips aligned with ${user.firstName}'s lifestyle and goals. Use their birthchart to make predictions on daily interactions and predictive astrological guidance. (${modifiers.health}) Include suggestions for reflection and small changes aligned with the user's values and aspirations.`,
+        `- Health: Start with a SPECIFIC PREDICTION about a health pattern or physical sensation ${user.firstName} will experience ${todaysPredictionTimeframe} due to ${astroData.currentMoonPhase} and ${astroData.currentRetrogrades}. Reference the specific body part or energy center (chakra) most affected by today's planetary alignments. Include an intuitive insight about a FOOD, HERB, or NATURAL ELEMENT that will have special healing properties for them today. Recommend a specific movement, breath practice, or mindfulness technique that aligns with today's cosmic energy. Incorporate ${modifiers.health} and connect to ${jsonSinglePersonData.wellness_goals || "general well-being"}. End with a prediction about how their energy levels will shift throughout the day.`,
         
-        `- Personal Guidance: 5-7 sentences. Introspective advice for self-improvement and emotional balance for ${user.firstName}. Use their birthchart to make predictions on daily interactions and predictive astrological guidance. Include self-development insights, spiritual reflection, or motivation aligned with the person's daily astrological trends. (${modifiers.personalGuidance})`
+        `- Personal Guidance: Start with a SPECIFIC PREDICTION about an unexpected insight or revelation ${user.firstName} will experience ${todaysPredictionTimeframe} related to ${astroData.significantTransit}. Describe a DREAM SYMBOL, ANIMAL, or REPEATING PATTERN they should watch for as a message from the universe. Predict a specific synchronicity they might experience today (like "Watch for three references to water today as a sign to dive deeper into your emotions"). Reference ${jsonSinglePersonData.important_goals || "personal aspirations"} and include ${modifiers.personalGuidance}. End with an insight about a specific talent or gift they possess that is especially powerful under today's planetary aspects.`
     ];
     
-    // Only include Relationships section if partnerName exists and isn't empty
-    if (user.partnerName && user.partnerName.trim() !== "") {
+    // Conditionally add enhanced relationship section with mini-horoscope and intimacy guidance for those WITH partners
+    if (isInRelationship) {
         sections.push(
-            `- Relationships: 5-7 sentences. This section is for ${user.partnerName}. Use ${user.firstName} and ${user.partnerName}'s birth charts to make predictions on daily interactions and relationship energy shifts. Focus on spouse or partner's unique astrological transits etc and discern difficulties or challenges as well as positive energies and insights for daily relationship energetic connection. Emotional connections and advice for strengthening bonds. Discuss relationship harmony, communication tips, and emotional balance, rooted in compatibility elements and current planetary influences. Give guidance on fostering healthy connections or other considering any stated issues like communication. (${modifiers.relationships})`
+            `- Relationships: Begin with a MINI-HOROSCOPE specifically for ${user.partnerName} today: How ${astroData.venusPosition}, ${astroData.marsPosition}, and ${astroData.currentMoonSign} are affecting their emotions, energy, and communication style today. What ${user.partnerName} is likely experiencing, feeling, or thinking about under today's cosmic weather. Then, provide a SPECIFIC PREDICTION about how the connection between ${user.firstName} and ${user.partnerName} will evolve ${todaysPredictionTimeframe}. Describe a COMMUNICATION PATTERN to watch for today (like "Notice when ${user.partnerName} speaks more quietly than usual - this is when they need extra emotional support"). Identify a specific CHALLENGE or OPPORTUNITY in your relationship that's activated by today's planetary aspects, and give concrete guidance on how to navigate it. 
+            
+            INTIMATE CONNECTION GUIDANCE: Describe how today's specific planetary positions (especially ${astroData.venusPosition}, ${astroData.marsPosition}, and ${astroData.currentMoonSign}) are influencing the intimate and physical connection between ${user.firstName} and ${user.partnerName}. Identify optimal timing or conditions for deepening physical intimacy today based on cosmic energy. Suggest a specific approach, mood, or setting that would enhance lovemaking under today's unique astrological influences. Include one specific way to create deeper emotional connection during intimate moments that aligns with today's cosmic weather. End with a prediction about how focusing on physical intimacy today might positively affect other aspects of your relationship.
+            
+            Include specific actions ${user.firstName} can take to strengthen the overall connection, based on how ${user.partnerName} is experiencing today's energies. Reference ${jsonSinglePersonData.partner_improvements || "relationship goals"} and incorporate ${modifiers.relationships}. End with a prediction about a meaningful moment or exchange that's likely to occur between them today.`
+        );
+    }
+    // Add relationship guidance for SINGLE people
+    else if (isSingle) {
+        sections.push(
+            `- Relationship Seeking: Begin with a SPECIFIC PREDICTION about how today's unique cosmic energy (especially ${astroData.venusPosition}, ${astroData.marsPosition}, and ${astroData.currentMoonSign}) is influencing ${user.firstName}'s romantic magnetism and relationship potential. Describe which facets of ${user.firstName}'s personality are being cosmically enhanced today that might attract potential partners. Identify specific LOCATIONS, ACTIVITIES, or SOCIAL CONTEXTS that are astrologically favorable for meeting compatible people ${todaysPredictionTimeframe} based on today's planetary positions. Suggest a specific APPEARANCE ELEMENT (color to wear, accessory, hairstyle) that will enhance attractive energy under today's cosmic influences.
+            
+            Note a specific COMMUNICATION STYLE or APPROACH that will be especially effective in romantic interactions today, based on Mercury's position in ${astroData.mercuryPosition}. Identify one specific PATTERN or HABIT from past relationships that today's planetary alignments are helping ${user.firstName} to recognize or release. Provide insight into what type of potential partner would be most compatible under current transits, and what signals to watch for that indicate genuine connection potential. Include a specific prediction about a romantic opportunity or insight that will emerge ${todaysPredictionTimeframe}. End with practical guidance on one specific way to open up to new connections that aligns with today's unique astrological energy.`
         );
     }
     
-    // Only include Parenting Guidance if childrenNames exists and has entries
+    // Conditionally add enhanced parenting guidance with mini-horoscopes
     if (user.childrenNames && user.childrenNames.length > 0) {
         const childrenString = user.childrenNames.join(", ");
-        sections.push(
-            `- Parenting Guidance: 5-7 sentences. Focus on each child's unique astrological transits (${childrenString}), discerning challenges, positive energies, and insights for their daily relationship connection. Use their birth chart to make predictions and provide guidance to ${user.firstName}. Focus on the child/ren's unique astrological transits etc and discern difficulties or challenges as well as positive energies and insights for daily relationship energetic connection. Support tailored to the user and the most effective communication with each child if they have children for that day, offering actionable suggestions for nurturing and engagement. (${modifiers.parentingGuidance})`
-        );
+        
+        let childGuidance = `- Parenting Guidance: Begin with a MINI-HOROSCOPE for ${childrenString}: How ${astroData.mercuryPosition}, ${astroData.jupiterPosition}, and today's ${astroData.currentMoonPhase} are specifically affecting their mood, energy level, learning style, and emotional needs today. `;
+        
+        // If there's just one child
+        if (user.childrenNames.length === 1) {
+            childGuidance += `Describe what ${user.childrenNames[0]} is likely experiencing today and what they most need from ${user.firstName}. Identify a specific CHALLENGE ${user.childrenNames[0]} might face today based on the current planetary positions, and how ${user.firstName} can help them navigate it. `;
+        } 
+        // If there are multiple children
+        else {
+            childGuidance += `Briefly describe how each child might be experiencing today's energies differently. Identify one specific way ${user.firstName} can connect with each child today based on their unique needs under the current cosmic weather. `;
+        }
+        
+        childGuidance += `Then, provide a SPECIFIC PREDICTION about a behavior, need, or developmental shift that will emerge ${todaysPredictionTimeframe}. Describe a SIGNAL or CUE to watch for that indicates your child needs something specific from you today. Suggest a particular ACTIVITY or APPROACH that will be especially effective today based on the current planetary influences. Include guidance on how to handle any difficult behavior or emotional expression that may arise due to today's energies. Reference their communication style and include ${modifiers.parentingGuidance}. End with advice on how to create a meaningful connection moment with your child(ren) that aligns perfectly with today's cosmic energy.`;
+        
+        sections.push(childGuidance);
     }
     
-    // Only include Important Person section if importantPersonNames exists and has entries
+    // Conditionally add enhanced important person section
     if (user.importantPersonNames && user.importantPersonNames.length > 0) {
-        const importantPerson = user.importantPersonNames[0]; // Use the first important person
+        const importantPerson = user.importantPersonNames[0];
         sections.push(
-            `- Important Person Relationship: 5-7 sentences. Focus on ${importantPerson}'s unique astrological transits etc and discern difficulties or challenges as well as positive energies and insights for daily astrological connection and advise for ${user.firstName}. (${modifiers.importantPersonRelationship})`
+            `- Important Person Relationship: Using horoscope data for ${importantPerson} integrate it into How ${astroData.significantTransit}, ${astroData.currentMoonSign}, and ${astroData.currentRetrogrades} are affecting their emotional state, priorities, and communication style today. Describe what ${importantPerson} is likely experiencing and what they might need from ${user.firstName} under today's cosmic influences. Then provide a SPECIFIC PREDICTION about a shift or development in the relationship ${todaysPredictionTimeframe}. Identify a COMMUNICATION PATTERN to watch for that signals an important message or need from this person. Predict a specific interaction or exchange and how to navigate it for the best outcome. Suggest a concrete way to strengthen the connection based on how ${importantPerson} is experiencing today's energies. Reference ${jsonSinglePersonData.important_goals || "relationship aspirations"} and include ${modifiers.importantPersonRelationship}. End with an intuitive insight about how this relationship is evolving in ${user.firstName}'s life journey.`
         );
     }
     
     // Join all sections with newlines
     const sectionsText = sections.join("\n\n        ");
     
-    // Build the complete prompt
+    // Add relationship guidance instructions
+    const relationshipGuidance = `
+    RELATIONSHIP GUIDANCE AND MINI-HOROSCOPE INSTRUCTIONS:
+    1. Each relationship section (partner, children, important person) MUST include a mini-horoscope for that person
+    2. Mini-horoscopes should explain how today's specific astrological conditions are affecting them personally
+    3. Focus on their likely emotional state, communication style, needs, and energy levels today
+    4. Identify specific signals or patterns to watch for that indicate what they need
+    5. Provide concrete, actionable advice on how to best connect with and support them today
+    6. Include at least one specific challenge they may be facing due to today's planetary positions
+    7. Suggest specific activities or approaches that will be especially effective today
+    8. Keep insights specific, practical and grounded in today's actual astrological conditions
+    
+    FOR USERS WITH PARTNERS - INTIMATE CONNECTION GUIDANCE:
+    1. Always include guidance on physical/intimate connection that relates directly to today's planetary positions
+    2. Suggest specific approaches, timing, or settings that enhance intimate connection today
+    3. Balance practical advice with romantic/sensual suggestions that are tasteful and appropriate
+    4. Connect physical intimacy to emotional bonding in ways that are relevant to today's cosmic energy
+    5. Frame intimate guidance in terms of deepening connection rather than just physical satisfaction
+    6. Consider how Venus, Mars, and Moon positions specifically influence romantic and physical energy
+    
+    FOR SINGLE USERS - RELATIONSHIP SEEKING GUIDANCE:
+    1. Provide specific insights about how today's cosmic weather affects their romantic magnetism
+    2. Suggest concrete places, activities, or contexts favorable for meeting potential partners
+    3. Include one specific approach or communication style that will be effective in romantic interactions
+    4. Identify patterns from past relationships that today's energy helps them recognize or release
+    5. Offer practical guidance for opening to new connections that aligns with today's astrological influences
+    6. Include a specific prediction about romantic opportunities or insights coming their way
+    `;
+    
+    // Add psychic elements instructions
+    const psychicElements = `
+    PREDICTION AND PSYCHIC ELEMENT INSTRUCTIONS:
+    1. Each section MUST include at least one specific, testable prediction for the timeframe mentioned
+    2. Incorporate intuitive elements like colors, symbols, numbers, or synchronicities to watch for
+    3. Predictions should be specific enough to be memorable but not so specific they feel implausible
+    4. Balance spiritual/intuitive insights with practical astrological guidance
+    5. Keep the tone mystical and insightful without becoming too abstract or "woo-woo"
+    6. Use language that evokes intuition and inner knowing rather than superstition
+    7. Predictions should feel personal and tailored to the individual, not generic
+    8. Include one unexpected or surprising prediction in each section
+    `;
+    
+    // Build the complete prompt with enhanced instructions for variety and predictions
     const prompt = `
         Here is user data: ${JSON.stringify(jsonSinglePersonData)}
-        Your task is to create a daily, personalized horoscope for ${user.firstName} using predictions and advise incorporating astrological insights and practical advice using 20% personal data and 80% zodiac predictions and astrological insights. Make astrological predictions for each section. Focus on these sections and generate a CSV file containing the following columns and data:
+        
+        TODAY'S UNIQUE HOROSCOPE SEED: ${uniqueHoroscopeSeed}
+        TODAY'S DATE: ${dayOfWeek}, ${dateString}
+        PREDICTION TIMEFRAME: ${todaysPredictionTimeframe}
+        
+        ASTROLOGICAL CONTEXT FOR TODAY:
+        - Moon Phase: ${astroData.currentMoonPhase}
+        - Current Retrogrades: ${astroData.currentRetrogrades}
+        - Significant Transit: ${astroData.significantTransit}
+        - Venus Position: ${astroData.venusPosition}
+        - Mars Position: ${astroData.marsPosition}
+        - Mercury Position: ${astroData.mercuryPosition}
+        - Jupiter Position: ${astroData.jupiterPosition}
+        - Current Moon Sign: ${astroData.currentMoonSign}
+        - Other Planetary Positions: ${astroData.currentPlanetaryPositions}
+        
+        Your task is to create a HIGHLY SPECIFIC daily, personalized horoscope for ${user.firstName} with meaningful PREDICTIONS, INTUITIVE INSIGHTS, and RELATIONSHIP GUIDANCE that is SUBSTANTIALLY DIFFERENT from previous days' horoscopes. This horoscope must relate directly to TODAY'S specific astrological conditions listed above. Use a 40% personal data and 60% zodiac predictions and astrological insights ratio. Focus on these sections and generate a CSV file containing the following columns and data:
         ${sectionsText}
         
-        Read the individual's birth date, time, location, and any personal details provided in their form as a reference not as concrete information but used as a guideline to facilitate the prompt. Understand the person's situation regarding career status, relationship dynamics, health considerations, and interactions with children or important others. If relevant, mention any changes in the stars or timing from the last few days to highlight shifts in energy. Identify key astrological factors: Analyze natal charts, transits, planetary alignments, retrogrades, and compatibility aspects based on the individual's unique details. Link these celestial events to the person's current circumstances, challenges, and aspirations. Add that seems left field for advice but in line with the predictions. The user's own wording about challenges or experiences should be creatively rephrased. Provide new angles, interpretations, and solutions that resonate with their situation. Personalize and integrate astrological insights: Mention partner names, children's names, or important individuals if provided. For each section, provide three layers of scope (low, middle and high scope) and how it can affect the larger picture in their world.
-
-        IMPORTANT: Weave astrological references and predictions for the day (e.g., Sun, Moon, retrogrades, compatibility) naturally into the guidance, ensuring it remains accessible and empathetic. Use the previous three horoscopes as guidance= create new insights, predictions and personal astrological gifts: ${getWeekData};
+        ${relationshipGuidance}
         
-        IMPORTANT: Format your response ONLY as a CSV with the columns matching EXACTLY the section names mentioned above. The CSV must be enclosed in a markdown code block. For example:
+        ${psychicElements}
+        
+        IMPORTANT INSTRUCTIONS FOR CREATING A UNIQUE DAILY HOROSCOPE:
+        1. Review previous horoscopes: ${getWeekData}
+        2. YOUR HOROSCOPE MUST BE SUBSTANTIALLY DIFFERENT from these previous ones - do not repeat phrases, advice, or themes
+        3. Reference SPECIFIC astrological events happening TODAY
+        4. Include concrete, actionable advice unique to today's energy
+        5. Avoid generic phrases like "take time for self-care" or "focus on communication"
+        6. Each section should contain at least one SPECIFIC prediction tied to today's unique planetary positions
+        7. Use varied sentence structure and vocabulary from previous horoscopes
+        8. Include psychic elements that feel insightful without being overly mystical
+        9. Reference specifics from the user's personal data in ways you haven't before
+        10. For relationship sections, include detailed guidance on connecting with and supporting loved ones based on their needs today
+        
+        Format your response ONLY as a CSV with the columns matching EXACTLY the section names mentioned above. The CSV must be enclosed in a markdown code block. For example:
         
         \`\`\`csv
         "Career and Finances","Health","Personal Guidance"
@@ -212,6 +332,114 @@ Speak like bob brezney, creator of free will horoscope, referencing and predicti
         console.log("Error in getChatGPTResponse:", error);
         return null;
     }
+}
+
+/**
+ * Gets current astrological data for today
+ * This function simulates astrological data based on the current date
+ * In a production environment, you could replace this with an API call to a real astrology service
+ * 
+ * @returns {Object} - Object containing various astrological data points for today
+ */
+function getDailyAstrologicalData() {
+    const today = new Date();
+    const day = today.getDate();
+    const month = today.getMonth() + 1;
+    
+    // Lunar phases (approximate based on date)
+    const lunarDay = day % 30;
+    let moonPhase;
+    if (lunarDay < 4) moonPhase = "New Moon";
+    else if (lunarDay < 11) moonPhase = "Waxing Crescent";
+    else if (lunarDay < 15) moonPhase = "First Quarter";
+    else if (lunarDay < 19) moonPhase = "Waxing Gibbous";
+    else if (lunarDay < 22) moonPhase = "Full Moon";
+    else if (lunarDay < 26) moonPhase = "Waning Gibbous";
+    else if (lunarDay < 30) moonPhase = "Last Quarter";
+    else moonPhase = "Waning Crescent";
+    
+    // Zodiac signs (approximate)
+    const zodiacSigns = [
+        "Aries", "Taurus", "Gemini", "Cancer", 
+        "Leo", "Virgo", "Libra", "Scorpio", 
+        "Sagittarius", "Capricorn", "Aquarius", "Pisces"
+    ];
+    
+    // Planet positions (simplified - would come from real ephemeris)
+    const moonPosition = zodiacSigns[(month + day % 12) % 12];
+    const sunPosition = zodiacSigns[(month - 1 + Math.floor(day/30)) % 12];
+    const mercuryPosition = zodiacSigns[(month + 2 + day % 12) % 12];
+    const venusPosition = zodiacSigns[(month + 1 + Math.floor(day/15)) % 12];
+    const marsPosition = zodiacSigns[(month + 3 + Math.floor(day/20)) % 12];
+    const jupiterPosition = zodiacSigns[(month + 4 + Math.floor(day/25)) % 12];
+    
+    // Retrogrades (simulated based on date)
+    const retrogradeOptions = [
+        "Mercury Retrograde",
+        "Venus Retrograde", 
+        "Mars Retrograde",
+        "Jupiter Retrograde",
+        "Saturn Retrograde",
+        "Uranus Retrograde",
+        "Neptune Retrograde",
+        "Pluto Retrograde",
+        "No major planets in retrograde"
+    ];
+    
+    // Select retrogrades based on day
+    const retrogradeIndex = (day * month) % retrogradeOptions.length;
+    const currentRetrogrades = retrogradeOptions[retrogradeIndex];
+    
+    // Significant transits (important planet movements)
+    const transitOptions = [
+        `Mercury entering ${mercuryPosition}`,
+        `Venus and Mars in ${venusPosition} creating a trine aspect`,
+        `Sun square Jupiter in ${jupiterPosition}`,
+        `New Moon in ${moonPosition}`,
+        `Full Moon opposing Saturn`,
+        `Mars conjunct Pluto in ${marsPosition}`,
+        `Jupiter entering ${jupiterPosition}`,
+        `Mercury sextile Venus`,
+        `Saturn stationing direct`,
+        `Venus square Uranus`,
+        `Sun conjunct Mercury in ${sunPosition}`,
+        `Neptune trine Mars`
+    ];
+    
+    const transitIndex = (day + month) % transitOptions.length;
+    const significantTransit = transitOptions[transitIndex];
+    
+    // Current planetary positions summary
+    const planetarySummaries = [
+        `Mercury in ${mercuryPosition} and Jupiter in ${jupiterPosition} creating a harmonious trine`,
+        `Sun in ${sunPosition} squaring Saturn, creating tension with authority figures`,
+        `Venus in ${venusPosition} opposing Mars in ${marsPosition}, heightening relationship dynamics`,
+        `Mercury retrograde in ${mercuryPosition} causing communication challenges`,
+        `Jupiter in ${jupiterPosition} forming a grand trine with Saturn and Neptune`,
+        `Mars in ${marsPosition} squaring Pluto, intensifying power dynamics`,
+        `Venus in ${venusPosition} conjunct Jupiter in ${jupiterPosition}, bringing abundance`,
+        `Mercury, Venus, and Mars forming a stellium in ${mercuryPosition}`,
+        `Sun in ${sunPosition} trine Moon in ${moonPosition}, creating emotional harmony`,
+        `Saturn opposing Uranus, creating tension between tradition and innovation`,
+        `Neptune retrograde causing spiritual awakening and revealing illusions`,
+        `Pluto stationing direct, bringing transformation to power structures`
+    ];
+    
+    const planetaryIndex = (day * month + day) % planetarySummaries.length;
+    const currentPlanetaryPositions = planetarySummaries[planetaryIndex];
+    
+    return {
+        currentMoonPhase: moonPhase,
+        currentMoonSign: moonPosition,
+        currentRetrogrades: currentRetrogrades,
+        significantTransit: significantTransit,
+        sunPosition: sunPosition,
+        mercuryPosition: mercuryPosition,
+        venusPosition: venusPosition,
+        marsPosition: marsPosition,
+        jupiterPosition: jupiterPosition,
+        currentPlanetaryPositions: currentPlanetaryPositions
+    };
 }
 
 function getRandomModifiers() {

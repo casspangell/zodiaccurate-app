@@ -1021,7 +1021,7 @@ function getThreeDaysDataFromFirebase(uuid) {
                 if (data.hasOwnProperty(day)) {
                     daysOfTheWeekData[day] = data[day];
                     console.log("Retrieved data for: ", daysOfTheWeekData[day]);
-                    // Logger.log(day + ": " + JSON.stringify(data[day]));
+                    Logger.log(day + ": " + JSON.stringify(data[day]));
                 } else {
                     Logger.log(day + ": No data available.");
                 }
