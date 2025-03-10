@@ -38,12 +38,13 @@ export function validateFinalConsent() {
     const consentAgree = document.getElementById("consent_agree");
     const emailAgree = document.getElementById("email_agree");
     const errorMessage = document.getElementById("consent-error");
+    event.preventDefault();
 
     if (!consentAgree.checked || !emailAgree.checked) {
-        event.preventDefault(); // Prevents form submission
-        errorMessage.style.display = "block"; // Show error message
+        errorMessage.style.display = "block";
+        return false;
     } else {
-        errorMessage.style.display = "none"; // Hide error message
-        alert("Form submitted successfully!"); // Replace with actual form submission logic
+        errorMessage.style.display = "none";
+        return true;
     }
 }

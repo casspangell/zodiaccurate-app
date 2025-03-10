@@ -1022,56 +1022,64 @@ function addImportantPerson() {
         }
     }
 
+
+
     submitButton.addEventListener("click", async function (event) {
-        //   event.preventDefault();
+        const consent = validateFinalConsent();
+        event.preventDefault();
 
-        //   submitButton.disabled = true;
-        //   submitButton.style.pointerEvents = "none"
-        //   submitButton.textContent = "Processing...";
-        //   submitButton.style.backgroundColor = "#ccc";
+        if (consent === false) {
+            return;
+        }
+          
+          submitButton.disabled = true;
+          submitButton.style.pointerEvents = "none"
+          submitButton.textContent = "Processing...";
+          submitButton.style.backgroundColor = "#ccc";
 
-        // let formDataObject = collectFormData();
-        // formDataObject = removeEmptyValues(formDataObject);
+        let formDataObject = collectFormData();
+        formDataObject = removeEmptyValues(formDataObject);
 
-        // const uuid = getUUIDFromUrl();
-        // if (uuid) {
-        //     formDataObject.uuid = uuid;
-        // }
+        const uuid = getUUIDFromUrl();
+        if (uuid) {
+            formDataObject.uuid = uuid;
+        }
 
-        // console.log("Filtered Form Data before sending:", formDataObject);
+        console.log("Filtered Form Data before sending:", formDataObject);
 
-        // try {
-        //     updateText();
-        //     setInterval(updateText, 3000);
-        //     const response = await fetch(FIREBASE_FUNCTIONS_URL, {
-        //         method: "POST",
-        //         headers: { "Content-Type": "application/json" },
-        //         body: JSON.stringify(formDataObject),
-        //     });
+        try {
+            updateText();
+            setInterval(updateText, 3000);
+            const response = await fetch(FIREBASE_FUNCTIONS_URL, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(formDataObject),
+            });
 
-        //     const result = await response.json();
+            const result = await response.json();
 
-        //     alert(result.message || "Form submitted successfully!");
-        // } catch (error) {
-        //     submitButton.disabled = false;
-        //     submitButton.style.pointerEvents = ""
-        //     console.error("Error submitting form:", error);
-        //     alert("There was an error submitting the form.");
-        // } finally {
-        //     document.querySelectorAll(".prev").forEach((button) => {
-        //      button.style.display = "none";
-        //     });
-        //       document.querySelectorAll("input[type='checkbox']").forEach((checkbox) => {
-        //     checkbox.disabled = true;
-        //     checkbox.style.pointerEvents = "none";
-        //    });
+            alert(result.message || "Form submitted successfully!");
+        } catch (error) {
+            submitButton.disabled = false;
+            submitButton.style.pointerEvents = ""
+            console.error("Error submitting form:", error);
+            alert("There was an error submitting the form.");
+        } finally {
+            document.querySelectorAll(".prev").forEach((button) => {
+             button.style.display = "none";
+            });
+              document.querySelectorAll("input[type='checkbox']").forEach((checkbox) => {
+            checkbox.disabled = true;
+            checkbox.style.pointerEvents = "none";
+           });
 
-        //     rotatingTextDiv.style.display = "none";
-        //     submitButton.style.pointerEvents = "none";
-        //     submitButton.textContent = "Submitted";
-        //     submitButton.style.color = "#5a3e85";
-        //     submitButton.style.backgroundColor = "#f5d76e";
-        // }
+            rotatingTextDiv.style.display = "none";
+            submitButton.style.pointerEvents = "none";
+            submitButton.textContent = "Submitted";
+            submitButton.style.color = "#5a3e85";
+            submitButton.style.backgroundColor = "#f5d76e";
+        }
+
     });
 
     let currentIndex = 0;

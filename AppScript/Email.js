@@ -100,7 +100,7 @@ async function sendWelcomeEmailWithMailerSend(clientName, uuid, email) {
                     <li><strong>OUTLOOK:</strong> Open an email, hover over "Daily Guidance," click the three dots, then choose "Add to contacts."</li>
                     <li><strong>Other mail providers:</strong> Find and select "Add to contacts" for our email address.</li>
                 </ul>
-                
+                <p>Why wait 10 days? Ready to start your subscription now? <a href="${STRIPE_LINK}">Start here</a></p>
               <p>Best Regards,<br/>
               Your Zodiaccurate Team<br></p>
               <p>You can change your CC information or cancel anytime via this <a href="${STRIPE_LINK}">Link</a></p>
