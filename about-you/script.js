@@ -43,7 +43,8 @@ document.addEventListener("DOMContentLoaded", function () {
         "Updating celestial positions...",
         "Computing horoscope insights...",
         "Synchronizing astral events...",
-        "Finalizing astrological analysis (this may take a moment)..."
+        "Finalizing astrological analysis...",
+        "Do not exit or refresh page..."
     ];
 
 

@@ -13,26 +13,7 @@ function onWebFormSubmitHandler(e) {
   var uuid = e.uuid;
   var name = e.formData.name || e.name;
   var email = e.formData.email || e.email;
-  
-  // Log the extracted values
-  console.log("Extracted UUID:", uuid);
-  console.log("Extracted Name:", name);
-  console.log("Extracted Email:", email);
-  
-  // (Optional) Extract additional fields if needed
-  var location = e.formData.location;
-  var birthCity = e.formData.birth_city;
-  var birthDate = e.formData.birth_date;
-  var birthTime = e.formData.birth_time;
-  var relationshipStatus = e.formData.relationship_status;
-  var employmentStatus = e.formData.employment_status;
-  
-  console.log("Location:", location);
-  console.log("Birth City:", birthCity);
-  console.log("Birth Date:", birthDate);
-  console.log("Birth Time:", birthTime);
-  console.log("Relationship Status:", relationshipStatus);
-  console.log("Employment Status:", employmentStatus);
+  var location = e.formData.location || e.location;
 
     var userData = {};
 
@@ -63,12 +44,10 @@ function onWebFormSubmitHandler(e) {
     } else {
         Logger.log("🆕 New User Submission Detected.");
 
-        // jsonData["trial-date-start"] = new Date().toISOString();
-        // jsonData["trial"] = "true";
-
         // Update execution time & save timezone
         if (location) {
-            const timezone = getTimeZoneFromLocation(location);
+            Logger.log("User has location");
+            const timezone = getTimeZoneFromLocation(location, uuid);
             const formattedTimezone = replaceSlashesWithDashes(timezone);
             userData["timezone"] = formattedTimezone;
             
@@ -84,14 +63,15 @@ function onWebFormSubmitHandler(e) {
         userData["editURL"] = uuid; 
         userData["email"] = email;
         userData["name"] = name;
+        userData["trial-date-start"] = new Date().toISOString();
+        userData["trial"] = "true";
 
         userSaveResult = saveUserToUserTableFirebase(uuid, userData);
         saveResult = pushEntryToFirebase(e.formData, uuid);
 
         if (saveResult && userSaveResult) {
             Logger.log("✅ New User Saved in Firebase.");
-            welcomeChatGPT(e.formData, uuid);
-            
+            welcomeChatGPT(e.formData, uuid);            
         } else {
             Logger.log("❌ Failed to save new user in Firebase.");
         }

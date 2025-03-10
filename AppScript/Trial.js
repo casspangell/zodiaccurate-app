@@ -2,7 +2,7 @@ function testCheckForTrial() {
   setupTrialSystem("casspangell@gmail.com", "cass");
 }
 
-function setupTrialSystem(email, name) {
+function setupTrialSystem(email, name, uuid) {
   console.log("Checking user trial status");
     // Check if the user already exists in the trial table
     const trialDate = getUserDataFromTrialUserTableFirebase(email);
@@ -24,7 +24,6 @@ function setupTrialSystem(email, name) {
 
     } else if (trialDate === false) {
       console.log("User not found in database");
-      //Add to firebase and send conf email
 
       return false;
 

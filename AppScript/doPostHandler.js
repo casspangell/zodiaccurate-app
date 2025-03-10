@@ -1,5 +1,6 @@
 function doPost(e) {
   Logger.log("Do Post Hit");
+
   try {
     // Log the incoming request
     console.log("doPost: Incoming request:", JSON.stringify(e.postData.contents));
@@ -25,14 +26,6 @@ function doPost(e) {
     const email = data?.email;
     const name = data?.name;
     const source = data?.source?.trim();
-    console.log(`Extracted source (raw): '${data?.source}'`);
-    console.log(`Extracted source (trimmed): '${source}'`);
-    console.log(`Type of source: ${typeof source}`);
-
-
-    console.log("Extracted email:", email);
-    console.log("Extracted name:", name);
-    console.log("Request source:", source);
 
     if (source === "stripewebhook") {    // Ensure both email and name are present
       if (!email || !name) {
@@ -53,7 +46,6 @@ function doPost(e) {
         return ContentService.createTextOutput("Error: Missing email, name, or source")
           .setMimeType(ContentService.MimeType.TEXT);
       }
-      activateTrialForUser(email, name);
 
     } else {
       console.warn(`Unknown source: '${source}'`);

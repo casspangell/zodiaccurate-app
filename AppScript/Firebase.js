@@ -39,56 +39,6 @@ function getFirebaseIdToken(email, password) {
 }
 
 
-// function getFirebaseIdToken(email, password) {
-//     console.log("=== Authenticating firebase");
-
-//   const url = `https://www.googleapis.com/identitytoolkit/v3/relyingparty/verifyPassword?key=${FIREBASE_API_KEY}`;
-//   const config = {
-//     method: "post",
-//     contentType: "application/json",
-//     headers: {
-//       "Content-Type": "application/json",
-//       Accept: "*/*",
-//     },
-//     payload: JSON.stringify({email,password,returnSecureToken: true}),
-//     muteHttpExceptions: true,
-//   };
-
-//   const response = UrlFetchApp.fetch(url, config);
-//   const data = JSON.parse(response.getContentText());
-
-//   if (!data.idToken) {
-//         Logger.log(`Firebase Authentication Error: ${JSON.stringify(data)}`);
-//         return null;
-//     }
-
-//   return data.idToken;
-// }
-
-// function getFirebaseIdToken(email, password) {
-//     Logger.log("Authenticating Firebase...");
-
-//     const url = `https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${FIREBASE_API_KEY}`;
-//     const config = {
-//         method: "post",
-//         contentType: "application/json",
-//         payload: JSON.stringify({ email, password, returnSecureToken: true }),
-//         muteHttpExceptions: true
-//     };
-
-//     const response = UrlFetchApp.fetch(url, config);
-//     const data = JSON.parse(response.getContentText());
-
-//     if (!data.idToken) {
-//         Logger.log(`🔥 Firebase Authentication Failed: ${JSON.stringify(data)}`);
-//         return null;
-//     }
-
-//     Logger.log(`✅ New Firebase Token: ${data.idToken.substring(0, 10)}...`);
-//     return data.idToken;
-// }
-
-
 /**
  * Pushes a JSON entry to the Firebase responses table for a specific UUID.
  *
@@ -196,9 +146,14 @@ function saveUserToUserTableFirebase(uuid, jsonData) {
 function saveEmailCampaignToFirebase(jsonData, uuid) {
       Logger.log("saveEmailCampaignToFirebase...", JSON.stringify(jsonData));
 
- const token = getFirebaseIdToken("appscript@zodiaccurate.com", FIREBASE_PASSWORD);
+    const token = getFirebaseIdToken("appscript@zodiaccurate.com", FIREBASE_PASSWORD);
+    if (!token) {
+        Logger.log("❌ Firebase Authentication Failed.");
+        return false;
+    }
+    Logger.log("✅ Firebase Token Retrieved");
 
-    const firebaseUrl = `${FIREBASE_URL}/trial_campaign/${uuid}.json?auth=${FIREBASE_API_KEY}`;
+    const firebaseUrl = `${FIREBASE_URL}/trial_campaign/${uuid}.json?auth=${token}`;
 
     const options = {
         method: "patch",
@@ -864,12 +819,14 @@ function getUUIDDataFromTrialCampaignTable() {
 
     try {
         const response = UrlFetchApp.fetch(firebaseUrl, options);
+        console.log(response);
         const uuidData = JSON.parse(response.getContentText());
+        console.log(uuidData);
         Logger.log(`UUIDs with data: ${Object.keys(uuidData)}`);
         return uuidData;
 
     } catch (error) {
-        Logger.log(`Error retrieving data for timezone ${timezone}: ${error.message}`);
+        Logger.log(`Error retrieving data for timezone ${error.message}`);
         return []; // Return an empty array on error
     }
 }

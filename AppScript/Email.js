@@ -623,13 +623,13 @@ console.log("Confirmation Email ", emailHtml);
   }
 }
 
-async function setUpEmailCampaign(jsonSinglePersonData, uuid, name, email) {
+function setUpEmailCampaign(jsonSinglePersonData, uuid, name, email) {
     console.log("PREPARE EMAIL CAMPAIGN CHATGPT");
 
     try {
         // Generate ChatGPT prompt
         const prompt = getChatEmailCampaignInstructions(uuid, jsonSinglePersonData);
-        const emailCampaignData = await getChatGPTEmailCampaignResponse(prompt, uuid);
+        const emailCampaignData = getChatGPTEmailCampaignResponse(prompt, uuid);
         saveEmailCampaignToFirebase(emailCampaignData, uuid);
         console.log("Trial email campaign setup successfully.");
     } catch (error) {
