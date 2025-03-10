@@ -266,41 +266,113 @@ function getTomorrowDay() {
   return tomorrowDay;
 }
 
-// Returns
-// {
-//     "firstName": "Paul Fletcher",
-//     "partnerName": "Sau",
-//     "childrenNames": ["Elice"],
-//     "importantPersonNames": ["John Doe", "Jane Smith"]
-// }
+/**
+ * Extracts user, partner, and children information from the user data.
+ * Specifically designed to work with the actual data structure.
+ * 
+ * @param {Object} jsonSinglePersonData - User data object from your form
+ * @returns {Object} - Object containing extracted user information
+ */
 function getUserNames(jsonSinglePersonData) {
-    let userNames = {};
-
-    // Retrieve User's First Name
-    userNames["firstName"] = jsonSinglePersonData["name"] || "User";
-
-    // Retrieve Partner's Name
-    userNames["partnerName"] = jsonSinglePersonData["partner_name"] || "";
-
-    // Retrieve Children's Names (Handles multiple children dynamically)
-    let childrenNames = [];
-    let childIndex = 1;
-    while (jsonSinglePersonData[`child_${childIndex}_first_name`]) {
-        childrenNames.push(jsonSinglePersonData[`child_${childIndex}_first_name`].trim());
-        childIndex++;
+    // Initialize with default values
+    let userNames = {
+        firstName: "User",
+        partnerName: "",
+        childrenNames: [],
+        importantPersonNames: []
+    };
+    
+    // Safety check
+    if (!jsonSinglePersonData) {
+        console.log("WARNING: jsonSinglePersonData is null or undefined");
+        return userNames;
     }
-    userNames["childrenNames"] = childrenNames.length > 0 ? childrenNames : [];
-
-    // Retrieve Important People's Names (Modify if structure changes)
-    let importantPeopleNames = [];
-    let importantPersonIndex = 1;
-    while (jsonSinglePersonData[`important_person_${importantPersonIndex}_name`]) {
-        importantPeopleNames.push(jsonSinglePersonData[`important_person_${importantPersonIndex}_name`].trim());
-        importantPersonIndex++;
+    
+    try {
+        // Extract user's first name
+        if (jsonSinglePersonData.name && typeof jsonSinglePersonData.name === 'string') {
+            const nameParts = jsonSinglePersonData.name.split(' ');
+            userNames.firstName = nameParts[0] || "User";
+            console.log("User's first name:", userNames.firstName);
+        }
+        
+        // Extract partner name
+        if (jsonSinglePersonData.partner_name && jsonSinglePersonData.partner_name.trim() !== "") {
+            userNames.partnerName = jsonSinglePersonData.partner_name.trim();
+            console.log("Partner name:", userNames.partnerName);
+        }
+        
+        // Extract children names
+        let childrenNames = [];
+        
+        // Get number of children (if available)
+        let numChildren = 0;
+        if (jsonSinglePersonData.number_of_children) {
+            const match = jsonSinglePersonData.number_of_children.match(/(\d+)/);
+            if (match) {
+                numChildren = parseInt(match[1], 10);
+                console.log("Number of children indicated:", numChildren);
+            }
+        }
+        
+        // Look for child_X_first_name pattern (where X might be "one", "two", etc.)
+        const childPatterns = [
+            { prefix: "child_one_", numeral: "1" },
+            { prefix: "child_two_", numeral: "2" },
+            { prefix: "child_three_", numeral: "3" },
+            { prefix: "child_four_", numeral: "4" },
+            { prefix: "child_five_", numeral: "5" }
+        ];
+        
+        // Also check numeric patterns (child_1_first_name)
+        const numericPatterns = [
+            { prefix: "child_1_", numeral: "1" },
+            { prefix: "child_2_", numeral: "2" },
+            { prefix: "child_3_", numeral: "3" },
+            { prefix: "child_4_", numeral: "4" },
+            { prefix: "child_5_", numeral: "5" }
+        ];
+        
+        // Combine all patterns
+        const allPatterns = [...childPatterns, ...numericPatterns];
+        
+        // Check each pattern
+        for (const pattern of allPatterns) {
+            const nameKey = `${pattern.prefix}first_name`;
+            if (jsonSinglePersonData[nameKey] && jsonSinglePersonData[nameKey].trim() !== "") {
+                const childName = jsonSinglePersonData[nameKey].trim();
+                console.log(`Found child ${pattern.numeral} name:`, childName);
+                childrenNames.push(childName);
+            }
+        }
+        
+        // If we found no children but the user indicated they have children,
+        // check for other indicators and add a generic placeholder
+        if (childrenNames.length === 0 && 
+            (numChildren > 0 || jsonSinglePersonData.areas_of_improvement?.includes("daughter") || 
+             jsonSinglePersonData.areas_of_improvement?.includes("son") ||
+             jsonSinglePersonData.areas_of_improvement?.includes("child") ||
+             jsonSinglePersonData.important_goals?.includes("father"))) {
+            console.log("User indicated having children but no specific names found.");
+            childrenNames.push("your child");
+        }
+        
+        userNames.childrenNames = childrenNames;
+        console.log("Children names:", JSON.stringify(childrenNames));
+        
+        // Extract important person info
+        // For this app, this appears to be empty by default
+        
+        return userNames;
+    } catch (error) {
+        console.log("Error in getUserNames:", error);
+        return {
+            firstName: userNames.firstName || "User",
+            partnerName: userNames.partnerName || "",
+            childrenNames: userNames.childrenNames || [],
+            importantPersonNames: userNames.importantPersonNames || []
+        };
     }
-    userNames["importantPersonNames"] = importantPeopleNames.length > 0 ? importantPeopleNames : [];
-
-    return userNames;
 }
 
 

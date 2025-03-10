@@ -79,3 +79,47 @@ const TEST_USER_DATA = {
   "work_stress": "I take breaks to recharge.",
   "current_location": "Australia Brisbane"
 };
+
+const TEST_USER_DATA_NO_CHILD_NO_PARTNER = {
+  "areas_of_improvement": "Getting up 6am and bed by 10pm, make consistently better food choices and eat less when I eat. Be non-responsive (negatively) to my daughter's tantrums.",
+  "belief_system": "Spiritual",
+  "birth_city": "California",
+  "birth_date": "December 26, 1963",
+  "birth_time": "12pm",
+  "career_decisions": [
+    "I analyze data and facts thoroughly",
+    "I balance intuition with analysis",
+    "I tend to delay decisions"
+  ],
+  "career_goals": "Work-life balance",
+  "choose_best_answer": "SKIP TO NEXT SECTION",
+  "click_to_bypass_future_partner": "Career And Employment",
+  "consent_policies": "Yes",
+  "email": "casspangell@gmail.com",
+  "email_agreement": "Yes",
+  "emotional_health": "Overall pretty good on emotional balance. Occasionally I snap with some anger at my child's antics or temper tantrums.",
+  "employment_status": "Self-Employed",
+  "family_values": "Making enough each month to stay ahead of the bills, saving for a house down payment, correcting my credit score, finding enough extra income so my wife doesn't have to work to send money home to her family.",
+  "financial_security": "Somewhat insecure",
+  "important_goals": "Have huge success in my new subscription-based business. Educate myself on being a better father and better at understanding my child's behaviors and responses. Be completely financially free and the business operates on its own with minimal activity on my behalf. Set up legal trusts and businesses that avoid excess taxation. Become immortal in this lifetime. Open up Ta Chang Center locally where I live.",
+  "job_satisfaction": "Satisfied",
+  "job_title": "Spiritual Healer and Guidance Counselor",
+  "joy_and_satisfaction": "When my manifestations come true. When my healing abilities work and affect others in a positive way. When I get validation that I am a good dad doing a good job. When I get to spend time in my spiritual teacher's field.",
+  "mental_health": "I would like to be much more aware of negative thinking and minimize it as it arises. I would like to stop judging people. I don't do it a lot, but I need to improve and reduce any negative thoughts, words, and actions because it is very important to my spiritual journey.",
+  "name": "Paul Fletcher",
+  "orientation": "Prefer Female",
+  "physical_health": "Don't feel fully rested after 8 hours of sleep. Teeth need to be healthier. Eyes are okay but a little farsighted. No pain. Not as much energy in the mornings as I would like.",
+  "relationship_conflict": "Address them immediately.",
+  "relationship_status": "Married",
+  "skip_to_bypass_unemployed": "Skip to Bypass Unemployed",
+  "stress": "Making enough each month to stay ahead of the bills, saving for a house down payment, correcting my credit score, finding enough extra income so my wife doesn't have to work to send money home to her family.",
+  "timezone": "Australia/Brisbane",
+  "trial": true,
+  "trial_date_start": "2025-01-19T00:49:02.183Z",
+  "wellness": "Pretty good health.",
+  "wellness_goals": "I would say I am about 5 pounds overweight, and I don't exercise daily, even though I don't have any physical limits that would stop me. I would like to be consistent about waking up and doing spiritual practice Mon-Fri 6-7:30am. I would enjoy more balanced energy from the moment of waking.",
+  "work_environment": "Collaborative and team-oriented",
+  "work_life_balance": "Work dominates my life.",
+  "work_stress": "I take breaks to recharge.",
+  "current_location": "Australia Brisbane"
+};

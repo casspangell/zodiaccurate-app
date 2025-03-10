@@ -1,42 +1,77 @@
 function testChatPrompt() {
-    const testData = getUserDataFromFirebase(PAUL_TEST);
-    const instructions = getChatInstructions(testData, PAUL_TEST);
-    const output = getChatGPTResponse(instructions, PAUL_TEST);
+    const uuid = "a323baee-0828-433f-9502-5d24d633d2ea";
+    const instructions = getChatInstructions(TEST_USER_DATA_NO_CHILD_NO_PARTNER, uuid);
+    const output = getChatGPTResponse(instructions, uuid);
 }
 
 /**
  * Constructs a ChatGPT prompt using user data and modifiers.
- * - Retrieves random modifiers and three days of prior data for context.
- * - Builds a detailed prompt to generate a personalized daily horoscope.
+ * Conditionally includes sections based on available user data.
+ * Fixed to use proper markdown code block syntax.
  *
  * @param {Object} jsonSinglePersonData - The user data object containing relevant information.
  * @param {string} uuid - The unique identifier for the user.
  * @returns {string} - A formatted prompt string for ChatGPT.
  */
 function getChatInstructions(jsonSinglePersonData, uuid) {
-  console.log("GET CHAT INSTRUCTIONS");
+    console.log("GET CHAT INSTRUCTIONS");
     const modifiers = getRandomModifiers();
     const user = getUserNames(jsonSinglePersonData);
     const getWeekData = getThreeDaysDataFromFirebase(uuid);
-
+    
+    // Always include these base sections
+    let sections = [
+        `- Career and Finances: 5-7 sentences. Use ${user.firstName}'s birth chart on daily finances and provide predictive astrological guidance. Strategies for professional and financial growth. Include specific small but meaningful steps the person can take, phrased in an empowering and open-ended tone to encourage autonomy. Tailor advice based on the individual's career status (employed, job-seeking, entrepreneurial, or retired) and any financial considerations or struggles they've shared.(${modifiers.careerAndFinances})`,
+        
+        `- Health: 5-7 sentences. Holistic well-being with practical health tips aligned with ${user.firstName}'s lifestyle and goals. Use their birthchart to make predictions on daily interactions and predictive astrological guidance. (${modifiers.health}) Include suggestions for reflection and small changes aligned with the user's values and aspirations.`,
+        
+        `- Personal Guidance: 5-7 sentences. Introspective advice for self-improvement and emotional balance for ${user.firstName}. Use their birthchart to make predictions on daily interactions and predictive astrological guidance. Include self-development insights, spiritual reflection, or motivation aligned with the person's daily astrological trends. (${modifiers.personalGuidance})`
+    ];
+    
+    // Only include Relationships section if partnerName exists and isn't empty
+    if (user.partnerName && user.partnerName.trim() !== "") {
+        sections.push(
+            `- Relationships: 5-7 sentences. This section is for ${user.partnerName}. Use ${user.firstName} and ${user.partnerName}'s birth charts to make predictions on daily interactions and relationship energy shifts. Focus on spouse or partner's unique astrological transits etc and discern difficulties or challenges as well as positive energies and insights for daily relationship energetic connection. Emotional connections and advice for strengthening bonds. Discuss relationship harmony, communication tips, and emotional balance, rooted in compatibility elements and current planetary influences. Give guidance on fostering healthy connections or other considering any stated issues like communication. (${modifiers.relationships})`
+        );
+    }
+    
+    // Only include Parenting Guidance if childrenNames exists and has entries
+    if (user.childrenNames && user.childrenNames.length > 0) {
+        const childrenString = user.childrenNames.join(", ");
+        sections.push(
+            `- Parenting Guidance: 5-7 sentences. Focus on each child's unique astrological transits (${childrenString}), discerning challenges, positive energies, and insights for their daily relationship connection. Use their birth chart to make predictions and provide guidance to ${user.firstName}. Focus on the child/ren's unique astrological transits etc and discern difficulties or challenges as well as positive energies and insights for daily relationship energetic connection. Support tailored to the user and the most effective communication with each child if they have children for that day, offering actionable suggestions for nurturing and engagement. (${modifiers.parentingGuidance})`
+        );
+    }
+    
+    // Only include Important Person section if importantPersonNames exists and has entries
+    if (user.importantPersonNames && user.importantPersonNames.length > 0) {
+        const importantPerson = user.importantPersonNames[0]; // Use the first important person
+        sections.push(
+            `- Important Person Relationship: 5-7 sentences. Focus on ${importantPerson}'s unique astrological transits etc and discern difficulties or challenges as well as positive energies and insights for daily astrological connection and advise for ${user.firstName}. (${modifiers.importantPersonRelationship})`
+        );
+    }
+    
+    // Join all sections with newlines
+    const sectionsText = sections.join("\n\n        ");
+    
+    // Build the complete prompt
     const prompt = `
         Here is user data: ${JSON.stringify(jsonSinglePersonData)}
-        Your task is to create a daily, personalized horoscope for ${user.firstName} using predictions and advise incorporating astrological insights and practical advice using 20% personal data and 80% zodiac predictions and astrological insights. Make astrological predictions for each section. Focus on these sections and  generate a CSV file containing the following columns and data:
-        - Career and Finances: 5-7 sentences. Use ${user.firstName}’s birth chart on daily finances and provide predictive astrological guidance. Strategies for professional and financial growth. Include specific small but meaningful steps the person can take, phrased in an empowering and open-ended tone to encourage autonomy. Tailor advice based on the individual’s career status (employed, job-seeking, entrepreneurial, or retired) and any financial considerations or struggles they’ve shared.(${modifiers.careerAndFinances})
-
-        - Relationships: 5-7 sentences. This section is for ${user.partnerName}, if applicable. Use ${user.firstName} and ${user.partnerName}'s birth charts to make predictions on daily interactions and relationship energy shifts. Focus on spouse or partner's unique astrological transits etc and discern difficulties or challenges as well as positive energies and insights for daily relationship energetic connection. Emotional connections and advice for strengthening bonds. Discuss relationship harmony, communication tips, and emotional balance, rooted in compatibility elements and current planetary influences. Give guidance on fostering healthy connections or other considering any stated issues like communication. (${modifiers.relationships})
-
-        - Parenting Guidance: 5-7 sentences. If ${user.firstName} has children (${user.childrenNames}), focus on each child's unique astrological transits, discerning challenges, positive energies, and insights for their daily relationship connection. Use their birth chart to make predictions and provide guidance to ${user.firstName}. Focus on the child/ren's unique astrological transits etc and discern difficulties or challenges as well as positive energies and insights for daily relationship energetic connection. Support tailored to the user and the most effective communication with each child if they have children for that day, offering actionable suggestions for nurturing and engagement. (${modifiers.parentingGuidance}). 
-
-        - Health: 5-7 sentences. Holistic well-being with practical health tips aligned with ${user.firstName}'s' lifestyle and goals. Use their birthchart to make predictions on daily interactions and predictive astrological guidance. (${modifiers.health}) Introspective advice for self-improvement and emotional balance. Include suggestions for reflection and small changes aligned with the user’s values and aspirations. Include self-development insights, spiritual reflection, or motivation aligned with the person’s daily astrological trends.
-
-        - Personal Guidance: 5-7 sentences. Introspective advice for self-improvement and emotional balance for ${user.firstName}. Use their birthchart to make predictions on daily interactions and predictive astrological guidance. Include self-development insights, spiritual reflection, or motivation aligned with the person’s daily astrological trends. (${modifiers.personalGuidance})
-
-        - Important Person Relationship: 5-7 sentences. Focus on the ${user.importantPersonRelationship}'s unique astrological transits etc and discern difficulties or challenges as well as positive energies and insights for daily astrological connection and advise for ${user.firstName}. (${modifiers.importantPersonRelationship}).
+        Your task is to create a daily, personalized horoscope for ${user.firstName} using predictions and advise incorporating astrological insights and practical advice using 20% personal data and 80% zodiac predictions and astrological insights. Make astrological predictions for each section. Focus on these sections and generate a CSV file containing the following columns and data:
+        ${sectionsText}
         
-        Read the individual’s birth date, time, location, and any personal details provided in their form as a reference not as concrete information but used as a guideline to facilitate the prompt. Understand the person’s situation regarding career status, relationship dynamics, health considerations, and interactions with children or important others. If relevant, mention any changes in the stars or timing from the last few days to highlight shifts in energy. Identify key astrological factors: Analyze natal charts, transits, planetary alignments, retrogrades, and compatibility aspects based on the individual’s unique details. Link these celestial events to the person’s current circumstances, challenges, and aspirations. Add that seems left field for advice but in line with the predictions. The user’s own wording about challenges or experiences should be creatively rephrased. Provide new angles, interpretations, and solutions that resonate with their situation. Personalize and integrate astrological insights: Mention partner names, children’s names, or important individuals if provided. For each section, provide three layers of scope (low, middle and high scope) and how it can affect the larger picture in their world.
+        Read the individual's birth date, time, location, and any personal details provided in their form as a reference not as concrete information but used as a guideline to facilitate the prompt. Understand the person's situation regarding career status, relationship dynamics, health considerations, and interactions with children or important others. If relevant, mention any changes in the stars or timing from the last few days to highlight shifts in energy. Identify key astrological factors: Analyze natal charts, transits, planetary alignments, retrogrades, and compatibility aspects based on the individual's unique details. Link these celestial events to the person's current circumstances, challenges, and aspirations. Add that seems left field for advice but in line with the predictions. The user's own wording about challenges or experiences should be creatively rephrased. Provide new angles, interpretations, and solutions that resonate with their situation. Personalize and integrate astrological insights: Mention partner names, children's names, or important individuals if provided. For each section, provide three layers of scope (low, middle and high scope) and how it can affect the larger picture in their world.
 
         IMPORTANT: Weave astrological references and predictions for the day (e.g., Sun, Moon, retrogrades, compatibility) naturally into the guidance, ensuring it remains accessible and empathetic. Use the previous three horoscopes as guidance= create new insights, predictions and personal astrological gifts: ${getWeekData};
+        
+        IMPORTANT: Format your response ONLY as a CSV with the columns matching EXACTLY the section names mentioned above. The CSV must be enclosed in a markdown code block. For example:
+        
+        \`\`\`csv
+        "Career and Finances","Health","Personal Guidance"
+        "Your career advice here...","Your health advice here...","Your personal guidance here..."
+        \`\`\`
+        
+        Do not include any other text outside the code block. Do not include empty columns for sections that weren't mentioned above.
     `;
 
     return prompt.trim();
@@ -44,71 +79,138 @@ function getChatInstructions(jsonSinglePersonData, uuid) {
 
 /**
  * Fetches a response from the ChatGPT API based on the provided instructions.
- * - Constructs a payload with the user's data and ChatGPT instructions.
- * - Sends a request to the ChatGPT API and parses the response.
- * - Saves the response to Firebase if valid.
+ * Updated to explicitly specify which columns to include based on user data.
+ * Fixed to use proper markdown code block syntax.
  *
  * @param {string} instructions - The ChatGPT prompt containing user data and instructions.
  * @param {string} uuid - The unique identifier for the user.
  * @returns {Object|null} - The parsed response data if successful, or null on failure.
  */
 function getChatGPTResponse(instructions, uuid) {
-  
     const url = 'https://api.openai.com/v1/chat/completions';
-
-    const payload = {
-        "model": "gpt-4o",
-        "max_tokens": 4096,
-        "temperature": 0.8,
-        "top_p": 0.6,
-        "frequency_penalty": 0.2,
-        "presence_penalty": 0.1,
-      "logprobs": true,
-        "messages": [
-            {
-                "role": "system",
-                "content": "You are bob brezney, a highly knowledgeable and empathetic astrologer and personal guide."
-            },
-            {
-                "role": "user",
-                "content": "You are bob brezney, a highly knowledgeable and empathetic astrologer and personal guide. Your task is to generate a personalized daily astological horoscope in CSV format based on the provided data. Always provide the CSV content enclosed in a markdown code block with the csv tag (e.g., csv \"Column1\",\"Column2\",\"Column3\" \"Value1\",\"Value2\",\"Value3\" ). The first row must contain column headers, and subsequent rows must contain corresponding values. Do not include any text or explanation outside the markdown block. Ensure all values are properly quoted (e.g., \"Value\"), especially if they contain commas, line breaks, or special characters. Example format: csv \"Personal Guidance\",\"Career and Finances\",\"Health and Wellness\",\"Partner Relationship\",\"Children or Important Person Relationship\". Ensure the format is consistent and adheres strictly to these guidelines."+ 
-                "speak like bob brezney creator of free will horoscope referencing and predicting astrological phenomena in each category. You address the user by their first name as well as any important people in their life. If suggesting an event, find local events that cater to the guidance. Final check: Review the completed horoscope to ensure it meets tone, personalization, and astrological accuracy standards, verifying that it addresses each category in the correct order without overlap or repetition. "
-            },
-            {
-                "role": "user",
-                "content": instructions
+    
+    try {
+        // Parse JSON data from the instructions to determine which sections to include
+        const dataMatch = instructions.match(/Here is user data: (\{.*?\})/);
+        let jsonData = {};
+        
+        if (dataMatch && dataMatch[1]) {
+            try {
+                jsonData = JSON.parse(dataMatch[1]);
+            } catch (e) {
+                console.log("Could not parse user data JSON from instructions:", e);
             }
-        ]
-    };
+        }
+        
+        // Use getUserNames to determine which sections should be present
+        const user = getUserNames(jsonData);
+        
+        // Base columns that are always included
+        const columns = [
+            "Career and Finances", 
+            "Health", 
+            "Personal Guidance"
+        ];
+        
+        // Add relationship column if partner exists
+        if (user.partnerName && user.partnerName.trim() !== "") {
+            columns.push("Relationships");
+        }
+        
+        // Add parenting column if children exist
+        if (user.childrenNames && user.childrenNames.length > 0) {
+            columns.push("Parenting Guidance");
+        }
+        
+        // Add important person column if important persons exist
+        if (user.importantPersonNames && user.importantPersonNames.length > 0) {
+            columns.push("Important Person Relationship");
+        }
+        
+        console.log("Columns to include:", columns);
+        
+        // Create a detailed system prompt with explicit column instructions and fixed code block syntax
+        const systemPrompt = `You are bob brezney, a highly knowledgeable and empathetic astrologer and personal guide. 
+Your task is to generate a personalized daily astrological horoscope in CSV format based on the provided data.
 
-    const options = {
-        "method": "post",
-        "headers": {
-            "Authorization": "Bearer " + CHAT_GPT_KEY,
-            "Content-Type": "application/json"
-        },
-        "payload": JSON.stringify(payload)
-    };
+IMPORTANT FORMATTING INSTRUCTIONS:
+1. Include ONLY these specific columns in your CSV: ${columns.join(', ')}
+2. Do NOT include any columns that aren't in this list
+3. Provide the CSV content enclosed in a markdown code block
+4. The first row must contain ONLY these column headers exactly as written
+5. Subsequent rows must contain corresponding values
+6. Do not include any text or explanation outside the markdown block
+7. Ensure all values are properly quoted (e.g., "Value"), especially if they contain commas or line breaks
 
-    const response = UrlFetchApp.fetch(url, options);
-    const jsonResponse = JSON.parse(response.getContentText());
+Example correct format:
 
-      // Extract token usage details
-      var promptTokens = jsonResponse.usage.prompt_tokens;
-      var completionTokens = jsonResponse.usage.completion_tokens;
-      var totalTokens = jsonResponse.usage.total_tokens;
+\`\`\`csv
+"${columns.join('","')}"
+"Value for first column","Value for second column"${columns.length > 2 ? ',...' : ''}
+\`\`\`
 
-      // Log the token usage
-      Logger.log("Prompt Tokens: " + promptTokens);
-      Logger.log("Completion Tokens: " + completionTokens);
-      Logger.log("Total Tokens: " + totalTokens);
+Speak like bob brezney, creator of free will horoscope, referencing and predicting astrological phenomena in each category. Address the user by their first name and mention any important people in their life when relevant. Final check: Review the completed horoscope to ensure it meets tone, personalization, and astrological accuracy standards.`;
 
-    const responseData = parseResponseToJson(jsonResponse);
+        const payload = {
+            "model": "gpt-4o",
+            "max_tokens": 4096,
+            "temperature": 0.8,
+            "top_p": 0.6,
+            "frequency_penalty": 0.2,
+            "presence_penalty": 0.1,
+            "logprobs": true,
+            "messages": [
+                {
+                    "role": "system",
+                    "content": systemPrompt
+                },
+                {
+                    "role": "user",
+                    "content": instructions
+                }
+            ]
+        };
 
-    if (responseData && responseData.length > 0) {
-      return responseData;
-    } else {
-        console.log("Unexpected API response structure: " + JSON.stringify(responseData));
+        const options = {
+            "method": "post",
+            "headers": {
+                "Authorization": "Bearer " + CHAT_GPT_KEY,
+                "Content-Type": "application/json"
+            },
+            "payload": JSON.stringify(payload)
+        };
+
+        // Log request details (sanitize for security)
+        console.log("Making API request to ChatGPT");
+        console.log("Request columns:", columns);
+        
+        const response = UrlFetchApp.fetch(url, options);
+        const jsonResponse = JSON.parse(response.getContentText());
+
+        // Extract token usage details
+        var promptTokens = jsonResponse.usage.prompt_tokens;
+        var completionTokens = jsonResponse.usage.completion_tokens;
+        var totalTokens = jsonResponse.usage.total_tokens;
+
+        // Log the token usage
+        Logger.log("Prompt Tokens: " + promptTokens);
+        Logger.log("Completion Tokens: " + completionTokens);
+        Logger.log("Total Tokens: " + totalTokens);
+
+        // Parse the response using your existing parser
+        const responseData = parseResponseToJson(jsonResponse);
+
+        if (responseData && responseData.length > 0) {
+            console.log("Successfully parsed response data");
+            return responseData;
+        } else {
+            console.log("Failed to parse response data or empty result");
+            console.log("Response content:", jsonResponse.choices[0].message.content.substring(0, 200) + "...");
+            return null;
+        }
+    } catch (error) {
+        console.log("Error in getChatGPTResponse:", error);
+        return null;
     }
 }
 
