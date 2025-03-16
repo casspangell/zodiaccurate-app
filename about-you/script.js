@@ -47,26 +47,22 @@ document.addEventListener("DOMContentLoaded", function () {
         "Do not exit or refresh page..."
     ];
 
-
-
     const progressBar = document.createElement("div");
     document.querySelector(".progress-container").appendChild(progressBar);
     progressBar.classList.add("progress-bar-active");
     const progressContainer = document.querySelector(".progress-container");
     const emailInput = document.getElementById("email");
 
-
-
     let dbData = {};
 
-//------------------
+    //------------------
 
-const uuid = getUUIDFromUrl();
-if (uuid) {
-  fetchData();
-}
+    const uuid = getUUIDFromUrl();
+    if (uuid) {
+        fetchData();
+    }
 
-//------------------
+    //------------------
 
     let partnerCount = 1;
     let childCount = 0;
@@ -100,146 +96,144 @@ if (uuid) {
         11: "final"
     };
 
+    async function fetchData() {
+        const loadingOverlay = document.getElementById("loadingOverlay");
+        loadingOverlay.style.display = "flex";
+        const uuid = getUUIDFromUrl();
+        try {
+            const response = await fetch(`${FIREBASE_GET_DATA_URL}?uuid=${encodeURIComponent(uuid)}`, {
+                method: "GET",
+                headers: { "Content-Type": "application/json" },
+            });
+            const result = await response.json();
+            dbData = result;
+            console.log("User found. Fetching data.");
+            populateFormFields(result);
+            updateLocalStorageWithData(result);
 
-async function fetchData() {
-  const loadingOverlay = document.getElementById("loadingOverlay");
-  loadingOverlay.style.display = "flex";
-  const uuid = getUUIDFromUrl();
-  try {
-    const response = await fetch(`${FIREBASE_GET_DATA_URL}?uuid=${encodeURIComponent(uuid)}`, {
-      method: "GET",
-      headers: { "Content-Type": "application/json" },
-    });
-    const result = await response.json();
-    dbData = result;
-    console.log("User found. Fetching data.");
-    populateFormFields(result);
-    updateLocalStorageWithData(result);
-
-  } catch (error) {
-    console.error("Error fetching data:", error);
-  } finally {
-    // Hide overlay when data is loaded or in case of an error
-    loadingOverlay.style.display = "none";
-  }
-}
-
-function populateFormFields(data) {
-    // Loop through each key-value pair in the data object.
-    Object.entries(data).forEach(([fieldName, value]) => {
-        // Handle radio buttons separately
-        if (document.querySelector(`input[type="radio"][name="${fieldName}"]`)) {
-            const radioButton = document.querySelector(`input[type="radio"][name="${fieldName}"][value="${value}"]`);
-            if (radioButton) {
-                radioButton.checked = true;
-            }
-        } else {
-            // Find the element with the given ID for other input types
-            const field = document.getElementById(fieldName);
-            if (field) {
-                if (
-                    field instanceof HTMLInputElement ||
-                    field instanceof HTMLTextAreaElement ||
-                    field instanceof HTMLSelectElement
-                ) {
-                    field.value = value;
-                } else {
-                    field.textContent = value;
-                }
-            }
+        } catch (error) {
+            console.error("Error fetching data:", error);
+        } finally {
+            // Hide overlay when data is loaded or in case of an error
+            loadingOverlay.style.display = "none";
         }
-    });
-}
-
-function populateImportantPersons(data) {
-    // Collect indices from keys starting with "important_person_name_"
-    const indices = [];
-    Object.keys(data).forEach((key) => {
-        console.log(key);
-        if (key.startsWith("important_person_name_")) {
-
-            const parts = key.split("_");
-            const idx = parts[parts.length - 1];
-            if (!indices.includes(idx)) {
-                indices.push(idx);
-            }
-        }
-    });
-
-    // If we found any important person entries, unhide the section.
-    if (indices.length > 0) {
-        document.getElementById("important-person-section").style.display = "block";
     }
 
-    // Sort indices numerically so they appear in order.
-    indices.sort((a, b) => parseInt(a) - parseInt(b));
+    function populateFormFields(data) {
+        // Loop through each key-value pair in the data object.
+        Object.entries(data).forEach(([fieldName, value]) => {
+            // Handle radio buttons separately
+            if (document.querySelector(`input[type="radio"][name="${fieldName}"]`)) {
+                const radioButton = document.querySelector(`input[type="radio"][name="${fieldName}"][value="${value}"]`);
+                if (radioButton) {
+                    radioButton.checked = true;
+                }
+            } else {
+                // Find the element with the given ID for other input types
+                const field = document.getElementById(fieldName);
+                if (field) {
+                    if (
+                        field instanceof HTMLInputElement ||
+                        field instanceof HTMLTextAreaElement ||
+                        field instanceof HTMLSelectElement
+                    ) {
+                        field.value = value;
+                    } else {
+                        field.textContent = value;
+                    }
+                }
+            }
+        });
+    }
 
-    // For each detected index, add a card and prefill it.
-    indices.forEach((dataIndex) => {
-        // Call function to add a new important person card.
-        addImportantPerson();
-        const currentIndex = importantPersonCount;
+    function populateImportantPersons(data) {
+        // Collect indices from keys starting with "important_person_name_"
+        const indices = [];
+        Object.keys(data).forEach((key) => {
+            console.log(key);
+            if (key.startsWith("important_person_name_")) {
 
-        // List of fields to populate
-        const fields = [
-            "name",
-            "birthdate",
-            "birth_time",
-            "birth_city",
-            "relation",
-            "impact",
-            "stress",
-            "appreciation",
-            "improvement"
-        ];
-
-        // Update both input and textarea fields
-        fields.forEach((field) => {
-            const dataKey = `important_person_${field}_${dataIndex}`;
-            const selector = `#important-person-${currentIndex} [name="important_person_${field}_${currentIndex}"]`;
-
-            const element = document.querySelector(selector);
-            if (element && data[dataKey] !== undefined) {
-                element.value = data[dataKey];
+                const parts = key.split("_");
+                const idx = parts[parts.length - 1];
+                if (!indices.includes(idx)) {
+                    indices.push(idx);
+                }
             }
         });
 
-        // Handle checkboxes (e.g., conflict preferences)
-        const conflictKey = `important_person_conflict_${dataIndex}`;
-        if (data[conflictKey]) {
-            const values = Array.isArray(data[conflictKey])
-                ? data[conflictKey]
-                : data[conflictKey].split(",").map(v => v.trim());
+        // If we found any important person entries, unhide the section.
+        if (indices.length > 0) {
+            document.getElementById("important-person-section").style.display = "block";
+        }
 
-            const checkboxes = document.querySelectorAll(
-                `#important-person-${currentIndex} input[name="important_person_conflict_${currentIndex}"]`
-            );
-            checkboxes.forEach((checkbox) => {
-                if (values.includes(checkbox.value)) {
-                    checkbox.checked = true;
+        // Sort indices numerically so they appear in order.
+        indices.sort((a, b) => parseInt(a) - parseInt(b));
+
+        // For each detected index, add a card and prefill it.
+        indices.forEach((dataIndex) => {
+            // Call function to add a new important person card.
+            addImportantPerson();
+            const currentIndex = importantPersonCount;
+
+            // List of fields to populate
+            const fields = [
+                "name",
+                "birthdate",
+                "birth_time",
+                "birth_city",
+                "relation",
+                "impact",
+                "stress",
+                "appreciation",
+                "improvement"
+            ];
+
+            // Update both input and textarea fields
+            fields.forEach((field) => {
+                const dataKey = `important_person_${field}_${dataIndex}`;
+                const selector = `#important-person-${currentIndex} [name="important_person_${field}_${currentIndex}"]`;
+
+                const element = document.querySelector(selector);
+                if (element && data[dataKey] !== undefined) {
+                    element.value = data[dataKey];
                 }
             });
+
+            // Handle checkboxes (e.g., conflict preferences)
+            const conflictKey = `important_person_conflict_${dataIndex}`;
+            if (data[conflictKey]) {
+                const values = Array.isArray(data[conflictKey])
+                    ? data[conflictKey]
+                    : data[conflictKey].split(",").map(v => v.trim());
+
+                const checkboxes = document.querySelectorAll(
+                    `#important-person-${currentIndex} input[name="important_person_conflict_${currentIndex}"]`
+                );
+                checkboxes.forEach((checkbox) => {
+                    if (values.includes(checkbox.value)) {
+                        checkbox.checked = true;
+                    }
+                });
+            }
+        });
+    }
+
+    // Overwrite local storage data with the new data.
+    function updateLocalStorageWithData(data) {
+        Object.entries(data).forEach(([key, value]) => {
+            // If value is an object, store it as JSON; otherwise, store the string representation.
+            localStorage.setItem(key, typeof value === "object" ? JSON.stringify(value) : value);
+        });
+    }
+
+    function getUUIDFromUrl() {
+        // window.location.search returns a string like "?5dee1b8e-a2f5-4613-8655-f9667561cead"
+        const query = window.location.search;
+        if (query && query.length > 1) {
+            return query.substring(1);
         }
-    });
-}
-
-
-// Overwrite local storage data with the new data.
-function updateLocalStorageWithData(data) {
-  Object.entries(data).forEach(([key, value]) => {
-    // If value is an object, store it as JSON; otherwise, store the string representation.
-    localStorage.setItem(key, typeof value === "object" ? JSON.stringify(value) : value);
-  });
-}
-
-function getUUIDFromUrl() {
-  // window.location.search returns a string like "?5dee1b8e-a2f5-4613-8655-f9667561cead"
-  const query = window.location.search;
-  if (query && query.length > 1) {
-    return query.substring(1);
-  }
-  return null;
-}
+        return null;
+    }
 
     // Load saved form data from localStorage
     let formData = JSON.parse(localStorage.getItem("formData")) || {};
@@ -271,7 +265,6 @@ function getUUIDFromUrl() {
 
     // Function to restore form data from localStorage
     function loadFormData() {
-
         sections.forEach((section) => {
             section.querySelectorAll("input, select, textarea").forEach((input) => {
                 if (formData.hasOwnProperty(input.name)) {
@@ -431,33 +424,6 @@ function getUUIDFromUrl() {
         showSection(currentSection);
     }
 
-//     function printSections() {
-//     const sections = document.querySelectorAll(".section");
-    
-//     sections.forEach((section, index) => {
-//         const sectionTitle = section.querySelector("h2")?.textContent.trim() || "Unnamed Section";
-//         console.log(`Index: ${index}, Section: ${sectionTitle}`);
-//     });
-// }
-
-// Call the function to print the section list
-// printSections();
-
-// function printSectionsWithVisibility() {
-//     const sections = document.querySelectorAll(".section");
-
-//     sections.forEach((section, index) => {
-//         const wasHidden = section.style.display === "none";
-//         section.style.display = "block"; // Temporarily show it
-
-//         const sectionTitle = section.querySelector("h2")?.textContent.trim() || "Unnamed Section";
-
-//         if (wasHidden) section.style.display = "none"; // Restore original state
-//     });
-// }
-
-// printSectionsWithVisibility();
-
     nextButtons.forEach((button) => {
         button.addEventListener("click", function () {
             if (!validateSection()) {
@@ -482,6 +448,8 @@ function getUUIDFromUrl() {
                     const selectedStatus = document.querySelector('input[name="relationship_status"]:checked');
                     if (!selectedStatus) return;
                     const status = selectedStatus.value;
+
+                    updateRelationshipSections(status);
 
                     if (["married", "committed", "separated_fix"].includes(status)) {
                         goToSection(3);
@@ -576,70 +544,6 @@ function getUUIDFromUrl() {
         });
     });
 
-    // if (!addPartnerButton.dataset.listener) {  // Prevent duplicate listeners
-    //     addPartnerButton.addEventListener("click", function () {
-    //         console.log("Adding a partner..."); 
-    //         addPartner();
-    //     });
-    //     addPartnerButton.dataset.listener = "true";  // Mark as attached
-    // }
-
-
-    // function addPartner() {
-    //     partnerCount++;
-    //     console.log(`Adding Partner ${partnerCount}`);
-    //     const newPartner = document.createElement("div");
-    //     newPartner.classList.add("partner-entry");
-    //     newPartner.setAttribute("id", `partner-${partnerCount}`);
-    //     newPartner.innerHTML = `
-    //             <h3>Partner ${partnerCount} Information</h3>
-    //             <label>Partner's Name: <input type="text" name="partner_name_${partnerCount}"></label><br>
-    //             <label>Partner's Birth Date: <input type="text" name="partner_birth_date_${partnerCount}" placeholder="Example: May 25, 1984"></label><br>
-    //             <label>Partner's Birth Time: <input type="text" name="partner_birth_time_${partnerCount}" placeholder="Example: 1:30 PM"></label><br>
-    //             <label>Partner's Birth City: <input type="text" name="partner_birth_city_${partnerCount}"></label><br>
-    //             <label>Partner's Stress: <input type="text" name="partner_stress_${partnerCount}"></label><br>
-    //             <label>How do you handle conflicts in your relationship?</label><br>
-    //             <div class="main-checkbox-group multi-column">
-    //                 <input type="checkbox" name="partner_conflict_${partnerCount}" value="Address Immediately"> Address Immediately
-    //                 <input type="checkbox" name="partner_conflict_${partnerCount}" value="Cool Down First"> Cool Down First
-    //                 <input type="checkbox" name="partner_conflict_${partnerCount}" value="Avoid Conflict"> Avoid Conflict
-    //                 <input type="checkbox" name="partner_conflict_${partnerCount}" value="Seek a Third-Party Opinion"> Seek a Third-Party Opinion
-    //             </div>
-    //             <br>
-    //             <label>List 3-5 things you love about your partner: <input type="text" name="partner_love_${partnerCount}"></label><br>
-    //             <label>List 3-5 things you want to improve about yourself in your relationship: <input type="text" name="partner_improve_${partnerCount}"></label><br>
-    //             <label>Partner’s Belief System:</label><br>
-    //             <select name="partner_belief_${partnerCount}">
-    //                 <option value="Christian">Christian</option>
-    //                 <option value="Mormon">Mormon</option>
-    //                 <option value="Buddhist">Buddhist</option>
-    //                 <option value="Islam">Islam</option>
-    //                 <option value="Jewish">Jewish</option>
-    //                 <option value="Hindu">Hindu</option>
-    //                 <option value="Spiritual">Spiritual</option>
-    //                 <option value="Atheist">Atheist</option>
-    //                 <option value="Agnostic">Agnostic</option>
-    //                 <option value="Pagan">Pagan</option>
-    //                 <option value="Other">Other</option>
-    //             </select>
-    //                             <br>
-    //             <button type="button" class="remove-partner-btn" data-partner-id="${partnerCount}">Remove This Partner</button>
-    //     `;
-    //     partnerContainer.appendChild(newPartner);
-    //     console.log(`Partner ${partnerCount} added successfully.`);
-    //     // Attach remove event to the button immediately after adding the partner
-    //     newPartner.querySelector(".remove-partner-btn").addEventListener("click", function () {
-    //         removePartner(newPartner);
-    // });
-    // }
-
-    // function removePartner(partnerElement) {
-    //     partnerCount--;
-    //     console.log(`Removing ${partnerElement.id}`);
-    //     partnerElement.remove();
-    //     console.log(`Partner removed successfully.`);
-    // }
-
     if (addChildButton) {
         if (!addChildButton.dataset.listener) {  // Prevent duplicate event listeners
             addChildButton.addEventListener("click", function () {
@@ -667,7 +571,7 @@ function getUUIDFromUrl() {
                 <label>Child's Birth Date: <input type="text" id="child_name_${childCount}" name="child_birth_date_${childCount}" placeholder="Example: May 25, 2019"></label><br>
                 <label>Child's Birth Time: <input type="text" id="child_name_${childCount}" name="child_birth_time_${childCount}" placeholder="Example: 1:30 PM"></label><br>
                 
-                <label>What is your child’s gender?</label><br>
+                <label>What is your child's gender?</label><br>
                 <div class="main-radio-group multi-column">
                    <label><input type="radio" id="child_gender_${childCount}" name="child_gender_${childCount}" value="Male"> Male</label>
                     <label><input type="radio" id="child_gender_${childCount}" name="child_gender_${childCount}" value="Female"> Female</label>
@@ -695,239 +599,638 @@ function getUUIDFromUrl() {
         // Attach remove event to the button immediately after adding the child
         newChild.querySelector(".remove-child-btn").addEventListener("click", function () {
             removeChild(newChild);
-    });
-}
-
-function removeChild(childElement) {
-    childElement.remove();
-    childCount--;
-}
-
-function populateChildren(data) {
-    // Gather indices by checking for keys that start with "child_name_"
-    const indices = [];
-    Object.keys(data).forEach(key => {
-        if (key.startsWith("child_name_")) {
-            // E.g., key "child_name_1" yields index "1"
-            const parts = key.split("_");
-            const idx = parts[parts.length - 1];
-            if (!indices.includes(idx)) {
-                indices.push(idx);
-            }
-        }
-    });
-                    console.log("Extracted Child Indices:", indices);
-    // If any child data is found, unhide the Children Section
-    if (indices.length > 0) {
-        document.getElementById("children-section").style.display = "block";
+        });
     }
-    
-    // Sort indices numerically to maintain the order
-    indices.sort((a, b) => parseInt(a) - parseInt(b));
-    
-    // For each index, add a new child entry and prefill its fields
-    indices.forEach(dataIndex => {
-        // Call your existing addChild() function
-        addChild();
-        // The new card’s index corresponds to the current value of the global childCount
-        const currentIndex = childCount;
-        
-        // List the text fields to prefill
-        const fields = [
-            "name",
-            "birth_place",
-            "birth_date",
-            "birth_time",
-            "activities",
-            "stress",
-            "joy",
-            "concerns",
-            "activities"
-        ];
-        
-        fields.forEach(field => {
-            // Build the key from the Firebase data (for example: child_name_1)
-            const dataKey = `child_${field}_${dataIndex}`;
 
-            // Select both input and textarea fields
-            const selector = `#child-${currentIndex} input[name="child_${field}_${currentIndex}"], 
-                              #child-${currentIndex} textarea[name="child_${field}_${currentIndex}"]`;
-            
-            const inputElem = document.querySelector(selector);
-            if (inputElem && data[dataKey] !== undefined) {
-                inputElem.value = data[dataKey];
+    function removeChild(childElement) {
+        // Get the child ID from the element
+        const childId = childElement.id;
+        const childIndex = parseInt(childId.split('-')[1]);
+        
+        // Get the name mapping for this child
+        const nameMapping = {
+            1: "one",
+            2: "two",
+            3: "three",
+            4: "four",
+            5: "five"
+        };
+        
+        // Remove from localStorage and formData
+        const storedData = JSON.parse(localStorage.getItem("formData")) || {};
+        
+        // Remove all fields related to this child
+        Object.keys(storedData).forEach(key => {
+            // Check if this key is related to the deleted child using both naming patterns
+            if (key.startsWith(`child_name_${childIndex}`) || 
+                key.startsWith(`child_${nameMapping[childIndex]}_`) ||
+                key.startsWith(`child_birth_place_${childIndex}`) ||
+                key.startsWith(`child_birth_date_${childIndex}`) ||
+                key.startsWith(`child_birth_time_${childIndex}`) ||
+                key.startsWith(`child_gender_${childIndex}`) ||
+                key.startsWith(`child_activities_${childIndex}`) ||
+                key.startsWith(`child_stress_${childIndex}`) ||
+                key.startsWith(`child_joy_${childIndex}`) ||
+                key.startsWith(`child_concerns_${childIndex}`)) {
+                
+                delete storedData[key];
             }
         });
         
-        // Handle radio buttons for child gender
-        const genderKey = `child_gender_${dataIndex}`;
-        if (data[genderKey]) {
-            const radios = document.querySelectorAll(
-                `#child-${currentIndex} input[name="child_gender_${currentIndex}"]`
-            );
-            radios.forEach(radio => {
-                if (radio.value === data[genderKey]) {
-                    radio.checked = true;
+        // Save updated data back to localStorage
+        localStorage.setItem("formData", JSON.stringify(storedData));
+        
+        // Finally, remove the element from DOM
+        childElement.remove();
+        childCount--;
+        
+        // Update number_of_children in localStorage if there are any children left
+        if (childCount === 0) {
+            delete storedData["number_of_children"];
+            localStorage.setItem("formData", JSON.stringify(storedData));
+        } else {
+            storedData["number_of_children"] = `${childCount} Child${childCount > 1 ? 'ren' : ''}`;
+            localStorage.setItem("formData", JSON.stringify(storedData));
+        }
+        
+        console.log(`Child ${childIndex} removed from data and DOM`);
+    }
+
+    function populateChildren(data) {
+        // Gather indices by checking for keys that start with "child_name_"
+        const indices = [];
+        Object.keys(data).forEach(key => {
+            if (key.startsWith("child_name_")) {
+                // E.g., key "child_name_1" yields index "1"
+                const parts = key.split("_");
+                const idx = parts[parts.length - 1];
+                if (!indices.includes(idx)) {
+                    indices.push(idx);
+                }
+            }
+        });
+        console.log("Extracted Child Indices:", indices);
+        // If any child data is found, unhide the Children Section
+        if (indices.length > 0) {
+            document.getElementById("children-section").style.display = "block";
+        }
+        
+        // Sort indices numerically to maintain the order
+        indices.sort((a, b) => parseInt(a) - parseInt(b));
+        
+        // For each index, add a new child entry and prefill its fields
+        indices.forEach(dataIndex => {
+            // Call your existing addChild() function
+            addChild();
+            // The new card's index corresponds to the current value of the global childCount
+            const currentIndex = childCount;
+            
+            // List the text fields to prefill
+            const fields = [
+                "name",
+                "birth_place",
+                "birth_date",
+                "birth_time",
+                "activities",
+                "stress",
+                "joy",
+                "concerns",
+                "activities"
+            ];
+            
+            fields.forEach(field => {
+                // Build the key from the Firebase data (for example: child_name_1)
+                const dataKey = `child_${field}_${dataIndex}`;
+
+                // Select both input and textarea fields
+                const selector = `#child-${currentIndex} input[name="child_${field}_${currentIndex}"], 
+                                #child-${currentIndex} textarea[name="child_${field}_${currentIndex}"]`;
+                
+                const inputElem = document.querySelector(selector);
+                if (inputElem && data[dataKey] !== undefined) {
+                    inputElem.value = data[dataKey];
                 }
             });
-        }
-    });
-}
-
-
-// Prevent duplicate event listeners
-if (!document.getElementById("add-important-person").dataset.listener) {
-    document.getElementById("add-important-person").addEventListener("click", function () {
-        addImportantPerson();
-    });
-    document.getElementById("add-important-person").dataset.listener = "true";
-}
-
-function resetImportantPersons(){
-    importantPersonCount = 0;
-    document.getElementById("important-person-container").innerHTML = "";
-}
-
-function addImportantPerson() {
-    importantPersonCount++;
-    const newPerson = document.createElement("div");
-    newPerson.classList.add("important-person-entry");
-    newPerson.setAttribute("id", `important-person-${importantPersonCount}`);
-    newPerson.innerHTML = `
-        <div class="important-person-card">
-            <h3>Person ${importantPersonCount} Information</h3>
-            <label>First Name: <input type="text" name="important_person_name_${importantPersonCount}" placeholder="Example: John"></label><br>
-            <label>Birthdate: <input type="text" name="important_person_birthdate_${importantPersonCount}" placeholder="Example: May 25, 1984 or 'Unknown'"></label><br>
-            <label>Birth Time: <input type="text" name="important_person_birth_time_${importantPersonCount}" placeholder="Example: 1:30 PM or 'Unknown'"></label><br>
-            <label>Birth City: <input type="text" name="important_person_birth_city_${importantPersonCount}" placeholder="City, State, Country or 'Unknown'"></label><br>
-            <label>What is your relationship with this person?</label><br>
-            <div class="main-radio-group multi-column">
-                <label><input type="radio" id="important_person_relation_${importantPersonCount}" name="important_person_relation_${importantPersonCount}" value="Family Member"> Family Member</label>
-                <label><input type="radio" id="important_person_relation_${importantPersonCount}" name="important_person_relation_${importantPersonCount}" value="Roommate"> Roommate</label>
-                <label><input type="radio" id="important_person_relation_${importantPersonCount}" name="important_person_relation_${importantPersonCount}" value="Friend"> Friend</label>
-                <label><input type="radio" id="important_person_relation_${importantPersonCount}" name="important_person_relation_${importantPersonCount}" value="Business Partner"> Business Partner</label>
-                <label><input type="radio" id="important_person_relation_${importantPersonCount}" name="important_person_relation_${importantPersonCount}" value="Ex-Partner"> Ex-Partner</label>
-                <label><input type="radio" id="important_person_relation_${importantPersonCount}" name="important_person_relation_${importantPersonCount}" value="Other"> Other</label>
-            </div>
-            <br>
-            <label for="joy_satisfaction">Describe how this person affects your daily life:</label>
-            <textarea id="important_person_impact_${importantPersonCount}" name="important_person_impact_${importantPersonCount}" class="text-large auto-expand" placeholder="Example: This person inspires me to work harder and stay positive, but they can also add stress when we disagree."></textarea>
-
-            <label for="important_person_stress_${importantPersonCount}">List 3-5 sources of stress related to this person</label>
-            <textarea id="important_person_stress_${importantPersonCount}" name="important_person_stress_${importantPersonCount}" class="text-large auto-expand" placeholder="Example: 1. Miscommunication. 2. Different priorities. 3. Financial disagreements."></textarea>
             
-            <label for="important_person_appreciation_${importantPersonCount}">List 3-5 things you appreciate about this person:</label>
-            <textarea id="important_person_appreciation_${importantPersonCount}" name="important_person_appreciation_${importantPersonCount}" class="text-large auto-expand" placeholder="Example: 1. Their loyalty. 2. Their sense of humor. 3. Their ability to listen. 4. Their dedication to family. 5. Their honesty."></textarea>
+            // Handle radio buttons for child gender
+            const genderKey = `child_gender_${dataIndex}`;
+            if (data[genderKey]) {
+                const radios = document.querySelectorAll(
+                    `#child-${currentIndex} input[name="child_gender_${currentIndex}"]`
+                );
+                radios.forEach(radio => {
+                    if (radio.value === data[genderKey]) {
+                        radio.checked = true;
+                    }
+                });
+            }
+        });
+    }
 
-            <label>How do you typically handle disagreements with this person?</label><br>
-            <div class="main-checkbox-group multi-column">
-                <label><input type="checkbox" id="important_person_conflict_${importantPersonCount}" name="important_person_conflict_${importantPersonCount}" value="Address Immediately"> Address Immediately</label>
-                <label><input type="checkbox" id="important_person_conflict_${importantPersonCount}" name="important_person_conflict_${importantPersonCount}" value="Take Time to Cool Down"> Take Time to Cool Down</label>
-                <label><input type="checkbox" id="important_person_conflict_${importantPersonCount}" name="important_person_conflict_${importantPersonCount}" value="Avoid Confrontation"> Avoid Confrontation</label>
-                <label><input type="checkbox" id="important_person_conflict_${importantPersonCount}" name="important_person_conflict_${importantPersonCount}" value="Seek a Third-Party Opinion"> Seek a Third-Party Opinion</label>
+
+    // Prevent duplicate event listeners
+    if (!document.getElementById("add-important-person").dataset.listener) {
+        document.getElementById("add-important-person").addEventListener("click", function () {
+            addImportantPerson();
+        });
+        document.getElementById("add-important-person").dataset.listener = "true";
+    }
+
+    function resetImportantPersons(){
+        importantPersonCount = 0;
+        document.getElementById("important-person-container").innerHTML = "";
+    }
+
+ function addImportantPerson() {
+        importantPersonCount++;
+        const newPerson = document.createElement("div");
+        newPerson.classList.add("important-person-entry");
+        newPerson.setAttribute("id", `important-person-${importantPersonCount}`);
+        newPerson.innerHTML = `
+            <div class="important-person-card">
+                <h3>Person ${importantPersonCount} Information</h3>
+                <label>First Name: <input type="text" name="important_person_name_${importantPersonCount}" placeholder="Example: John"></label><br>
+                <label>Birthdate: <input type="text" name="important_person_birthdate_${importantPersonCount}" placeholder="Example: May 25, 1984 or 'Unknown'"></label><br>
+                <label>Birth Time: <input type="text" name="important_person_birth_time_${importantPersonCount}" placeholder="Example: 1:30 PM or 'Unknown'"></label><br>
+                <label>Birth City: <input type="text" name="important_person_birth_city_${importantPersonCount}" placeholder="City, State, Country or 'Unknown'"></label><br>
+                <label>What is your relationship with this person?</label><br>
+                <div class="main-radio-group multi-column">
+                    <label><input type="radio" id="important_person_relation_${importantPersonCount}" name="important_person_relation_${importantPersonCount}" value="Family Member"> Family Member</label>
+                    <label><input type="radio" id="important_person_relation_${importantPersonCount}" name="important_person_relation_${importantPersonCount}" value="Roommate"> Roommate</label>
+                    <label><input type="radio" id="important_person_relation_${importantPersonCount}" name="important_person_relation_${importantPersonCount}" value="Friend"> Friend</label>
+                    <label><input type="radio" id="important_person_relation_${importantPersonCount}" name="important_person_relation_${importantPersonCount}" value="Business Partner"> Business Partner</label>
+                    <label><input type="radio" id="important_person_relation_${importantPersonCount}" name="important_person_relation_${importantPersonCount}" value="Ex-Partner"> Ex-Partner</label>
+                    <label><input type="radio" id="important_person_relation_${importantPersonCount}" name="important_person_relation_${importantPersonCount}" value="Other"> Other</label>
+                </div>
+                <br>
+                <label for="joy_satisfaction">Describe how this person affects your daily life:</label>
+                <textarea id="important_person_impact_${importantPersonCount}" name="important_person_impact_${importantPersonCount}" class="text-large auto-expand" placeholder="Example: This person inspires me to work harder and stay positive, but they can also add stress when we disagree."></textarea>
+
+                <label for="important_person_stress_${importantPersonCount}">List 3-5 sources of stress related to this person</label>
+                <textarea id="important_person_stress_${importantPersonCount}" name="important_person_stress_${importantPersonCount}" class="text-large auto-expand" placeholder="Example: 1. Miscommunication. 2. Different priorities. 3. Financial disagreements."></textarea>
+                
+                <label for="important_person_appreciation_${importantPersonCount}">List 3-5 things you appreciate about this person:</label>
+                <textarea id="important_person_appreciation_${importantPersonCount}" name="important_person_appreciation_${importantPersonCount}" class="text-large auto-expand" placeholder="Example: 1. Their loyalty. 2. Their sense of humor. 3. Their ability to listen. 4. Their dedication to family. 5. Their honesty."></textarea>
+
+                <label>How do you typically handle disagreements with this person?</label><br>
+                <div class="main-checkbox-group multi-column">
+                    <label><input type="checkbox" id="important_person_conflict_${importantPersonCount}" name="important_person_conflict_${importantPersonCount}" value="Address Immediately"> Address Immediately</label>
+                    <label><input type="checkbox" id="important_person_conflict_${importantPersonCount}" name="important_person_conflict_${importantPersonCount}" value="Take Time to Cool Down"> Take Time to Cool Down</label>
+                    <label><input type="checkbox" id="important_person_conflict_${importantPersonCount}" name="important_person_conflict_${importantPersonCount}" value="Avoid Confrontation"> Avoid Confrontation</label>
+                    <label><input type="checkbox" id="important_person_conflict_${importantPersonCount}" name="important_person_conflict_${importantPersonCount}" value="Seek a Third-Party Opinion"> Seek a Third-Party Opinion</label>
+                </div>
+                <br>
+
+                <label for="important_person_improvement_${importantPersonCount}">List 3-5 ways you want to improve your relationship with this person (Optional):</label>
+                <textarea id="important_person_improvement_${importantPersonCount}" name="important_person_improvement_${importantPersonCount}" class="text-large auto-expand" placeholder="Example: 1. Their loyalty. 2. Their sense of humor. 3. Their ability to listen. 4. Their dedication to family. 5. Their honesty."></textarea>
+
+                <button type="button" class="remove-important-person-btn" data-person-id="${importantPersonCount}">Remove This Person</button>
             </div>
-            <br>
-
-            <label for="important_person_improvement_${importantPersonCount}">List 3-5 ways you want to improve your relationship with this person (Optional):</label>
-            <textarea id="important_person_improvement_${importantPersonCount}" name="important_person_improvement_${importantPersonCount}" class="text-large auto-expand" placeholder="Example: 1. Their loyalty. 2. Their sense of humor. 3. Their ability to listen. 4. Their dedication to family. 5. Their honesty."></textarea>
-
-            <button type="button" class="remove-important-person-btn" data-person-id="${importantPersonCount}">Remove This Person</button>
-        </div>
-    `;
-    document.getElementById("important-person-container").appendChild(newPerson);
-    newPerson.querySelector(".remove-important-person-btn").addEventListener("click", function () {
-        removeImportantPerson(newPerson);
-    });
-}
+        `;
+        document.getElementById("important-person-container").appendChild(newPerson);
+        newPerson.querySelector(".remove-important-person-btn").addEventListener("click", function () {
+            removeImportantPerson(newPerson);
+        });
+    }
 
     // Function to remove an important person section
     function removeImportantPerson(personElement) {
-        personElement.remove();
-        importantPersonCount--;
-    }
-
-    function collectFormData() {
-        const formData = {};
-        const inputs = document.querySelectorAll("input, select, textarea");
-
-        inputs.forEach((input) => {
-            if (input.type === "checkbox") {
-                if (!formData[input.name]) {
-                    formData[input.name] = [];
-                }
-                if (input.checked) {
-                    formData[input.name].push(input.value);
-                }
-            } else if (input.type === "radio") {
-                // Ensure each radio group is captured, even if nothing is selected
-                if (!(input.name in formData)) {
-                    formData[input.name] = ""; // Default empty string for unselected radios
-                }
-                if (input.checked) {
-                    formData[input.name] = input.value;
-                }
-            } else {
-                formData[input.name] = input.value.trim();
+        // Get the person ID from the element
+        const personId = personElement.id;
+        const personIndex = parseInt(personId.split('-')[2]);
+        
+        // Remove from localStorage and formData
+        const storedData = JSON.parse(localStorage.getItem("formData")) || {};
+        
+        // Remove all fields related to this important person
+        Object.keys(storedData).forEach(key => {
+            if (key.startsWith(`important_person_${personIndex}_`)) {
+                delete storedData[key];
             }
         });
+        
+        // Save updated data back to localStorage
+        localStorage.setItem("formData", JSON.stringify(storedData));
+        
+        // Remove the element from DOM
+        personElement.remove();
+        importantPersonCount--;
+        
+        console.log(`Important Person ${personIndex} removed from data and DOM`);
+    }
 
+    // Improved function to collect form data that properly handles all input types
+    function collectFormData() {
+        const formData = {};
+        
+        // Get all form inputs, select menus, and textareas
+        const allFormElements = document.querySelectorAll("input, select, textarea");
+        
+        allFormElements.forEach((element) => {
+            // Skip elements without names
+            if (!element.name) return;
+            
+            if (element.type === "checkbox") {
+                // For checkboxes, we need to handle groups
+                if (element.checked) {
+                    if (!formData[element.name]) {
+                        formData[element.name] = [];
+                    }
+                    
+                    // If this checkbox was already processed, don't add it again
+                    if (!formData[element.name].includes(element.value)) {
+                        formData[element.name].push(element.value);
+                    }
+                }
+            } else if (element.type === "radio") {
+                // For radio buttons, only include the checked ones
+                if (element.checked) {
+                    formData[element.name] = element.value;
+                }
+            } else {
+                // For text inputs, textareas, and selects
+                formData[element.name] = element.value.trim();
+            }
+        });
+        
+        // Special handling for dynamically created sections
+        processChildrenData(formData);
+        processImportantPersonsData(formData);
+        processPartnerData(formData);
+        
+        console.log("Complete form data collected:", formData);
         return formData;
     }
 
-    function removeEmptyValues(obj) {
-        return Object.fromEntries(
-            Object.entries(obj).filter(([_, value]) => {
-                return value !== null && value !== "" && 
-                       !(Array.isArray(value) && value.length === 0);
-            })
-        );
-    }
-
-    function collectFormData() {
-        const formData = new FormData(form);
-        const dataObject = {};
-
-        formData.forEach((value, key) => {
-            dataObject[key] = value;
+    /**
+     * Process children data to ensure all fields are properly collected
+     */
+    function processChildrenData(formData) {
+        const childContainer = document.getElementById("child-container");
+        if (!childContainer) return;
+        
+        // Count how many child entries we have
+        const childEntries = childContainer.querySelectorAll(".child-entry");
+        formData["number_of_children"] = childEntries.length > 0 ? `${childEntries.length} Child${childEntries.length > 1 ? 'ren' : ''}` : "";
+        
+        // For each child entry, make sure all fields are properly named
+        childEntries.forEach((childEntry, index) => {
+            const childIndex = index + 1;
+            
+            // Create proper child field names for database formatting
+            // Convert child_name_1 to child_one_first_name
+            const nameMapping = {
+                1: "one",
+                2: "two",
+                3: "three",
+                4: "four",
+                5: "five"
+            };
+            
+            // Basic fields
+            const nameField = childEntry.querySelector(`[name="child_name_${childIndex}"]`);
+            if (nameField && nameField.value.trim()) {
+                formData[`child_${nameMapping[childIndex]}_first_name`] = nameField.value.trim();
+            }
+            
+            // Birth info
+            const birthPlaceField = childEntry.querySelector(`[name="child_birth_place_${childIndex}"]`);
+            if (birthPlaceField && birthPlaceField.value.trim()) {
+                formData[`child_${nameMapping[childIndex]}_birth_place`] = birthPlaceField.value.trim();
+            }
+            
+            const birthDateField = childEntry.querySelector(`[name="child_birth_date_${childIndex}"]`);
+            if (birthDateField && birthDateField.value.trim()) {
+                formData[`child_${nameMapping[childIndex]}_birth_date`] = birthDateField.value.trim();
+            }
+            
+            const birthTimeField = childEntry.querySelector(`[name="child_birth_time_${childIndex}"]`);
+            if (birthTimeField && birthTimeField.value.trim()) {
+                formData[`child_${nameMapping[childIndex]}_birth_time`] = birthTimeField.value.trim();
+            }
+            
+            // Gender
+            const genderField = childEntry.querySelector(`[name="child_gender_${childIndex}"]:checked`);
+            if (genderField) {
+                formData[`child_${nameMapping[childIndex]}_gender`] = genderField.value;
+            }
+            
+            // Textareas
+            const activitiesField = childEntry.querySelector(`[name="child_activities_${childIndex}"]`);
+            if (activitiesField && activitiesField.value.trim()) {
+                formData[`child_${nameMapping[childIndex]}_primary_activities`] = activitiesField.value.trim();
+            }
+            
+            const stressField = childEntry.querySelector(`[name="child_stress_${childIndex}"]`);
+            if (stressField && stressField.value.trim()) {
+                formData[`child_${nameMapping[childIndex]}_stress`] = stressField.value.trim();
+            }
+            
+            const joyField = childEntry.querySelector(`[name="child_joy_${childIndex}"]`);
+            if (joyField && joyField.value.trim()) {
+                formData[`child_${nameMapping[childIndex]}_joy_and_satisfaction`] = joyField.value.trim();
+            }
+            
+            const concernsField = childEntry.querySelector(`[name="child_concerns_${childIndex}"]`);
+            if (concernsField && concernsField.value.trim()) {
+                formData[`child_${nameMapping[childIndex]}_long_term_concerns`] = concernsField.value.trim();
+            }
         });
 
-        return dataObject;
+        // Make sure we remove data from any deleted children
+        // For example, if we have 3 children but childCount has decreased to 2
+        for (let i = childEntries.length + 1; i <= 5; i++) {
+        const nameMapping = {
+            1: "one",
+            2: "two",
+            3: "three",
+            4: "four",
+            5: "five"
+        };
+        
+        // Remove legacy data for this deleted child
+        Object.keys(formData).forEach(key => {
+            if (key.startsWith(`child_${nameMapping[i]}_`) || key.startsWith(`child_${i}_`)) {
+                delete formData[key];
+            }
+        });
+    }
     }
 
-    function clearEmploymentData(status) {
-        // If user selects "Unemployed" or "Retired", clear job-related fields
-        if (status === "unemployed" || status === "retired") {
-            console.log("Clearing job-related fields...");
-            const jobFields = ["job_title", "job_satisfaction", "career_goals", "work_stress", "work_environment", "career_decision", "work_life_balance", "financial_security"];
-
-            jobFields.forEach(field => {
-                const inputElements = document.querySelectorAll(`[name="${field}"]`);
-                inputElements.forEach(input => {
-                    if (input.type === "checkbox" || input.type === "radio") {
-                        input.checked = false;
-                    } else {
-                        input.value = "";
+    /**
+     * Process important persons data to ensure all fields are properly collected
+     * Only saves data if it contains meaningful information
+     */
+    function processImportantPersonsData(formData) {
+        const container = document.getElementById("important-person-container");
+        if (!container) return;
+        
+        // Count how many entries we have
+        const entries = container.querySelectorAll(".important-person-entry");
+        
+        // For each entry, verify if it contains meaningful data before processing
+        entries.forEach((entry, index) => {
+            const personIndex = index + 1;
+            
+            // First, check if this entry has a name (required field)
+            const nameField = entry.querySelector(`[name="important_person_name_${personIndex}"]`);
+            if (!nameField || !nameField.value.trim()) {
+                console.log(`Important person ${personIndex} has no name - skipping`);
+                return; // Skip this entry entirely if no name is provided
+            }
+            
+            // Count how many fields have data for this person
+            let fieldCount = 0;
+            let hasData = false;
+            
+            // Check for data in various fields
+            const fieldsToCheck = [
+                `important_person_name_${personIndex}`,
+                `important_person_birthdate_${personIndex}`,
+                `important_person_birth_time_${personIndex}`,
+                `important_person_birth_city_${personIndex}`,
+                `important_person_impact_${personIndex}`,
+                `important_person_stress_${personIndex}`,
+                `important_person_appreciation_${personIndex}`,
+                `important_person_improvement_${personIndex}`
+            ];
+            
+            // Check text fields
+            fieldsToCheck.forEach(fieldName => {
+                const field = entry.querySelector(`[name="${fieldName}"]`);
+                if (field && field.value.trim() !== '') {
+                    fieldCount++;
+                    if (fieldName === `important_person_impact_${personIndex}` || 
+                        fieldName === `important_person_stress_${personIndex}` ||
+                        fieldName === `important_person_appreciation_${personIndex}`) {
+                        hasData = true; // These fields are considered more important
                     }
-                });
+                }
+            });
+            
+            // Check radio fields
+            const relationField = entry.querySelector(`[name="important_person_relation_${personIndex}"]:checked`);
+            if (relationField) {
+                fieldCount++;
+            }
+            
+            // Check checkboxes
+            const conflictChecks = entry.querySelectorAll(`[name="important_person_conflict_${personIndex}"]:checked`);
+            if (conflictChecks.length > 0) {
+                fieldCount++;
+                hasData = true; // This is considered an important field
+            }
+            
+            // Only process and save if we have meaningful data
+            // Requiring at least 3 fields filled out or at least one "important" field
+            if (fieldCount >= 3 || hasData) {
+                console.log(`Important person ${personIndex} has sufficient data - processing`);
+                
+                // Save the basic name field
+                formData[`important_person_${personIndex}_name`] = nameField.value.trim();
+                
+                // Process and save the rest of the fields
+                // Birth info
+                const birthdateField = entry.querySelector(`[name="important_person_birthdate_${personIndex}"]`);
+                if (birthdateField && birthdateField.value.trim()) {
+                    formData[`important_person_${personIndex}_birthdate`] = birthdateField.value.trim();
+                }
+                
+                const birthTimeField = entry.querySelector(`[name="important_person_birth_time_${personIndex}"]`);
+                if (birthTimeField && birthTimeField.value.trim()) {
+                    formData[`important_person_${personIndex}_birth_time`] = birthTimeField.value.trim();
+                }
+                
+                const birthCityField = entry.querySelector(`[name="important_person_birth_city_${personIndex}"]`);
+                if (birthCityField && birthCityField.value.trim()) {
+                    formData[`important_person_${personIndex}_birth_city`] = birthCityField.value.trim();
+                }
+                
+                // Relationship
+                if (relationField) {
+                    formData[`important_person_${personIndex}_relation`] = relationField.value;
+                }
+                
+                // Textareas
+                const impactField = entry.querySelector(`[name="important_person_impact_${personIndex}"]`);
+                if (impactField && impactField.value.trim()) {
+                    formData[`important_person_${personIndex}_impact`] = impactField.value.trim();
+                }
+                
+                const stressField = entry.querySelector(`[name="important_person_stress_${personIndex}"]`);
+                if (stressField && stressField.value.trim()) {
+                    formData[`important_person_${personIndex}_stress`] = stressField.value.trim();
+                }
+                
+                const appreciationField = entry.querySelector(`[name="important_person_appreciation_${personIndex}"]`);
+                if (appreciationField && appreciationField.value.trim()) {
+                    formData[`important_person_${personIndex}_appreciation`] = appreciationField.value.trim();
+                }
+                
+                // Conflict management (checkboxes)
+                if (conflictChecks.length > 0) {
+                    formData[`important_person_${personIndex}_conflict`] = Array.from(conflictChecks).map(cb => cb.value);
+                }
+                
+                const improvementField = entry.querySelector(`[name="important_person_improvement_${personIndex}"]`);
+                if (improvementField && improvementField.value.trim()) {
+                    formData[`important_person_${personIndex}_improvement`] = improvementField.value.trim();
+                }
+            } else {
+                console.log(`Important person ${personIndex} has insufficient data - skipping`);
+                // We don't add any data for this person
+            }
+        });
+        
+        // Make sure we remove data from any deleted important persons
+        // If we had more entries before that were deleted
+        for (let i = entries.length + 1; i <= 10; i++) {
+            // Remove legacy data for deleted important persons
+            Object.keys(formData).forEach(key => {
+                if (key.startsWith(`important_person_${i}_`)) {
+                    delete formData[key];
+                }
             });
         }
+    }
 
-        // If user selects "Employed", clear unemployment/retirement-related fields
-        if (status === "employed" || status === "business_owner" || status === "entrepreneur" || status === "self_employed") {
-            console.log("Clearing unemployment & retirement-related fields...");
-            const clearFields = ["job_focus", "retirement_focus", "retirement_transition", "retirement_activity", "social_connections", "sense_of_purpose"];
+    /**
+     * Handles relationship status changes by showing/hiding relevant sections
+     * and clearing data for unused relationship types
+     */
+    function updateRelationshipSections(status) {
+        console.log("Relationship Status Selected:", status);
 
-            clearFields.forEach(field => {
-                const inputElements = document.querySelectorAll(`[name="${field}"]`);
-                inputElements.forEach(input => {
-                    if (input.type === "checkbox" || input.type === "radio") {
-                        input.checked = false;
-                    } else {
-                        input.value = "";
-                    }
-                });
+        // Show or hide sections based on relationship status
+        document.getElementById("partner-section").style.display = 
+            (["married", "committed", "separated_fix"].includes(status)) 
+            ? "block" : "none";
+
+        document.getElementById("future-partner-section").style.display = 
+            (["future_partner", "divorced", "separated_differences"].includes(status)) 
+            ? "block" : "none";
+
+        // If relationship status changes to something other than married/committed/etc
+        if (!["married", "committed", "separated_fix"].includes(status)) {
+            // Clear partner data from local storage
+            const storedData = JSON.parse(localStorage.getItem("formData")) || {};
+            
+            Object.keys(storedData).forEach(key => {
+                if (key.startsWith("partner_") || key === "partners_belief_system") {
+                    delete storedData[key];
+                }
             });
+            
+            localStorage.setItem("formData", JSON.stringify(storedData));
+            console.log("Partner data cleared due to relationship status change");
         }
+        
+        // If relationship status changes to something other than future_partner/divorced/etc
+        if (!["future_partner", "divorced", "separated_differences"].includes(status)) {
+            // Clear future partner data from local storage
+            const storedData = JSON.parse(localStorage.getItem("formData")) || {};
+            
+            // Find and delete future partner fields
+            Object.keys(storedData).forEach(key => {
+                if (key.startsWith("future_partner_") || 
+                    key.includes("partner_preference") ||
+                    key.includes("love_language") ||
+                    key.includes("lifestyle")) {
+                    
+                    delete storedData[key];
+                }
+            });
+            
+            localStorage.setItem("formData", JSON.stringify(storedData));
+            console.log("Future partner data cleared due to relationship status change");
+        }
+    }
+
+    /**
+     * Process partner data to ensure all fields are properly collected
+     */
+    function processPartnerData(formData) {
+        const partnerSection = document.getElementById("partner-section");
+        if (!partnerSection || partnerSection.style.display === "none") return;
+        
+        // Basic fields
+        const nameField = partnerSection.querySelector('[name="partner_name_1"]');
+        if (nameField && nameField.value.trim()) {
+            formData["partner_name"] = nameField.value.trim();
+        }
+        
+        // Birth info
+        const birthDateField = partnerSection.querySelector('[name="partner_birth_date_1"]');
+        if (birthDateField && birthDateField.value.trim()) {
+            formData["partner_birth_date"] = birthDateField.value.trim();
+        }
+        
+        const birthTimeField = partnerSection.querySelector('[name="partner_birth_time_1"]');
+        if (birthTimeField && birthTimeField.value.trim()) {
+            formData["partner_birth_time"] = birthTimeField.value.trim();
+        }
+        
+        const birthCityField = partnerSection.querySelector('[name="partner_birth_city_1"]');
+        if (birthCityField && birthCityField.value.trim()) {
+            formData["partner_birth_city"] = birthCityField.value.trim();
+        }
+        
+        // Stress
+        const stressField = partnerSection.querySelector('[name="partner_stress_1"]');
+        if (stressField && stressField.value.trim()) {
+            formData["partner_stress"] = stressField.value.trim();
+        }
+        
+        // Conflict management (checkboxes)
+        const conflictChecks = partnerSection.querySelectorAll('[name="partner_conflict_1"]:checked');
+        if (conflictChecks.length > 0) {
+            formData["partner_conflict"] = Array.from(conflictChecks).map(cb => cb.value);
+        }
+        
+        // Love and improvement
+        const loveField = partnerSection.querySelector('[name="partner_love_1"]');
+        if (loveField && loveField.value.trim()) {
+            formData["partner_appreciation"] = loveField.value.trim();
+        }
+        
+        const improveField = partnerSection.querySelector('[name="partner_improve_1"]');
+        if (improveField && improveField.value.trim()) {
+            formData["partner_improvements"] = improveField.value.trim();
+        }
+        
+        // Belief system
+        const beliefField = partnerSection.querySelector('[name="belief_system"]:checked');
+        if (beliefField) {
+            formData["partners_belief_system"] = beliefField.value;
+        }
+    }
+
+    /**
+     * Improved function to remove empty values from the form data
+     */
+    function removeEmptyValues(obj) {
+        const filteredObj = {};
+        
+        Object.entries(obj).forEach(([key, value]) => {
+            // Check if it's an array
+            if (Array.isArray(value)) {
+                if (value.length > 0) {
+                    filteredObj[key] = value;
+                }
+            } 
+            // Check if it's a string
+            else if (typeof value === 'string') {
+                if (value.trim() !== '') {
+                    filteredObj[key] = value;
+                }
+            }
+            // Keep other non-null, non-undefined values
+            else if (value !== null && value !== undefined) {
+                filteredObj[key] = value;
+            }
+        });
+        
+        return filteredObj;
     }
 
     function populateEmploymentData(data) {
@@ -954,20 +1257,29 @@ function addImportantPerson() {
 
         // Loop through each checkable field (radio buttons & checkboxes)
         checkableFields.forEach(field => {
-            // Build the key from the Firebase data (for example: child_name_1)
-            const dataKey = `job_${field}`;
-
-            // Select both input and textarea fields
-            const selector = `#job-${currentIndex} input[name="job_${field}_${currentIndex}"], 
-                              #job-${currentIndex} textarea[name="job_${field}_${currentIndex}"]`;
+            // Select the appropriate inputs
+            const inputs = document.querySelectorAll(`input[name="${field}"]`);
             
-            const inputElem = document.querySelector(selector);
-            if (inputElem && data[dataKey] !== undefined) {
-                inputElem.value = data[dataKey];
+            if (inputs.length > 0 && data[field] !== undefined) {
+                inputs.forEach(input => {
+                    // For checkboxes that can have multiple values
+                    if (input.type === "checkbox") {
+                        if (Array.isArray(data[field])) {
+                            input.checked = data[field].includes(input.value);
+                        } else if (typeof data[field] === 'string') {
+                            // If the value was stored as comma-separated string
+                            const values = data[field].split(',').map(v => v.trim());
+                            input.checked = values.includes(input.value);
+                        }
+                    } 
+                    // For radio buttons
+                    else if (input.type === "radio") {
+                        input.checked = input.value === data[field];
+                    }
+                });
             }
         });
     }
-
 
     function updateEmploymentSections(status) {
         console.log("Employment Status Selected:", status);
@@ -1023,78 +1335,18 @@ function addImportantPerson() {
         }
     }
 
-
-
-    submitButton.addEventListener("click", async function (event) {
-        const consent = validateFinalConsent();
-        event.preventDefault();
-
-        if (consent === false) {
-            return;
-        }
-          
-          submitButton.disabled = true;
-          submitButton.style.pointerEvents = "none"
-          submitButton.textContent = "Processing...";
-          submitButton.style.backgroundColor = "#ccc";
-
-        let formDataObject = collectFormData();
-        formDataObject = removeEmptyValues(formDataObject);
-
-        const uuid = getUUIDFromUrl();
-        if (uuid) {
-            formDataObject.uuid = uuid;
-        }
-
-        console.log("Filtered Form Data before sending:", formDataObject);
-
-        try {
-            updateText();
-            setInterval(updateText, 3000);
-            const response = await fetch(FIREBASE_FUNCTIONS_URL, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(formDataObject),
-            });
-
-            const result = await response.json();
-
-            alert(result.message || "Form submitted successfully!");
-        } catch (error) {
-            submitButton.disabled = false;
-            submitButton.style.pointerEvents = ""
-            console.error("Error submitting form:", error);
-            alert("There was an error submitting the form.");
-        } finally {
-            document.querySelectorAll(".prev").forEach((button) => {
-             button.style.display = "none";
-            });
-              document.querySelectorAll("input[type='checkbox']").forEach((checkbox) => {
-            checkbox.disabled = true;
-            checkbox.style.pointerEvents = "none";
-           });
-
-            rotatingTextDiv.style.display = "none";
-            submitButton.style.pointerEvents = "none";
-            submitButton.textContent = "Submitted";
-            submitButton.style.color = "#5a3e85";
-            submitButton.style.backgroundColor = "#f5d76e";
-        }
-
-    });
-
     let currentIndex = 0;
     function updateText() {
         if (currentIndex < rotatingStrings.length) {
-          rotatingTextDiv.textContent = rotatingStrings[currentIndex];
-          currentIndex++;
+            rotatingTextDiv.textContent = rotatingStrings[currentIndex];
+            currentIndex++;
 
-          if (currentIndex < rotatingStrings.length) {
-            const randomDelay = (Math.floor(Math.random() * 3) + 1) * 500;
-            setTimeout(updateText, randomDelay);
-          }
+            if (currentIndex < rotatingStrings.length) {
+                const randomDelay = (Math.floor(Math.random() * 3) + 1) * 500;
+                setTimeout(updateText, randomDelay);
+            }
         }
-      }
+    }
 
     function validateRadioGroup(groupName) {
         const checkedRadio = document.querySelector(`input[name="${groupName}"]:checked`);
@@ -1117,5 +1369,63 @@ function addImportantPerson() {
         }
     }
 
-});
+    submitButton.addEventListener("click", async function (event) {
+        event.preventDefault();
+        
+        // Validate consent
+        const consent = validateFinalConsent();
+        if (consent === false) {
+            return;
+        }
+          
+        submitButton.disabled = true;
+        submitButton.style.pointerEvents = "none";
+        submitButton.textContent = "Processing...";
+        submitButton.style.backgroundColor = "#ccc";
 
+        // Collect all form data
+        let formDataObject = collectFormData();
+        
+        // Remove empty values
+        formDataObject = removeEmptyValues(formDataObject);
+
+        const uuid = getUUIDFromUrl();
+        if (uuid) {
+            formDataObject.uuid = uuid;
+        }
+
+        console.log("Final Form Data:", formDataObject);
+
+        try {
+            updateText();
+            setInterval(updateText, 3000);
+            const response = await fetch(FIREBASE_FUNCTIONS_URL, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(formDataObject),
+            });
+
+            const result = await response.json();
+            alert(result.message || "Form submitted successfully!");
+        } catch (error) {
+            submitButton.disabled = false;
+            submitButton.style.pointerEvents = "";
+            console.error("Error submitting form:", error);
+            alert("There was an error submitting the form.");
+        } finally {
+            document.querySelectorAll(".prev").forEach((button) => {
+                button.style.display = "none";
+            });
+            document.querySelectorAll("input[type='checkbox']").forEach((checkbox) => {
+                checkbox.disabled = true;
+                checkbox.style.pointerEvents = "none";
+            });
+
+            rotatingTextDiv.style.display = "none";
+            submitButton.style.pointerEvents = "none";
+            submitButton.textContent = "Submitted";
+            submitButton.style.color = "#5a3e85";
+            submitButton.style.backgroundColor = "#f5d76e";
+        }
+    });
+});

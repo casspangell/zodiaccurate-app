@@ -19,7 +19,7 @@ const db = getDatabase(app);
 // Allow only https://zodiaccurate.app (or use "*" for all origins)
 const corsHandler = cors({ origin: "https://zodiaccurate.app" });
 
-const appScriptUrl = "https://script.google.com/macros/s/AKfycbyzjfJO7LhfRCkk7e8oXqeVD9zfNvWZ7eBUeI7E7DayyLD7fp3PvWKd-JJwYQ1CNwikqQ/exec";
+const appScriptUrl = "https://script.google.com/macros/s/AKfycbwt4YawokDbetsoXQV5GEzDmySW4RdF4uZLWzLEB5ChT9q1NG0iTj98F7jU5pHgW66-mw/exec";
 
 // Retrieve secret from Google Cloud Secret Manager
 async function getSecret(secretName: string): Promise<string> {
@@ -99,49 +99,118 @@ export const webhookHandler = onRequest(
 
     // Handle Stripe events
     switch (event.type) {
-      case "customer.subscription.created":
-        const session = event.data.object as any;
+      // Inside your webhook handler where you process the subscription events
+case "customer.subscription.created":
+case "checkout.session.completed":
+  let customerId;
+  let sessionObject;
+  
+  if (event.type === "checkout.session.completed") {
+    sessionObject = event.data.object as any; // Use 'any' to bypass strict typing
+    customerId = sessionObject.customer as string;
+    
+    // For checkout sessions, you can often get the email directly
+    const checkoutEmail = sessionObject.customer_details?.email;
+    if (checkoutEmail) {
+      logger.info(`Email found directly in checkout session: ${checkoutEmail}`);
+    }
+  } else {
+    sessionObject = event.data.object as any; // Use 'any' to bypass strict typing
+    customerId = sessionObject.customer as string;
+  }
 
-        // Retrieve customer ID
-        const customerId = session.customer;
-        if (!customerId) {
-          logger.error("No customer ID found in the subscription event.");
-          response.status(400).send("Error: No customer ID in event.");
-          return;
-        }
+  if (!customerId) {
+    logger.error("No customer ID found in the event.");
+    response.status(400).send("Error: No customer ID in event.");
+    return;
+  }
 
-        logger.info(`Fetching customer details for customer ID: ${customerId}`);
+  logger.info(`Fetching customer details for customer ID: ${customerId}`);
 
+  try {
+    // Fetch customer details from Stripe
+    const customer = await stripeInstance.customers.retrieve(customerId) as any;
 
-        logger.info("AppScriptUrl: ", appScriptUrl);
+    const name = customer.name || "Seeker";
+    const email = customer.email || (event.type === "checkout.session.completed" ? 
+                 sessionObject.customer_details?.email : "Unknown Email");
+    
+    logger.info("name: ", name, " email: ", email, " source: ", "stripeWebhook");
+    logger.info("Fetched Customer Details:", { name, email });
 
-        try {
-            // Fetch customer details from Stripe
-            const customer = await stripeInstance.customers.retrieve(customerId) as any;
-
-            const name = customer.name || "Seeker";
-            const email = customer.email || "Unknown Email";
-            logger.info("name: ", name, " email: ", email, " source: ","stripeWebhook");
-            logger.info("Fetched Customer Details:", { name, email });
-
-            if (name && email) {
-              // Send data to Apps Script
-              const payload = { name, email, source: "stripeWebhook" };
-              logger.info("Data sent to Apps Script:", payload);
-
-              const appScriptResponse = await axios.post(appScriptUrl, payload, {
-                headers: { "Content-Type": "application/json" },
+    if (email) {
+      try {
+        // Get a reference to the users node
+        const usersRef = db.ref('users');
+        
+        // Query all users to find one with matching email
+        const snapshot = await usersRef.once('value');
+        let userFound = false;
+        
+        // Iterate through all users to find the one with matching email
+        snapshot.forEach((userSnapshot) => {
+          const userId = userSnapshot.key;
+          const userData = userSnapshot.val();
+          
+          // Check if this user has the matching email
+          if (userData.email && userData.email === email) {
+            userFound = true;
+            
+            // Update the trial status to 'subscribed'
+            db.ref(`users/${userId}/trial`).set("subscribed")
+              .then(() => {
+                logger.info(`Updated user ${userId} status from trial to subscribed`);
+              })
+              .catch((error) => {
+                logger.error(`Error updating user status: ${error.message}`);
               });
-
-              logger.info("Apps Script response:", appScriptResponse.data);
-            } else {
-              logger.warn("Customer details incomplete:", { name, email });
-            }
-          } catch (err: any) {
-            logger.error("Error fetching customer details:", err.message);
+              
+            // Optionally add subscription details
+            db.ref(`users/${userId}/subscriptionId`).set(
+              event.type === "customer.subscription.created" ? 
+              sessionObject.id : sessionObject.subscription
+            );
+            
+            db.ref(`users/${userId}/subscriptionDate`).set(new Date().toISOString());
+            
+            return true; // Stop iteration after finding the user
           }
+          
+          return false; // Continue iteration if email doesn't match
+        });
+        
+        if (!userFound) {
+          logger.warn(`User with email ${email} not found in database`);
+        }
+      } catch (error: any) {
+        logger.error(`Error searching for user: ${error.message}`);
+      }
 
-          break;
+      // Send data to Apps Script
+      const payload = { 
+        name, 
+        email, 
+        source: "stripeWebhook",
+        event: event.type,
+        subscriptionId: event.type === "customer.subscription.created" ? 
+                       sessionObject.id : sessionObject.subscription
+      };
+      
+      logger.info("Data sent to Apps Script:", payload);
+
+      const appScriptResponse = await axios.post(appScriptUrl, payload, {
+        headers: { "Content-Type": "application/json" },
+      });
+
+      logger.info("Apps Script response:", appScriptResponse.data);
+    } else {
+      logger.warn("Customer email not found:", { customerId, name });
+    }
+  } catch (err: any) {
+    logger.error("Error processing subscription event:", err.message);
+  }
+
+  break;
 
         default:
           logger.info(`Unhandled event type: ${event.type}`);

@@ -1,32 +1,32 @@
-async function testCreateTodaysHoroscopeChatGPT() {
-  console.log("Creating todays horoscope and saving it to Firebase");
-  const uuid = "a323baee-0828-433f-9502-5d24d633d2ea";
-  const userData = TEST_USER_DATA;
+// async function testCreateTodaysHoroscopeChatGPT() {
+//   console.log("Creating todays horoscope and saving it to Firebase");
+//   const uuid = "a323baee-0828-433f-9502-5d24d633d2ea";
+//   const userData = TEST_USER_DATA;
 
-  try {
-    // Generate ChatGPT prompt
-    const prompt = getChatInstructions(userData, uuid);
+//   try {
+//     // Generate ChatGPT prompt
+//     const prompt = getChatInstructions(userData, uuid);
 
-    try {
-      if(uuid) {
-        const chatGPTResponse = await getChatGPTResponse(prompt, uuid);
-        if (chatGPTResponse != null) {
-          const today = getTodayDay();
-          saveHoroscopeToFirebase(chatGPTResponse, uuid, today);
-          return true;
-        }
-      } else {
-        console.error("UUID is null or undefined")
-        return false;
-      }
-    } catch (error) {
-        console.error("An error occurred:", error);
-    }
+//     try {
+//       if(uuid) {
+//         const chatGPTResponse = await getChatGPTResponse(prompt, uuid);
+//         if (chatGPTResponse != null) {
+//           const today = getTodayDay();
+//           saveHoroscopeToFirebase(chatGPTResponse, uuid, today);
+//           return true;
+//         }
+//       } else {
+//         console.error("UUID is null or undefined")
+//         return false;
+//       }
+//     } catch (error) {
+//         console.error("An error occurred:", error);
+//     }
 
-  } catch (error) {
-    console.error(`Error in createTodaysHoroscopeChatGPT for UUID ${uuid}:`, error.message);
-  }
-}
+//   } catch (error) {
+//     console.error(`Error in createTodaysHoroscopeChatGPT for UUID ${uuid}:`, error.message);
+//   }
+// }
 
 /**
  * 
@@ -64,6 +64,19 @@ async function nightlyChatGPT(uuid, userData) {
     console.error(`Error in nightlyChatGPT for UUID ${uuid}:`, error.message);
   }
 }
+
+async function TESTcreateTodaysHoroscopeChatGPT() {
+  console.log("Creating todays horoscope and saving it to Firebase");
+    // Generate ChatGPT prompt
+    const prompt = getChatInstructions(TEST_USER_DATA, TEST_UUID);
+
+        const chatGPTResponse = await getChatGPTResponse(prompt, TEST_UUID);
+        if (chatGPTResponse != null) {
+          const today = "tuesday";
+          TESTsaveHoroscopeToFirebase(chatGPTResponse, TEST_UUID, today);
+          return true;
+        }
+    }
 
 async function createTodaysHoroscopeChatGPT(uuid, userData) {
   console.log("Creating todays horoscope and saving it to Firebase");

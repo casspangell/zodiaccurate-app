@@ -27,7 +27,7 @@ function doPost(e) {
     const name = data?.name;
     const source = data?.source?.trim();
 
-    if (source === "stripewebhook") {    // Ensure both email and name are present
+    if (source === "stripeWebhook") {    // Ensure both email and name are present
       if (!email || !name) {
         console.error("Missing email, name in the request payload.");
         return ContentService.createTextOutput("Error: Missing email, name, or source")

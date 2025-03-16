@@ -4,10 +4,28 @@ function testChatPrompt() {
     const output = getChatGPTResponse(instructions, uuid);
 }
 
-/**
- * Enhanced getChatInstructions with comprehensive relationship guidance
- * Including intimate connection for partners and guidance for those seeking relationships
- */
+const structuralSafeguards = `
+CRITICAL OUTPUT CONSTRAINTS - FOLLOW THESE STRICTLY:
+1. MAXIMUM SENTENCE LENGTH: 30 words. Never exceed this limit.
+2. MAXIMUM PARAGRAPH LENGTH: 3-5 sentences.
+3. NEVER create lists or chains of similar words (adjectives, verbs, etc.)
+4. STOP IMMEDIATELY if you find yourself listing synonyms or related concepts.
+5. MAINTAIN coherent paragraph structure with clear topic sentences and supporting details.
+6. AVOID excessive adjectives - limit to 2-3 per noun maximum.
+7. USE varied sentence structures but keep them simple and direct.
+8. ABSOLUTELY NO run-on sentences with multiple conjunctions.
+9. ENSURE each sentence has a clear subject and predicate.
+10. VERIFY your output contains actual predictions and guidance, not just descriptive text.
+
+FORBIDDEN PATTERNS THAT WILL RESULT IN REJECTION:
+- Sentences longer than 30 words
+- Series of similar words connected by commas or conjunctions
+- Paragraphs containing more than 5 sentences
+- Content that lacks specific predictions or actionable advice
+- Repetitive sentence structures or phrases
+`;
+
+
 function getChatInstructions(jsonSinglePersonData, uuid) {
     console.log("GET CHAT INSTRUCTIONS");
     const modifiers = getRandomModifiers();
@@ -22,7 +40,10 @@ function getChatInstructions(jsonSinglePersonData, uuid) {
     const dateString = today.toISOString().split('T')[0];
     const dayOfWeek = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"][today.getDay()];
     
-    // Select a prediction timeframe for today's horoscope (varies by day)
+    // Create a truly unique random seed that changes daily
+    const randomSeed = `${dateString}-${uuid}-${Math.random().toString(36).substring(2, 15)}-${today.getHours()}`;
+    
+    // Select a prediction timeframe that varies each day
     const predictionTimeframes = [
         "in the next 24 hours", 
         "this week", 
@@ -30,12 +51,27 @@ function getChatInstructions(jsonSinglePersonData, uuid) {
         "before the next full moon",
         "by the end of this month",
         "before the next Mercury retrograde", 
-        "within the next lunar cycle"
+        "within the next lunar cycle",
+        "by the weekend",
+        "before the month ends",
+        "as the Sun moves through " + astroData.sunPosition,
+        "while Mercury travels through " + astroData.mercuryPosition,
+        "as the Moon waxes toward fullness",
+        "as the Moon wanes from fullness",
+        "during this " + astroData.currentMoonPhase + " phase"
     ];
-    const todaysPredictionTimeframe = predictionTimeframes[today.getDay()];
+    const todaysPredictionTimeframe = predictionTimeframes[today.getDay() + today.getDate() % predictionTimeframes.length];
     
-    // Generate a unique seed for this horoscope request
-    const uniqueHoroscopeSeed = `${dateString}-${uuid}-${Math.random().toString(36).substring(2, 8)}`;
+    // Dynamic instruction variations to encourage unique content
+    const variationStyles = [
+        "Use vivid sensory language and unexpected metaphors today",
+        "Emphasize the contrasts and polarities in cosmic energies today",
+        "Focus on the transformative potential of today's aspects",
+        "Highlight subtle, often overlooked astrological influences today",
+        "Emphasize the cyclical nature of cosmic patterns today",
+        "Focus on how micro-cosmic events mirror macro-cosmic patterns today"
+    ];
+    const todaysStyle = variationStyles[today.getDate() % variationStyles.length];
     
     // Check relationship status to determine appropriate guidance
     const isInRelationship = user.partnerName && user.partnerName.trim() !== "";
@@ -146,11 +182,41 @@ function getChatInstructions(jsonSinglePersonData, uuid) {
     8. Include one unexpected or surprising prediction in each section
     `;
     
+    // Enhanced anti-repetition instructions
+    const creativityInstructions = `
+    IMPORTANT CREATIVITY AND NON-REPETITION REQUIREMENTS:
+    1. Each horoscope MUST BE SUBSTANTIALLY DIFFERENT from horoscopes delivered in the past 7 days
+    2. DO NOT REUSE phrases, metaphors, symbols, colors, or numbers from previous days
+    3. Reference today's SPECIFIC DATE (${dateString}) and incorporate unique seasonal elements relevant to this time of year
+    4. Vary your sentence structures, vocabulary choices, and writing style from day to day
+    5. Create predictions that are specific, concrete, and testable rather than vague
+    6. Use the following unique seed for today's generation: ${randomSeed}
+    7. Each section must include at least one element that has NEVER appeared in previous horoscopes
+    8. Today's style guide: ${todaysStyle}
+
+    AVOID REPETITIVE PATTERNS:
+    - No repeating the same colors, numbers, or symbols within a 10-day period
+    - Do not use the phrase "trust your intuition" or similar generic advice more than once per week
+    - Vary the cosmic bodies referenced (use asteroids, fixed stars, nodes, and houses - not just planets)
+    - Create distinct synchronicity patterns each day (not just "watch for three references to X")
+    - Alternate between different types of predictions (career opportunities, conversations, insights, physical experiences)
+    - Use different timeframes for predictions (morning/afternoon/evening, specific dates, astrological events)
+    - Avoid starting sections with the same sentence structure used in previous days
+    
+    ENSURE TRUE UNIQUENESS:
+    - Vary the cosmic metaphors (not just "planetary alignments" or "cosmic energies" repeatedly)
+    - Use different body parts, foods, herbs, and practices in health sections
+    - Suggest different colors, symbols, and numbers as synchronistic elements
+    - Reference different aspects of the user's personal data in each horoscope
+    - Create unique challenges and opportunities in each section
+    - Vary the emotional tones throughout (not consistently optimistic or cautious)
+    `;
+    
     // Build the complete prompt with enhanced instructions for variety and predictions
     const prompt = `
         Here is user data: ${JSON.stringify(jsonSinglePersonData)}
         
-        TODAY'S UNIQUE HOROSCOPE SEED: ${uniqueHoroscopeSeed}
+        TODAY'S UNIQUE HOROSCOPE SEED: ${randomSeed}
         TODAY'S DATE: ${dayOfWeek}, ${dateString}
         PREDICTION TIMEFRAME: ${todaysPredictionTimeframe}
         
@@ -172,17 +238,14 @@ function getChatInstructions(jsonSinglePersonData, uuid) {
         
         ${psychicElements}
         
-        IMPORTANT INSTRUCTIONS FOR CREATING A UNIQUE DAILY HOROSCOPE:
-        1. Review previous horoscopes: ${getWeekData}
-        2. YOUR HOROSCOPE MUST BE SUBSTANTIALLY DIFFERENT from these previous ones - do not repeat phrases, advice, or themes
-        3. Reference SPECIFIC astrological events happening TODAY
-        4. Include concrete, actionable advice unique to today's energy
-        5. Avoid generic phrases like "take time for self-care" or "focus on communication"
-        6. Each section should contain at least one SPECIFIC prediction tied to today's unique planetary positions
-        7. Use varied sentence structure and vocabulary from previous horoscopes
-        8. Include psychic elements that feel insightful without being overly mystical
-        9. Reference specifics from the user's personal data in ways you haven't before
-        10. For relationship sections, include detailed guidance on connecting with and supporting loved ones based on their needs today
+        ${creativityInstructions}
+
+        ${structuralSafeguards}
+        
+        REVIEW PREVIOUS HOROSCOPES FOR CONTRAST:
+        ${getWeekData}
+        
+        Compare your output with these previous horoscopes and ensure you are creating something distinctly different in tone, style, and content. YOUR CREATIVITY WILL BE SPECIFICALLY EVALUATED ON ORIGINALITY AND CONTRAST WITH PREVIOUS DAYS.
         
         Format your response ONLY as a CSV with the columns matching EXACTLY the section names mentioned above. The CSV must be enclosed in a markdown code block. For example:
         
@@ -249,9 +312,45 @@ function getChatGPTResponse(instructions, uuid) {
         
         console.log("Columns to include:", columns);
         
+        // Dynamic creativity parameters that change daily
+        const today = new Date();
+        const dayOfMonth = today.getDate();
+        
+        // Vary temperature based on day of month (higher values = more creativity/variety)
+        // Range from 0.7 to 0.95 for good variety while maintaining coherence
+        const dynamicTemperature = 0.7 + ((dayOfMonth % 25) / 100);
+        
+        // Vary top_p parameter as well for additional diversity
+        const dynamicTopP = 0.5 + ((dayOfMonth % 40) / 100);
+        
+        // Adjust frequency and presence penalties to reduce repetition
+        const frequencyPenalty = 0.5 + ((dayOfMonth % 30) / 100);
+        const presencePenalty = 0.5 + ((dayOfMonth % 35) / 100);
+        
+        console.log(`Using dynamic parameters: temp=${dynamicTemperature}, top_p=${dynamicTopP}, freq=${frequencyPenalty}, pres=${presencePenalty}`);
+        
         // Create a detailed system prompt with explicit column instructions and fixed code block syntax
         const systemPrompt = `You are bob brezney, a highly knowledgeable and empathetic astrologer and personal guide. 
 Your task is to generate a personalized daily astrological horoscope in CSV format based on the provided data.
+
+CRITICAL STRUCTURAL REQUIREMENTS:
+1. Keep all sentences under 30 words maximum
+2. Use no more than 3 sentences in a row with similar structure
+3. Each paragraph must have 3-7 sentences maximum
+4. NEVER create run-on sentences with excessive conjunctions
+5. NEVER create word lists or chains of associated words
+6. Maintain clear paragraph breaks and logical progression
+7. Use proper punctuation and avoid excessive comma usage
+8. IMMEDIATELY STOP AND RESTART if you find yourself in a loop of similar words
+9. Limit adjective sequences to maximum of 2-3 per noun
+10. Avoid repeated use of the same grammatical constructions
+
+FORBIDDEN PATTERNS:
+- No sentences longer than 30 words
+- No lists of similar words (synonyms, related concepts, etc.)
+- No excessive use of adverbs, especially -ly adverbs in sequence
+- No "stream of consciousness" writing without proper structure
+- No repetitive phrases or word patterns
 
 IMPORTANT FORMATTING INSTRUCTIONS:
 1. Include ONLY these specific columns in your CSV: ${columns.join(', ')}
@@ -274,10 +373,10 @@ Speak like bob brezney, creator of free will horoscope, referencing and predicti
         const payload = {
             "model": "gpt-4o",
             "max_tokens": 4096,
-            "temperature": 0.8,
-            "top_p": 0.6,
-            "frequency_penalty": 0.2,
-            "presence_penalty": 0.1,
+            "temperature": dynamicTemperature,
+            "top_p": dynamicTopP,
+            "frequency_penalty": frequencyPenalty,
+            "presence_penalty": presencePenalty,
             "logprobs": true,
             "messages": [
                 {
@@ -422,12 +521,24 @@ function getDailyAstrologicalData() {
         `Sun in ${sunPosition} trine Moon in ${moonPosition}, creating emotional harmony`,
         `Saturn opposing Uranus, creating tension between tradition and innovation`,
         `Neptune retrograde causing spiritual awakening and revealing illusions`,
-        `Pluto stationing direct, bringing transformation to power structures`
+        `Pluto stationing direct, bringing transformation to power structures`,
+        `Chiron stationed retrograde in Aries, triggering healing of old wounds`,
+        `North Node in Taurus emphasizing financial stability and natural resources`,
+        `Lilith in ${zodiacSigns[(month + 5) % 12]} amplifying personal boundaries and authentic expression`,
+        `Ceres conjunct Venus in ${venusPosition}, nurturing relationships and self-worth`,
+        `Pallas Athena in ${zodiacSigns[(month + 6) % 12]} enhancing strategic thinking and creative problem-solving`,
+        `Vesta in ${zodiacSigns[(month + 7) % 12]} illuminating your sacred purpose and dedication`,
+        `Juno in ${zodiacSigns[(month + 8) % 12]} highlighting partnership commitments and equality`,
+        `Eclipse season approaching, amplifying transformation and revelations`,
+        `Mercury out of shadow phase, clearing communication channels`,
+        `Uranus square Mars creating unexpected breakthroughs and restlessness`,
+        `Neptune forming a grand water trine with personal planets, deepening intuition`,
+        `Saturn forming positive aspects to natal planets, strengthening foundations`
     ];
     
     const planetaryIndex = (day * month + day) % planetarySummaries.length;
     const currentPlanetaryPositions = planetarySummaries[planetaryIndex];
-    
+
     return {
         currentMoonPhase: moonPhase,
         currentMoonSign: moonPosition,

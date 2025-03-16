@@ -902,6 +902,30 @@ function saveHoroscopeToFirebase(jsonData, uuid, tomorrow) {
   }
 }
 
+function TESTsaveHoroscopeToFirebase(jsonData, uuid, today) {
+    console.log("saveHoroscopeToFirebase");
+
+  const sanitizedData = sanitizeKeys(jsonData);
+  const token = getFirebaseIdToken("appscript@zodiaccurate.com", FIREBASE_PASSWORD);
+  const firebaseUrl = `${FIREBASE_URL}/zodiac/${uuid}/${today}.json?auth=${token}`;
+
+  const options = {
+    method: "put",
+    contentType: "application/json",
+    payload: JSON.stringify(sanitizedData[0]),
+    headers: {
+        Authorization: `Bearer ${token}`
+    }
+  };
+
+  try {
+    const response = UrlFetchApp.fetch(firebaseUrl, options);
+    Logger.log(`Horoscope saved to Firebase at ${firebaseUrl}`);
+  } catch (e) {
+    Logger.log(`Error saving horoscope to Firebase: ${e.message}`);
+  }
+}
+
 
 /**
  * Retrieves zodiac data for today from the Firebase zodiac table for a specific UUID.
