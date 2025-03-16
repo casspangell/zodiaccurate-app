@@ -293,13 +293,11 @@ function getUserNames(jsonSinglePersonData) {
         if (jsonSinglePersonData.name && typeof jsonSinglePersonData.name === 'string') {
             const nameParts = jsonSinglePersonData.name.split(' ');
             userNames.firstName = nameParts[0] || "User";
-            console.log("User's first name:", userNames.firstName);
         }
         
         // Extract partner name
         if (jsonSinglePersonData.partner_name && jsonSinglePersonData.partner_name.trim() !== "") {
             userNames.partnerName = jsonSinglePersonData.partner_name.trim();
-            console.log("Partner name:", userNames.partnerName);
         }
         
         // Extract children names
@@ -311,7 +309,6 @@ function getUserNames(jsonSinglePersonData) {
             const match = jsonSinglePersonData.number_of_children.match(/(\d+)/);
             if (match) {
                 numChildren = parseInt(match[1], 10);
-                console.log("Number of children indicated:", numChildren);
             }
         }
         
@@ -341,7 +338,6 @@ function getUserNames(jsonSinglePersonData) {
             const nameKey = `${pattern.prefix}first_name`;
             if (jsonSinglePersonData[nameKey] && jsonSinglePersonData[nameKey].trim() !== "") {
                 const childName = jsonSinglePersonData[nameKey].trim();
-                console.log(`Found child ${pattern.numeral} name:`, childName);
                 childrenNames.push(childName);
             }
         }
@@ -353,15 +349,10 @@ function getUserNames(jsonSinglePersonData) {
              jsonSinglePersonData.areas_of_improvement?.includes("son") ||
              jsonSinglePersonData.areas_of_improvement?.includes("child") ||
              jsonSinglePersonData.important_goals?.includes("father"))) {
-            console.log("User indicated having children but no specific names found.");
             childrenNames.push("your child");
         }
         
         userNames.childrenNames = childrenNames;
-        console.log("Children names:", JSON.stringify(childrenNames));
-        
-        // Extract important person info
-        // For this app, this appears to be empty by default
         
         return userNames;
     } catch (error) {

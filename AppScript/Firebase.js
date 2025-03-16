@@ -10,8 +10,6 @@ function getFirebaseIdToken(email, password) {
         return cachedToken;
     }
 
-    console.log("=== Authenticating firebase");
-
     const url = `https://www.googleapis.com/identitytoolkit/v3/relyingparty/verifyPassword?key=${FIREBASE_API_KEY}`;
     const config = {
         method: "post",
