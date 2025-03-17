@@ -134,121 +134,118 @@ async function sendDailyEmailWithMailerSend(clientName, email, prompt, uuid) {
     throw new Error("Missing required parameters for daily email.");
   }
 
-  // Handle the case where prompt is an array
-  var dailyPrompt = transformKeysToLowerCaseWithUnderscores(prompt);
-  dailyPrompt = getObjectFromData(dailyPrompt);
+  // Assuming prompt is the new model structure with sections like 'personal_guidance', 'career_and_finances', etc.
+  const dailyPrompt = prompt; // You can adjust this if you need to transform the prompt further
 
   console.log("Daily prompt: ", dailyPrompt);
   const formattedDate = formatDateForUser(uuid);
 
+  // Generate the email content with conditional sections for each part of the data
   const emailHtml = `
   <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            color: #333;
-            background-color: #f4f4f4;
-            margin: 0;
-            padding: 0;
-        }
-        .container {
-            width: 100%;
-            max-width: 600px;
-            margin: 20px auto;
-            background-color: #fff;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-        }
-        .header img {
-            width: 100%;
-            height: auto;
-            border-radius: 8px 8px 0 0;
-            display: block;
-        }
-        .content {
-            padding: 20px;
-        }
-        h2 {
-            color: #2e6ca8;
-            margin-bottom: 10px;
-        }
-        p {
-            font-size: 14px;
-            line-height: 1.6;
-            margin-bottom: 20px;
-        }
-        .footer {
-            text-align: center;
-            padding: 20px;
-            background-color: #f4f4f4;
-            color: #777;
-            font-size: 12px;
-        }
-        .info {
-            background-color: #f8f9fa;
-            border-left: 5px solid #b0b0b0;
-            padding: 15px;
-            margin-top: 20px;
-            font-size: 13px;
-            color: #444;
-            border-radius: 6px;
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-        }
-        .info strong {
-            color: #333;
-            font-size: 14px;
-            display: block;
-            margin-bottom: 8px;
-        }
-        .info a {
-            color: #2e6ca8;
-            text-decoration: none;
-            font-weight: bold;
-        }
-        .info a:hover {
-            text-decoration: underline;
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <div class="header">
-            <img src="https://zodiaccurate.app/zodiaccurate_logo.png" alt="Zodiaccurate Daily Guidance">
-        </div>
-        <div class="content">
-            <h3>${formattedDate}</h3>
-            ${dailyPrompt.personal_guidance ? `<h2>Personal Guidance</h2><p>${dailyPrompt.personal_guidance}</p>` : ''}
-            ${dailyPrompt.career_and_finances ? `<h2>Career and Finances</h2><p>${dailyPrompt.career_and_finances}</p>` : ''}
-            ${dailyPrompt.health ? `<h2>Health</h2><p>${dailyPrompt.health}</p>` : ''}
-            ${dailyPrompt.health_and_wellness ? `<h2>Health</h2><p>${dailyPrompt.health_and_wellness}</p>` : ''}
-            ${dailyPrompt.relationships ? `<h2>Relationships</h2><p>${dailyPrompt.relationships}</p>` : ''}
-            ${dailyPrompt.children_or_important_person_relationship ? `<h2>Children or Important Person Relationship</h2><p>${dailyPrompt.children_or_important_person_relationship}</p>` : ''}
-            ${dailyPrompt.parenting_guidance ? `<h2>Children Advice</h2><p>${dailyPrompt.parenting_guidance}</p>` : ''}
-            ${dailyPrompt.partner_relationship ? `<h2>Partner Relationship</h2><p>${dailyPrompt.partner_relationship}</p>` : ''}
-            ${dailyPrompt.close_important_person ? `<h2>Close Important Person</h2><p>${dailyPrompt.close_important_person}</p>` : ''}
-            ${dailyPrompt.important_person_relationship ? `<h2>Important Person Relationship</h2><p>${dailyPrompt.important_person_relationship}</p>` : ''}
-            ${dailyPrompt.local_weather ? `<h2>Local Weather</h2><p>${dailyPrompt.local_weather}</p>` : ''}
-            <p>Best Regards,<br/>Your Zodiaccurate Team</p>
-        </div>
-        <div class="info">
-            <p>If you ever need to update your Zodiaccurate “current life” information, you can easily do so by <a href="https://zodiaccurate.app/about-you/?${uuid}">Clicking Here</a>.</p>
-            <p>You can change your CC information or cancel anytime via this <a href="${STRIPE_LINK}">Link</a>.</p>
-            <p>If you have any questions, please contact us at <a href="mailto:support@zodiaccurate.com">support@zodiaccurate.com</a>.</p>
-        </div>
-        <br/>
-        <div class="footer">
-            <p>${COPYRIGHT}</p>
-        </div>
-    </div>
-</body>
-</html>
-
-
+  <html lang="en">
+  <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <style>
+          body {
+              font-family: Arial, sans-serif;
+              color: #333;
+              background-color: #f4f4f4;
+              margin: 0;
+              padding: 0;
+          }
+          .container {
+              width: 100%;
+              max-width: 600px;
+              margin: 20px auto;
+              background-color: #fff;
+              padding: 20px;
+              border-radius: 8px;
+              box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+          }
+          .header img {
+              width: 100%;
+              height: auto;
+              border-radius: 8px 8px 0 0;
+              display: block;
+          }
+          .content {
+              padding: 20px;
+          }
+          h2 {
+              color: #2e6ca8;
+              margin-bottom: 10px;
+          }
+          p {
+              font-size: 14px;
+              line-height: 1.6;
+              margin-bottom: 20px;
+          }
+          .footer {
+              text-align: center;
+              padding: 20px;
+              background-color: #f4f4f4;
+              color: #777;
+              font-size: 12px;
+          }
+          .info {
+              background-color: #f8f9fa;
+              border-left: 5px solid #b0b0b0;
+              padding: 15px;
+              margin-top: 20px;
+              font-size: 13px;
+              color: #444;
+              border-radius: 6px;
+              box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+          }
+          .info strong {
+              color: #333;
+              font-size: 14px;
+              display: block;
+              margin-bottom: 8px;
+          }
+          .info a {
+              color: #2e6ca8;
+              text-decoration: none;
+              font-weight: bold;
+          }
+          .info a:hover {
+              text-decoration: underline;
+          }
+      </style>
+  </head>
+  <body>
+      <div class="container">
+          <div class="header">
+              <img src="https://zodiaccurate.app/zodiaccurate_logo.png" alt="Zodiaccurate Daily Guidance">
+          </div>
+          <div class="content">
+              <h3>${formattedDate}</h3>
+              ${dailyPrompt.personal_guidance ? `<h2>Personal Guidance</h2><p>${dailyPrompt.personal_guidance}</p>` : ''}
+              ${dailyPrompt.career_and_finances ? `<h2>Career and Finances</h2><p>${dailyPrompt.career_and_finances}</p>` : ''}
+              ${dailyPrompt.health ? `<h2>Health</h2><p>${dailyPrompt.health}</p>` : ''}
+              ${dailyPrompt.relationships ? `<h2>Relationships</h2><p>${dailyPrompt.relationships}</p>` : ''}
+              ${dailyPrompt.children_or_important_person_relationship ? `<h2>Children or Important Person Relationship</h2><p>${dailyPrompt.children_or_important_person_relationship}</p>` : ''}
+              ${dailyPrompt.parenting_guidance ? `<h2>Children Advice</h2><p>${dailyPrompt.parenting_guidance}</p>` : ''}
+              ${dailyPrompt.partner_relationship ? `<h2>Partner Relationship</h2><p>${dailyPrompt.partner_relationship}</p>` : ''}
+              ${dailyPrompt.close_important_person ? `<h2>Close Important Person</h2><p>${dailyPrompt.close_important_person}</p>` : ''}
+              ${dailyPrompt.important_person_relationship ? `<h2>Important Person Relationship</h2><p>${dailyPrompt.important_person_relationship}</p>` : ''}
+              ${dailyPrompt.local_weather ? `<h2>Local Weather</h2><p>${dailyPrompt.local_weather}</p>` : ''}
+              <p>Best Regards,<br/>Your Zodiaccurate Team</p>
+          </div>
+          <div class="info">
+              <p>If you ever need to update your Zodiaccurate “current life” information, you can easily do so by <a href="https://zodiaccurate.app/about-you/?${uuid}">Clicking Here</a>.</p>
+              <p>You can change your CC information or cancel anytime via this <a href="${STRIPE_LINK}">Link</a>.</p>
+              <p>If you have any questions, please contact us at <a href="mailto:support@zodiaccurate.com">support@zodiaccurate.com</a>.</p>
+          </div>
+          <br/>
+          <div class="footer">
+              <p>${COPYRIGHT}</p>
+          </div>
+      </div>
+  </body>
+  </html>
   `;
 
   const emailData = {
@@ -263,6 +260,7 @@ async function sendDailyEmailWithMailerSend(clientName, email, prompt, uuid) {
   
   return await sendEmail(MAILER_SEND_URL, emailData);
 }
+
 
 /**
  * Sends an email notification to a user informing them that their information has been updated.

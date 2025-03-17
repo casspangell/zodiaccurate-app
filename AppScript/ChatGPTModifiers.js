@@ -194,7 +194,7 @@ function getRelationshipGuidance() {
     3. Balance practical advice with romantic/sensual suggestions that are tasteful and appropriate
     4. Connect physical intimacy to emotional bonding in ways that are relevant to today's cosmic energy
     5. Frame intimate guidance in terms of deepening connection rather than just physical satisfaction
-    6. Consider how Venus, Mars, and Moon positions specifically influence romantic and physical energy
+    6. Consider today's astrological implication that specifically influence romantic and physical energy
     
     FOR SINGLE USERS - RELATIONSHIP SEEKING GUIDANCE:
     1. Provide specific insights about how today's cosmic weather affects their romantic magnetism

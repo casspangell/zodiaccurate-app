@@ -1,13 +1,16 @@
 function testChatPrompt() {
     const uuid = "be5dc835-5459-43fb-b09e-988d144cf514";
     const instructions = getChatInstructions(TEST_USER_DATA, uuid);
-    console.log("INSTRUCTIONS ", instructions);
 
-    getChatGPTResponse(instructions, uuid);
+    const zodiaccurateData = getChatGPTResponse(instructions, TEST_USER_DATA, uuid);
+
+    const { name, email } = TEST_USER_DATA;
+    sendDailyEmailWithMailerSend(name, email, zodiaccurateData, uuid);
 }
 
 function getChatInstructions(jsonSinglePersonData, uuid) {
 
+    const userData = jsonSinglePersonData;
     const user = getUserNames(jsonSinglePersonData);
     const userThreeDayData = getThreeDaysDataFromFirebase(uuid);
     const astroData = getDailyAstrologicalData();
@@ -37,6 +40,7 @@ function getChatInstructions(jsonSinglePersonData, uuid) {
     console.log("PROMPT ", prompt);
 
   return {
+    uuid: uuid,
     user_names: user,
     astrological_data: astroData,
     seed: seed,
@@ -52,12 +56,15 @@ function getChatInstructions(jsonSinglePersonData, uuid) {
 }
 
 
-function getChatGPTResponse(instructions, uuid) {
+function getChatGPTResponse(instructions, jsonSinglePersonData, uuid) {
 
     const systemPrompt = getChatPrompt();
     const params = instructions.creativeParams;
-
     const instructionsString = JSON.stringify(instructions);
+
+    console.log("PERSON DATA ", jsonSinglePersonData);
+    console.log("INSTRUCTIONS ", instructions);
+    console.log("PROMPT ", systemPrompt);
 
     try {
         const payload = {
