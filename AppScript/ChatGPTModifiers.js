@@ -240,14 +240,6 @@ function creativityInstructions(dateString, randomSeed) {
     - Alternate between different types of predictions (career opportunities, conversations, insights, physical experiences)
     - Use different timeframes for predictions (morning/afternoon/evening, specific dates, astrological events)
     - Avoid starting sections with the same sentence structure used in previous days
-    
-    ENSURE TRUE UNIQUENESS:
-    - Vary the cosmic metaphors (not just "planetary alignments" or "cosmic energies" repeatedly)
-    - Use different body parts, foods, herbs, and practices in health sections
-    - Suggest different colors, symbols, and numbers as synchronistic elements
-    - Reference different aspects of the user's personal data in each horoscope
-    - Create unique challenges and opportunities in each section
-    - Vary the emotional tones throughout (not consistently optimistic or cautious)
     `;
 }
 

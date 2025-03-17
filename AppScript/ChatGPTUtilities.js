@@ -24,24 +24,24 @@ function getChatInstructions(jsonSinglePersonData, uuid) {
     const prompt = getChatPrompt();
     const creativeParams = getCreativityParams();
 
-    console.log(`Using dynamic parameters: temp=${creativeParams.dynamicTemperature}, top_p=${creativeParams.dynamicTopP}, freq=${creativeParams.frequencyPenalty}, pres=${creativeParams.presencePenalty}`);
+    // console.log(`Using dynamic parameters: temp=${creativeParams.dynamicTemperature}, top_p=${creativeParams.dynamicTopP}, freq=${creativeParams.frequencyPenalty}, pres=${creativeParams.presencePenalty}`);
 
-    console.log("USER NAMES ",user);
-    console.log("ASTRO DATA ", astroData);
-    console.log("SEED ", seed);
-    console.log("PREDICTIONTIMEFRAME ", predictionTimeframe);
-    console.log("VARIATIONSTYLES ", vStyles);
-    console.log("RELATIONSHIP STATUS", rStatus);
-    console.log("RELATIONSHIP GUIDANCE", rGuidance);
-    console.log("PSYCHIC ", psyElements);
-    console.log("VARIATION STYLES ", variationStyles);
-    console.log("CREATIVIY INSTRUCTIONS", createInstructions);
-    // console.log("COLUMNS ", columns);
+    // console.log("USER NAMES ",user);
+    // console.log("ASTRO DATA ", astroData);
+    // console.log("SEED ", seed);
+    // console.log("PREDICTIONTIMEFRAME ", predictionTimeframe);
+    // console.log("VARIATIONSTYLES ", vStyles);
+    // console.log("RELATIONSHIP STATUS", rStatus);
+    // console.log("RELATIONSHIP GUIDANCE", rGuidance);
+    // console.log("PSYCHIC ", psyElements);
+    // console.log("VARIATION STYLES ", variationStyles);
+    // console.log("CREATIVIY INSTRUCTIONS", createInstructions);
     console.log("PROMPT ", prompt);
 
   return {
     uuid: uuid,
     user_names: user,
+    user_data: userData,
     astrological_data: astroData,
     seed: seed,
     predictionTimeframe: predictionTimeframe,
