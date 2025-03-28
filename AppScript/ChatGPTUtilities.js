@@ -71,6 +71,7 @@ function getChatGPTResponse(instructions, jsonSinglePersonData, uuid) {
         const payload = {
         "model": "gpt-4o",
         "max_tokens": 4096,
+        "temperature": 0.4,
         "messages": [
             {
                 "role": "system",
