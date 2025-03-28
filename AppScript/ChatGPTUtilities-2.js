@@ -6,7 +6,6 @@ function testChatPrompt() {
 
     const { name, email } = TEST_USER_DATA;
     sendDailyEmailWithMailerSend(name, email, zodiaccurateData, uuid);
-    saveHoroscopeToSpecificDateFirebase(zodiaccurateData, uuid, "monday");
 }
 
 function getChatInstructions(jsonSinglePersonData, uuid) {
@@ -14,16 +13,16 @@ function getChatInstructions(jsonSinglePersonData, uuid) {
     const userData = jsonSinglePersonData;
     const user = getUserNames(jsonSinglePersonData);
     const userThreeDayData = getThreeDaysDataFromFirebase(uuid);
-    // const astroData = getDailyAstrologicalData();
-    // const seed = createSeed(uuid);
-    // const predictionTimeframe = predictionTimeframes(astroData);
-    // const vStyles = variationStyles();
+    const astroData = getDailyAstrologicalData();
+    const seed = createSeed(uuid);
+    const predictionTimeframe = predictionTimeframes(astroData);
+    const vStyles = variationStyles();
     const rStatus = relationshipStatus(user, jsonSinglePersonData);
-    // const rGuidance = getRelationshipGuidance();
-    // const psyElements = psychicElements();
-    // const createInstructions = creativityInstructions(DATE_STRING, seed);
+    const rGuidance = getRelationshipGuidance();
+    const psyElements = psychicElements();
+    const createInstructions = creativityInstructions(DATE_STRING, seed);
     const prompt = getChatPrompt();
-    // const creativeParams = getCreativityParams();
+    const creativeParams = getCreativityParams();
 
     // console.log(`Using dynamic parameters: temp=${creativeParams.dynamicTemperature}, top_p=${creativeParams.dynamicTopP}, freq=${creativeParams.frequencyPenalty}, pres=${creativeParams.presencePenalty}`);
 
@@ -43,16 +42,16 @@ function getChatInstructions(jsonSinglePersonData, uuid) {
     uuid: uuid,
     user_names: user,
     user_data: userData,
-    // astrological_data: astroData,
-    // seed: seed,
-    // predictionTimeframe: predictionTimeframe,
-    // variationStyles: vStyles,
+    astrological_data: astroData,
+    seed: seed,
+    predictionTimeframe: predictionTimeframe,
+    variationStyles: vStyles,
     relationshipStatus: rStatus,
-    // relationshipGuidance: rGuidance,
-    // psychicElements: psyElements,
-    // variationStyles: variationStyles,
-    // creativityInstructions: createInstructions,
-    // creativeParams: creativeParams
+    relationshipGuidance: rGuidance,
+    psychicElements: psyElements,
+    variationStyles: variationStyles,
+    creativityInstructions: createInstructions,
+    creativeParams: creativeParams
   };
 }
 
@@ -71,6 +70,11 @@ function getChatGPTResponse(instructions, jsonSinglePersonData, uuid) {
         const payload = {
         "model": "gpt-4o",
         "max_tokens": 4096,
+        "temperature": params.temp,
+        "top_p": params.top_p,
+        "frequency_penalty": params.freq,
+        "presence_penalty": params.pres,
+        "logprobs": true,
         "messages": [
             {
                 "role": "system",

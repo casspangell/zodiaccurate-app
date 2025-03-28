@@ -503,7 +503,7 @@ function getUserTimezone(uuid) {
 
     // Construct Firebase URL
     const firebaseUrl = `${FIREBASE_URL}/users/${uuid}/timezone.json?auth=${token}`;
-    Logger.log(`🔥 Firebase GET Request URL: ${firebaseUrl}`);
+    // Logger.log(`🔥 Firebase GET Request URL: ${firebaseUrl}`);
 
     // Request Options
     const options = {
@@ -900,7 +900,7 @@ function saveHoroscopeToFirebase(jsonData, uuid, tomorrow) {
   }
 }
 
-function TESTsaveHoroscopeToFirebase(jsonData, uuid, today) {
+function saveHoroscopeToSpecificDateFirebase(jsonData, uuid, today) {
     console.log("saveHoroscopeToFirebase");
 
   const sanitizedData = sanitizeKeys(jsonData);

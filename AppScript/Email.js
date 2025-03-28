@@ -127,18 +127,53 @@ async function sendWelcomeEmailWithMailerSend(clientName, uuid, email) {
   return await sendEmail(MAILER_SEND_URL, emailData);
 }
 
-async function sendDailyEmailWithMailerSend(clientName, email, prompt, uuid) {
+async function sendDailyEmailWithMailerSend(clientName, email, zodiaccurate, uuid) {
   console.log("sendDailyEmailWithMailerSend clientName ", clientName," email ", email, " uuid ", uuid);
 
-  if (!clientName || !email || !prompt) {
-    throw new Error("Missing required parameters for daily email.");
+  // More detailed validation
+  if (!clientName || !email) {
+    throw new Error("Missing client name or email parameters for daily email.");
+  }
+  
+  if (!zodiaccurate || !Array.isArray(zodiaccurate) || zodiaccurate.length === 0) {
+    console.error("Invalid zodiaccurate data:", zodiaccurate);
+    throw new Error("Missing or invalid zodiaccurate data for daily email.");
   }
 
-  // Assuming prompt is the new model structure with sections like 'personal_guidance', 'career_and_finances', etc.
-  const dailyPrompt = prompt; // You can adjust this if you need to transform the prompt further
-
-  console.log("Daily prompt: ", dailyPrompt);
+  // Log the actual structure of zodiaccurate to debug
+  console.log("Daily zodiaccurate type: ", typeof zodiaccurate);
+  console.log("Is array? ", Array.isArray(zodiaccurate));
+  console.log("Length: ", zodiaccurate.length);
+  console.log("First item: ", zodiaccurate[0]);
+  
   const formattedDate = formatDateForUser(uuid);
+  
+  // Initialize emailContent variable
+  let emailContent = '';
+
+  // More robust forEach with error handling
+  try {
+    zodiaccurate.forEach((section, index) => {
+      console.log(`Processing section ${index}:`, section);
+      
+      // Check if section is a valid object with required properties
+      if (!section || typeof section !== 'object') {
+        console.warn(`Invalid section at index ${index}:`, section);
+        return; // Skip this iteration
+      }
+      
+      const category = section.Category || `Section ${index + 1}`;
+      const content = section.Content || '';
+      
+      emailContent += `
+        <h2>${category}</h2>
+        <p>${content}</p>
+      `;
+    });
+  } catch (error) {
+    console.error("Error processing zodiaccurate sections:", error);
+    throw new Error("Failed to process horoscope sections: " + error.message);
+  }
 
   // Generate the email content with conditional sections for each part of the data
   const emailHtml = `
@@ -222,20 +257,11 @@ async function sendDailyEmailWithMailerSend(clientName, email, prompt, uuid) {
           </div>
           <div class="content">
               <h3>${formattedDate}</h3>
-              ${dailyPrompt.personal_guidance ? `<h2>Personal Guidance</h2><p>${dailyPrompt.personal_guidance}</p>` : ''}
-              ${dailyPrompt.career_and_finances ? `<h2>Career and Finances</h2><p>${dailyPrompt.career_and_finances}</p>` : ''}
-              ${dailyPrompt.health ? `<h2>Health</h2><p>${dailyPrompt.health}</p>` : ''}
-              ${dailyPrompt.relationships ? `<h2>Relationships</h2><p>${dailyPrompt.relationships}</p>` : ''}
-              ${dailyPrompt.children_or_important_person_relationship ? `<h2>Children or Important Person Relationship</h2><p>${dailyPrompt.children_or_important_person_relationship}</p>` : ''}
-              ${dailyPrompt.parenting_guidance ? `<h2>Children Advice</h2><p>${dailyPrompt.parenting_guidance}</p>` : ''}
-              ${dailyPrompt.partner_relationship ? `<h2>Partner Relationship</h2><p>${dailyPrompt.partner_relationship}</p>` : ''}
-              ${dailyPrompt.close_important_person ? `<h2>Close Important Person</h2><p>${dailyPrompt.close_important_person}</p>` : ''}
-              ${dailyPrompt.important_person_relationship ? `<h2>Important Person Relationship</h2><p>${dailyPrompt.important_person_relationship}</p>` : ''}
-              ${dailyPrompt.local_weather ? `<h2>Local Weather</h2><p>${dailyPrompt.local_weather}</p>` : ''}
+              ${emailContent} <!-- This is where the dynamic sections will be inserted -->
               <p>Best Regards,<br/>Your Zodiaccurate Team</p>
           </div>
           <div class="info">
-              <p>If you ever need to update your Zodiaccurate “current life” information, you can easily do so by <a href="https://zodiaccurate.app/about-you/?${uuid}">Clicking Here</a>.</p>
+              <p>If you ever need to update your Zodiaccurate "current life" information, you can easily do so by <a href="https://zodiaccurate.app/about-you/?${uuid}">Clicking Here</a>.</p>
               <p>You can change your CC information or cancel anytime via this <a href="${STRIPE_LINK}">Link</a>.</p>
               <p>If you have any questions, please contact us at <a href="mailto:support@zodiaccurate.com">support@zodiaccurate.com</a>.</p>
           </div>

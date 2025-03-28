@@ -1,7 +1,6 @@
 
 const today = new Date();
 
-
 function createSeed(uuid) {
     // Get current date for reference
     const today = new Date();
@@ -10,6 +9,49 @@ function createSeed(uuid) {
     
     // Create a truly unique random seed that changes daily
     return `${dateString}-${uuid}-${Math.random().toString(36).substring(2, 15)}-${today.getHours()}`;
+}
+
+function resourceGuidance() {
+    // Get the current date and calculate the day of the month (1-31)
+    const today = new Date();
+    const dayOfMonth = today.getDate();
+    
+    // Define the category rotation schedule
+    const categoryRotation = {
+        "day1": "Personal Wellness",
+        "day4": "Relationship Guidance",
+        "day8": "Career and Finances",
+        "day12": "Child Guidance",
+        "day16": "Important Person Guidance"
+    };
+    
+    // Calculate which day in the rotation cycle (1-3) we're on
+    // This ensures we only show a suggestion every third day
+    const rotationDay = dayOfMonth % 3;
+    console.log("ROTATION DAY ", rotationDay);
+    
+    // Only show a suggestion if today is a "first day" in the 3-day cycle (remainder = 1)
+    if (rotationDay !== 1) {
+        return null; // No suggestion for today
+    }
+    
+    // Determine which category to show based on the day of the month
+    let guidance;
+    if (dayOfMonth >= 1 && dayOfMonth < 4) {
+        guidance = categoryRotation.day1;
+    } else if (dayOfMonth >= 4 && dayOfMonth < 8) {
+        guidance = categoryRotation.day4;
+    } else if (dayOfMonth >= 8 && dayOfMonth < 12) {
+        guidance = categoryRotation.day8;
+    } else if (dayOfMonth >= 12 && dayOfMonth < 16) {
+        guidance = categoryRotation.day16;
+    } else {
+        guidance = categoryRotation.day16;
+    }
+
+    console.log("TODAY'S RESOURCE ", guidance);
+    
+    return guidance;
 }
 
 function relationshipStatus(userNamesData, jsonSinglePersonData) {
@@ -47,7 +89,6 @@ function predictionTimeframes(astroData) {
     const today = new Date();
     return predictionTimeframes[today.getDay() + today.getDate() % predictionTimeframes.length];
 }
-
 
 function getDailyAstrologicalData() {
     const today = new Date();
@@ -197,12 +238,16 @@ function getRelationshipGuidance() {
     6. Consider today's astrological implication that specifically influence romantic and physical energy
     
     FOR SINGLE USERS - RELATIONSHIP SEEKING GUIDANCE:
-    1. Provide specific insights about how today's cosmic weather affects their romantic magnetism
-    2. Suggest concrete places, activities, or contexts favorable for meeting potential partners
-    3. Include one specific approach or communication style that will be effective in romantic interactions
-    4. Identify patterns from past relationships that today's energy helps them recognize or release
-    5. Offer practical guidance for opening to new connections that aligns with today's astrological influences
-    6. Include a specific prediction about romantic opportunities or insights coming their way
+   Begin with a SPECIFIC PREDICTION about how today's unique cosmic energy, 
+   is influencing ${user.firstName}'s romantic magnetism and 
+   relationship potential. Read and understand the persons personality profile , their sexual preferences, their hopes dreams 
+   and future desires. Subtly reference this occasionally in your predictive guidance, so as to create a sense of authentic 
+   understanding of their needs etc. Describe which facets of ${user.firstName}'s personality are being cosmically enhanced 
+   today that might attract potential partners. Identify and occasionally mention specific LOCATIONS, ACTIVITIES, or SOCIAL 
+   CONTEXTS that are astrologically favorable for meeting compatible people ${todaysPredictionTimeframe} based on today's 
+   planetary positions. Occasionally Suggest a specific APPEARANCE ELEMENT (color to wear, accessory, hairstyle) that will 
+   enhance attractive energy under today's cosmic influences. Be flexible with the closing statement. Sometimes its important 
+   to acknowledge how difficult their search for healthy, loving, supportive relationship  concerns can be.
     `;
 }
     
