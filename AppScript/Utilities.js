@@ -62,6 +62,136 @@ function sanitizeJsonKeys(jsonData) {
 }
 
 /**
+ * Sanitizes data for Firebase by ensuring keys and values are valid
+ * 
+ * @param {Object} data - The data object to sanitize
+ * @returns {Object} - The sanitized data object
+ */
+function sanitizeFirebaseData(data) {
+  // Create a new object for sanitized data
+  const sanitized = {};
+  
+  // Process each property in the data object
+  for (const key in data) {
+    if (!data.hasOwnProperty(key)) continue;
+    
+    // Skip null or undefined values
+    if (data[key] === null || data[key] === undefined) continue;
+    
+    // Create a Firebase-safe key (no '.', '$', '#', '[', ']', '/')
+    const safeKey = key.replace(/[.#$\[\]\/]/g, '_');
+    
+    // Process the value based on its type
+    let value = data[key];
+    
+    if (typeof value === 'string') {
+      // Strings are fine, but make sure they're not too long
+      if (value.length > 100000) {
+        value = value.substring(0, 100000) + "... [truncated]";
+      }
+      sanitized[safeKey] = value;
+    } 
+    else if (typeof value === 'number' || typeof value === 'boolean') {
+      // Numbers and booleans are fine as is
+      sanitized[safeKey] = value;
+    }
+    else if (typeof value === 'object') {
+      // Convert objects to JSON strings
+      try {
+        sanitized[safeKey] = JSON.stringify(value);
+      } catch (e) {
+        sanitized[safeKey] = String(value);
+      }
+    }
+    else {
+      // Convert any other types to strings
+      sanitized[safeKey] = String(value);
+    }
+  }
+  
+  return sanitized;
+}
+
+/**
+ * Sanitizes data for Firebase by ensuring keys and values are valid
+ * 
+ * @param {Object} data - The data object to sanitize
+ * @returns {Object} - The sanitized data object
+ */
+function sanitizeForFirebase(data) {
+  // Create a deep copy to avoid modifying the original
+  const sanitized = JSON.parse(JSON.stringify(data));
+  
+  // Loop through all properties
+  for (const key in sanitized) {
+    // Skip if not own property
+    if (!sanitized.hasOwnProperty(key)) continue;
+    
+    // Check for invalid key names (Firebase doesn't allow '.', '$', '#', '[', ']', '/')
+    if (/[.#$\[\]\/]/.test(key)) {
+      // Create a new sanitized key
+      const newKey = key.replace(/[.#$\[\]\/]/g, '_');
+      sanitized[newKey] = sanitized[key];
+      delete sanitized[key];
+    }
+    
+    // Check value type and convert if necessary
+    const value = sanitized[key];
+    
+    // If value is undefined or null, set to empty string
+    if (value === undefined || value === null) {
+      sanitized[key] = "";
+    }
+    // If value is an object or array, stringify it
+    else if (typeof value === 'object') {
+      sanitized[key] = JSON.stringify(value);
+    }
+    // If value is not a string, convert it to string
+    else if (typeof value !== 'string') {
+      sanitized[key] = value.toString();
+    }
+    
+    // Ensure value is not too long for Firebase (Firebase has limits on string size)
+    if (typeof sanitized[key] === 'string' && sanitized[key].length > 100000) {
+      sanitized[key] = sanitized[key].substring(0, 100000) + "... [truncated]";
+    }
+  }
+  
+  return sanitized;
+}
+
+/**
+ * Sanitizes the campaign data before saving to Firebase
+ * @param {Object} campaignData - The campaign data to sanitize
+ * @returns {Object} - Sanitized campaign data
+ */
+function sanitizeCampaignData(campaignData) {
+  // Create a deep copy of the object
+  const sanitized = JSON.parse(JSON.stringify(campaignData));
+  
+  // Ensure all field names are valid Firebase keys
+  const validFieldRegex = /^[a-zA-Z0-9_]+$/;
+  
+  for (const key in sanitized) {
+    // Check if key is valid
+    if (!validFieldRegex.test(key)) {
+      const newKey = key.replace(/[^a-zA-Z0-9_]/g, '_');
+      sanitized[newKey] = sanitized[key];
+      delete sanitized[key];
+    }
+    
+    // Ensure value is a string or can be converted to a string
+    if (sanitized[key] !== null && sanitized[key] !== undefined) {
+      if (typeof sanitized[key] !== 'string') {
+        sanitized[key] = String(sanitized[key]);
+      }
+    }
+  }
+  
+  return sanitized;
+}
+
+/**
  * Transforms object keys to lowercase with underscores, and replaces slashes in strings.
  *
  * @param {Object|Array|string} inputJson - The data to transform.

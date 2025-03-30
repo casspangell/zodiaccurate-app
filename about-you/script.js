@@ -1394,8 +1394,6 @@ document.addEventListener("DOMContentLoaded", function () {
             formDataObject.uuid = uuid;
         }
 
-        console.log("Final Form Data:", formDataObject);
-
         try {
             updateText();
             setInterval(updateText, 3000);

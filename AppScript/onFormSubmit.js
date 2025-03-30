@@ -66,6 +66,12 @@ function onWebFormSubmitHandler(e) {
         userData["trial-date-start"] = new Date().toISOString();
         userData["trial"] = "true";
 
+        Logger.log(userData["editURL"]);
+        Logger.log(userData["email"]);
+        Logger.log(userData["name"]);
+        Logger.log(userData["trial-date-start"]);
+        Logger.log(userData["trial"]);
+
         userSaveResult = saveUserToUserTableFirebase(uuid, userData);
         saveResult = pushEntryToFirebase(e.formData, uuid);
 

@@ -5,13 +5,19 @@ function testWelcomeChatGPT() {
 
 async function welcomeChatGPT(jsonSinglePersonData, uuid) {
     console.log("PREPARE WELCOME CHATGPT");
+    console.log(jsonSinglePersonData);
+    console.log(uuid);
 
     // Generate ChatGPT prompt
     const prompt = getChatInstructions(jsonSinglePersonData, uuid);
+    console.log("PROMPT: ",prompt);
     const userData = getUserDataFromUserTableFirebase(uuid);
+    console.log("USER DATA: ",userData);
 
     try {
+      console.log("processing...");
       if(uuid) {
+        console.log("uuid found...");
         const zodiaccurateData = await getChatGPTResponse(prompt, uuid);
         const editUrl = findKeyValue(userData, "editURL");
         const { name, email } = jsonSinglePersonData;

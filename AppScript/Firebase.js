@@ -107,7 +107,6 @@ function saveUserToUserTableFirebase(uuid, jsonData) {
 
     // Construct Firebase URL
     const firebaseUrl = `${FIREBASE_URL}/users/${uuid}.json?auth=${token}`;
-    Logger.log(`🔥 Firebase PATCH Request URL: ${firebaseUrl}`);
 
     // Request Options
     const options = {
@@ -142,35 +141,91 @@ function saveUserToUserTableFirebase(uuid, jsonData) {
 
 
 function saveEmailCampaignToFirebase(jsonData, uuid) {
-      Logger.log("saveEmailCampaignToFirebase...", JSON.stringify(jsonData));
-
+  Logger.log("saveEmailCampaignToFirebase...");
+  
+  // Validate UUID
+  if (!uuid || typeof uuid !== 'string') {
+    Logger.log("❌ Invalid UUID provided");
+    return false;
+  }
+  
+  try {
+    // Handle array result (common from CSV parsers)
+    let dataToSave;
+    
+    if (Array.isArray(jsonData)) {
+      // If we have an array, use the first item (assuming it's the data row)
+      if (jsonData.length > 0) {
+        dataToSave = jsonData[0];
+        Logger.log("📊 Converting array result to object (using first item)");
+      } else {
+        Logger.log("❌ Empty array provided as jsonData");
+        return false;
+      }
+    } else if (typeof jsonData === 'object') {
+      // If it's already an object, use it directly
+      dataToSave = jsonData;
+    } else {
+      Logger.log(`❌ Invalid data type: ${typeof jsonData}`);
+      return false;
+    }
+    
+    // Additional data validation
+    if (!dataToSave || typeof dataToSave !== 'object') {
+      Logger.log("❌ Invalid data object after conversion");
+      return false;
+    }
+    
+    // Sanitize keys and values for Firebase
+    const sanitizedData = sanitizeFirebaseData(dataToSave);
+    
+    // Log the data we're about to save
+    Logger.log("📦 Data to save to Firebase (preview): " + 
+               JSON.stringify(sanitizedData).substring(0, 500) + "...");
+    
+    // Get Firebase token
     const token = getFirebaseIdToken("appscript@zodiaccurate.com", FIREBASE_PASSWORD);
     if (!token) {
-        Logger.log("❌ Firebase Authentication Failed.");
-        return false;
+      Logger.log("❌ Firebase Authentication Failed.");
+      return false;
     }
     Logger.log("✅ Firebase Token Retrieved");
-
+    
+    // Construct Firebase URL
     const firebaseUrl = `${FIREBASE_URL}/trial_campaign/${uuid}.json?auth=${token}`;
-
+    
+    // Set request options
     const options = {
-        method: "patch",
-        contentType: "application/json",
-        payload: JSON.stringify(jsonData),
-        headers: {
-            Authorization: `Bearer ${token}`
-        }
+      method: "patch",
+      contentType: "application/json",
+      payload: JSON.stringify(sanitizedData), // This should now be a valid object, not an array
+      headers: {
+        Authorization: `Bearer ${token}`
+      },
+      muteHttpExceptions: true
     };
-
-    try {
-        const response = UrlFetchApp.fetch(firebaseUrl, options);
-        Logger.log("Entry successfully saved to Firebase.");
-        Logger.log("Response: " + response.getContentText());
-        return true;
-    } catch (e) {
-        Logger.log("Error saving entry to Firebase: " + e.message);
-        return false;
+    
+    // Send the request to Firebase
+    const response = UrlFetchApp.fetch(firebaseUrl, options);
+    const statusCode = response.getResponseCode();
+    const responseBody = response.getContentText();
+    
+    // Check if the request was successful
+    if (statusCode >= 200 && statusCode < 300) {
+      Logger.log(`✅ Data successfully saved to Firebase. Status: ${statusCode}`);
+      return true;
+    } else {
+      Logger.log(`❌ Error saving to Firebase. Status: ${statusCode}`);
+      Logger.log(`Full response: ${responseBody}`);
+      return false;
     }
+  } catch (error) {
+    Logger.log(`❌ Error saving entry to Firebase: ${error.message}`);
+    if (error.stack) {
+      Logger.log(`Stack trace: ${error.stack}`);
+    }
+    return false;
+  }
 }
 
 function getEmailCampaignFromFirebase(uuid) {
@@ -206,6 +261,61 @@ function getEmailCampaignFromFirebase(uuid) {
         return userData;
     } catch (e) {
         Logger.log("Error retrieving data for UUID " + uuid + ": " + e.message);
+        return null;
+    }
+}
+
+/**
+ * Retrieves zodiac data for the last three days from the Firebase zodiac table for a specific UUID.
+ *
+ * @param {string} uuid - The unique identifier for the user.
+ * @returns {Object|null} - An object containing data for the last three days if found, otherwise null.
+ */
+function getThreeDaysDataFromFirebase(uuid) {
+    console.log("getThreeDaysDataFromFirebase");
+  const token = getFirebaseIdToken("appscript@zodiaccurate.com", FIREBASE_PASSWORD);
+    const firebaseUrl = `${FIREBASE_URL}/zodiac/${uuid}.json?auth=${token}`;
+
+    const options = {
+        method: "GET",
+        contentType: "application/json",
+        headers: {
+            Authorization: `Bearer ${token}`
+        }
+    };
+
+    try {
+        const response = UrlFetchApp.fetch(firebaseUrl, options);
+        const data = JSON.parse(response.getContentText());
+        const daysOfTheWeekData = {};
+
+        if (data) {
+            Logger.log("Data retrieved for UUID: " + uuid);
+
+            const daysOfWeek = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
+            const today = new Date();
+            let dayIndex = today.getDay();
+
+            // Get the last 3 days' data
+            for (let i = 1; i <= 3; i++) {
+                dayIndex = (dayIndex - 1 + 7) % 7; // Calculate previous day index
+                const day = daysOfWeek[dayIndex];
+                if (data.hasOwnProperty(day)) {
+                    daysOfTheWeekData[day] = data[day];
+                    console.log("Retrieved data for: ", daysOfTheWeekData[day]);
+                    Logger.log(day + ": " + JSON.stringify(data[day]));
+                } else {
+                    Logger.log(day + ": No data available.");
+                }
+            }
+
+            return daysOfTheWeekData;
+        } else {
+            Logger.log("No three days days found for UUID: " + uuid);
+            return null;
+        }
+    } catch (e) {
+        Logger.log("Error retrieving data from Firebase: " + e.message);
         return null;
     }
 }
