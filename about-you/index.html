@@ -187,6 +187,7 @@
                         <label><input type="radio" name="relationship_status" value="separated_fix"> Separated (Trying to Fix)</label>
                         <label><input type="radio" name="relationship_status" value="separated_differences"> Separated (Irreconcilable Differences)</label>
                         <label><input type="radio" name="relationship_status" value="divorced"> Divorced</label>
+                        <label><input type="radio" name="relationship_status" value="widowed"> Widowed and Looking</label>
                         <label><input type="radio" name="relationship_status" value="not_interested"> Not Interested in a Relationship</label>
                     </div>
                     <p id="relationship-status-error" style="color: red; display: none;">Please select a relationship status.</p>
@@ -330,6 +331,9 @@
                         <label><input type="checkbox" value="not_important_at_all"> Not Important at All</label>
                     </div>
                 </div>
+                <label for="future_partner_details">Future Partner Details</label>
+                <p class="description">Share any details you wish regarding your ideal future partner, Examples include:  Characteristics, preferred qualities, preferred beliefs, relationship non starters, preferred religion (if relevant), children – no children (if relevant), location proximity (if relevant) age range, your ideal date, your ideal future etc.</p>
+                    <textarea type="text" id="future_partner_details" name="future_partner_details" class="text-large auto-expand"></textarea>
                 <br>
                 <div class="nav-button-container">
                     <button type="button" class="prev">Back</button>
@@ -444,6 +448,9 @@
                     </div>
                 </div>
 
+                <label for="job_retired_satisfaction">Please share relevant information about your career status, your goals, frustrations, and desired future path. This along with your astrological information will assist Zodiaccurate  with supportive guidance. </label><br><br>
+                    <textarea type="text" id="job_employed_satisfaction" name="job_employed_satisfaction" class="text-large auto-expand"></textarea>
+                        <br><br>
                 <div class="nav-button-container">
                     <button type="button" class="prev">Back</button>
                     <button type="button" class="next">Save & Continue</button>
@@ -462,6 +469,59 @@
                         <label><input type="checkbox" name="job_focus" value="exploring_new_careers"> Exploring New Careers</label>
                     </div>
                 </div>
+                <div class="question-group">
+                    <p>How do you currently feel about yourself during your job search?</p>
+                    <div class="main-checkbox-group">
+                        <label><input type="radio" name="job_feel" value="positive_and_hopeful">Positive and hopeful</label>
+                        <label><input type="radio" name="job_feel" value="stable_but_occassionally_anxious">Stable but occasionally anxious</label>
+                        <label><input type="radio" name="job_feel" value="frequently_stressed_and_worried">Frequently stressed and worried</label>
+                        <label><input type="radio" name="job_feel" value="feeling_down_or_discouraged">Feeling down or discouraged</label>
+                        <label><input type="radio" name="job_feel" value="emotionally_exhausted">Emotionally exhausted</label>
+                    </div>
+                </div>
+                <div class="question-group">
+                    <p>How do you currently feel about your job search progress?</p>
+                    <div class="main-checkbox-group">
+                        <label><input type="radio" name="job_search" value="very_confident_and_optimistic">Very confident and optimistic</label>
+                        <label><input type="radio" name="job_search" value="somewhat_confident_but_cautious">Somewhat confident but cautious</label>
+                        <label><input type="radio" name="job_search" value="neutral_still_exploring_options">Neutral, still exploring options</label>
+                        <label><input type="radio" name="job_search" value="worried_and_uncertain">Worried and uncertain</label>
+                        <label><input type="radio" name="job_search" value="discouraged_and_frustrated">Discouraged and frustrated</label>
+                    </div>
+                </div>
+                <div class="question-group">
+                    <p>What type of job are you primarily seeking?</p>
+                    <div class="main-checkbox-group multi-column">
+                        <label><input type="checkbox" name="job_type" value="full_time">Full-time, long-term employment</label>
+                        <label><input type="checkbox" name="job_type" value="part_time">Part-time or temporary work</label>
+                        <label><input type="checkbox" name="job_type" value="freelance">Freelance or contract opportunities</label>
+                        <label><input type="checkbox" name="job_type" value="remote_work">Remote work or telecommuting</label>
+                        <label><input type="checkbox" name="job_type" value="open_to_job">I'm open to any job that meets my needs</label>
+                    </div>
+                </div>
+                <div class="question-group">
+                    <p>What is your primary focus while seeking employment?</p>
+                    <div class="main-checkbox-group multi-column">
+                        <label><input type="checkbox" name="job_type" value="job_primary_focus">Finding a job that aligns with my passion</label>
+                        <label><input type="checkbox" name="job_type" value="job_primary_focus">Securing a job with stable income</label>
+                        <label><input type="checkbox" name="job_type" value="job_primary_focus">Updating my skills and qualifications</label>
+                        <label><input type="checkbox" name="job_type" value="job_primary_focus">Taking a break before resuming the job search</label>
+                        <label><input type="checkbox" name="job_type" value="job_primary_focus">Exploring new career paths or industries</label>
+                    </div>
+                </div>
+                <div class="question-group">
+                    <p>How do you maintain your motivation during your job search?</p>
+                    <div class="main-checkbox-group multi-column">
+                        <label><input type="checkbox" name="job_type" value="job_passion">Finding a job that aligns with my passion</label>
+                        <label><input type="checkbox" name="job_type" value="job_secure_income">Securing a job with stable income</label>
+                        <label><input type="checkbox" name="job_type" value="job_updating_skills">Updating my skills and qualifications</label>
+                        <label><input type="checkbox" name="job_type" value="job_take_a_break">Taking a break before resuming the job search</label>
+                        <label><input type="checkbox" name="job_type" value="job_exploring">Exploring new career paths or industries</label>
+                    </div>
+                </div>
+                    <label for="job_retired_satisfaction">Please share relevant information about your career status, your goals, frustrations, and desired future path. This along with your astrological information will assist Zodiaccurate  with supportive guidance. </label><br><br>
+                    <textarea type="text" id="job_unemployed_satisfaction" name="job_unemployed_satisfaction" class="text-large auto-expand"></textarea>
+                        <br><br>
                 <div class="nav-button-container">
                     <button type="button" class="prev">Back</button>
                     <button type="button" class="next">Save & Continue</button>
@@ -474,11 +534,11 @@
                 <div class="question-group">
                     <p>What is your main focus in retirement?</p>
                     <div class="main-checkbox-group multi-column">
-                        <label><input type="checkbox" name="retirement_focus" value="relaxing"> Relaxing</label>
-                        <label><input type="checkbox" name="retirement_focus" value="hobbies"> Hobbies</label>
-                        <label><input type="checkbox" name="retirement_focus" value="volunteering"> Volunteering</label>
-                        <label><input type="checkbox" name="retirement_focus" value="traveling"> Traveling</label>
-                        <label><input type="checkbox" name="retirement_focus" value="consulting_part_time"> Consulting/Part-Time Work</label>
+                        <label><input type="checkbox" name="retirement_focus" value="setting_daily_goals">Setting daily or weekly goals</label>
+                        <label><input type="checkbox" name="retirement_focus" value="engaging_in_hobbies">Engaging in hobbies and self-care</label>
+                        <label><input type="checkbox" name="retirement_focus" value="seeking_support">Seeking support from friends and family</label>
+                        <label><input type="checkbox" name="retirement_focus" value="staying_informed">Staying informed about job market trends</label>
+                        <label><input type="checkbox" name="retirement_focus" value="struggling_motivation">Struggling to stay motivated</label>
                     </div>
                 </div>
                 <div class="question-group">
@@ -521,6 +581,9 @@
                         <label><input type="radio" name="sense_of_purpose" value="searching_for_purpose"> Searching for Purpose</label>
                     </div>
                 </div>
+                <label for="job_retired_satisfaction">Please share relevant information about your career status, your goals, frustrations, and desired future path. This along with your astrological information will assist Zodiaccurate  with supportive guidance. </label><br><br>
+                    <textarea type="text" id="job_retired_satisfaction" name="job_retired_satisfaction" class="text-large auto-expand"></textarea>
+                        <br><br>
                 <div class="nav-button-container">
                     <button type="button" class="prev">Back</button>
                     <button type="button" class="next">Save & Continue</button>
