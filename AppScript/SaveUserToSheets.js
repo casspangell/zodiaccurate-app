@@ -1,6 +1,7 @@
 /**
  * Main function to export trial users to spreadsheet
  * This connects the Firebase trial user lookup with the spreadsheet export
+ * Prevents duplicates by checking for existing user IDs
  * 
  * @param {string} spreadsheetId - Optional: ID of the spreadsheet (defaults to constant)
  * @param {string} sheetName - Optional: Name of the sheet to write to (defaults to "Expired")
@@ -34,7 +35,6 @@ function exportExpiredTrialUsers(spreadsheetId, sheetName = "Expired") {
     
     Logger.log(`📋 Found ${users.length} users with trial=true for 30+ days.`);
     
-    // Now write these users to the spreadsheet
     // Open the spreadsheet by ID
     const spreadsheet = SpreadsheetApp.openById(spreadsheetId);
     
@@ -43,12 +43,28 @@ function exportExpiredTrialUsers(spreadsheetId, sheetName = "Expired") {
     if (!sheet) {
       Logger.log(`📝 Creating new sheet: ${sheetName}`);
       sheet = spreadsheet.insertSheet(sheetName);
-    } else {
-      Logger.log(`📝 Clearing existing sheet: ${sheetName}`);
-      sheet.clear();
+      
+      // Create headers in a new sheet
+      const headers = [
+        "User ID", 
+        "Email", 
+        "Name", 
+        "Trial Start Date", 
+        "Days on Trial",
+        "Export Date"
+      ];
+      
+      // Set headers in bold
+      sheet.getRange(1, 1, 1, headers.length).setValues([headers]).setFontWeight("bold");
+      
+      // Add filtering to headers
+      sheet.getRange(1, 1, 1, headers.length).createFilter();
+      
+      // Freeze the header row
+      sheet.setFrozenRows(1);
     }
     
-    // Create headers
+    // Define headers for reference
     const headers = [
       "User ID", 
       "Email", 
@@ -58,19 +74,26 @@ function exportExpiredTrialUsers(spreadsheetId, sheetName = "Expired") {
       "Export Date"
     ];
     
-    // Set headers in bold
-    sheet.getRange(1, 1, 1, headers.length).setValues([headers]).setFontWeight("bold");
+    // Get existing data to check for duplicates
+    const existingData = sheet.getDataRange().getValues();
+    // Remove header row
+    const existingDataWithoutHeader = existingData.length > 1 ? existingData.slice(1) : [];
     
-    // Format date columns (column 4 - Trial Start Date, column 6 - Export Date)
-    if (users.length > 0) {
-      sheet.getRange(2, 4, users.length, 1).setNumberFormat("yyyy-mm-dd");
-      sheet.getRange(2, 6, users.length, 1).setNumberFormat("yyyy-mm-dd hh:mm:ss");
-    }
+    // Create a map of existing user IDs to their row indices (0-based, relative to data without header)
+    const existingUserIdMap = new Map();
+    existingDataWithoutHeader.forEach((row, index) => {
+      if (row[0]) { // User ID is in the first column
+        existingUserIdMap.set(row[0], index);
+      }
+    });
     
-    // Prepare data rows
-    const dataRows = users.map(user => {
+    // Prepare data rows and track which users need to be added vs updated
+    const newUserRows = [];
+    const updatedUserRows = [];
+    
+    users.forEach(user => {
       const startDate = new Date(user.trialStartDate);
-      return [
+      const rowData = [
         user.userId,
         user.email,
         user.name,
@@ -78,11 +101,39 @@ function exportExpiredTrialUsers(spreadsheetId, sheetName = "Expired") {
         user.daysOnTrial,
         new Date() // Export date
       ];
+      
+      if (existingUserIdMap.has(user.userId)) {
+        // User exists - store data and row index for updating
+        updatedUserRows.push({
+          rowIndex: existingUserIdMap.get(user.userId) + 2, // +2 because: +1 for header, +1 for 1-based indexing
+          data: rowData
+        });
+      } else {
+        // New user - add to new users array
+        newUserRows.push(rowData);
+      }
     });
     
-    // Write data to the sheet
-    if (dataRows.length > 0) {
-      sheet.getRange(2, 1, dataRows.length, headers.length).setValues(dataRows);
+    // Update existing users
+    Logger.log(`🔄 Updating ${updatedUserRows.length} existing users`);
+    updatedUserRows.forEach(update => {
+      sheet.getRange(update.rowIndex, 1, 1, headers.length).setValues([update.data]);
+    });
+    
+    // Add new users
+    if (newUserRows.length > 0) {
+      Logger.log(`➕ Adding ${newUserRows.length} new users`);
+      const lastRow = sheet.getLastRow();
+      sheet.getRange(lastRow + 1, 1, newUserRows.length, headers.length).setValues(newUserRows);
+    }
+    
+    // Format date columns throughout the sheet
+    const dataRowCount = sheet.getLastRow() - 1; // Subtract header row
+    if (dataRowCount > 0) {
+      // Format Trial Start Date column (column 4)
+      sheet.getRange(2, 4, dataRowCount, 1).setNumberFormat("yyyy-mm-dd");
+      // Format Export Date column (column 6)
+      sheet.getRange(2, 6, dataRowCount, 1).setNumberFormat("yyyy-mm-dd hh:mm:ss");
     }
     
     // Auto-resize columns to fit content
@@ -90,13 +141,7 @@ function exportExpiredTrialUsers(spreadsheetId, sheetName = "Expired") {
       sheet.autoResizeColumn(i);
     }
     
-    // Add filtering to headers
-    sheet.getRange(1, 1, 1, headers.length).createFilter();
-    
-    // Freeze the header row
-    sheet.setFrozenRows(1);
-    
-    Logger.log(`✅ Successfully wrote ${users.length} users to spreadsheet`);
+    Logger.log(`✅ Successfully processed ${users.length} users (${newUserRows.length} new, ${updatedUserRows.length} updated)`);
     
   } catch (error) {
     Logger.log(`❌ Error in export process: ${error.message}`);
