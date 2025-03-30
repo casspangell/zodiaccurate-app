@@ -1004,58 +1004,98 @@ function getZodiacDataForTomorrow(uuid) {
   }
 }
 
-
 /**
- * Retrieves zodiac data for the last three days from the Firebase zodiac table for a specific UUID.
- *
- * @param {string} uuid - The unique identifier for the user.
- * @returns {Object|null} - An object containing data for the last three days if found, otherwise null.
+ * Main function to list users with trial=true who have been on trial for 30+ days
+ * This function doesn't modify any user data
  */
-function getThreeDaysDataFromFirebase(uuid) {
-    console.log("getThreeDaysDataFromFirebase");
-  const token = getFirebaseIdToken("appscript@zodiaccurate.com", FIREBASE_PASSWORD);
-    const firebaseUrl = `${FIREBASE_URL}/zodiac/${uuid}.json?auth=${token}`;
-
-    const options = {
-        method: "GET",
-        contentType: "application/json",
-        headers: {
-            Authorization: `Bearer ${token}`
-        }
-    };
-
-    try {
-        const response = UrlFetchApp.fetch(firebaseUrl, options);
-        const data = JSON.parse(response.getContentText());
-        const daysOfTheWeekData = {};
-
-        if (data) {
-            Logger.log("Data retrieved for UUID: " + uuid);
-
-            const daysOfWeek = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
-            const today = new Date();
-            let dayIndex = today.getDay();
-
-            // Get the last 3 days' data
-            for (let i = 1; i <= 3; i++) {
-                dayIndex = (dayIndex - 1 + 7) % 7; // Calculate previous day index
-                const day = daysOfWeek[dayIndex];
-                if (data.hasOwnProperty(day)) {
-                    daysOfTheWeekData[day] = data[day];
-                    console.log("Retrieved data for: ", daysOfTheWeekData[day]);
-                    Logger.log(day + ": " + JSON.stringify(data[day]));
-                } else {
-                    Logger.log(day + ": No data available.");
-                }
-            }
-
-            return daysOfTheWeekData;
-        } else {
-            Logger.log("No three days days found for UUID: " + uuid);
-            return null;
-        }
-    } catch (e) {
-        Logger.log("Error retrieving data from Firebase: " + e.message);
-        return null;
+/**
+ * Gets users who have trial="true" and have been on trial for 30+ days
+ * This is a synchronous function that directly returns the users array
+ * 
+ * @returns {Array} Array of users with trial="true" who have been on trial for 30+ days
+ */
+function getTrialUsersOverThirtyDays() {
+  Logger.log("🔍 Finding users with trial=true for 30+ days...");
+  
+  try {
+    const token = getFirebaseIdToken("appscript@zodiaccurate.com", FIREBASE_PASSWORD);
+    
+    if (!token) {
+      Logger.log("❌ Firebase Authentication Failed. No token received.");
+      return [];
     }
+    
+    // Fetch all users
+    const firebaseUrl = `${FIREBASE_URL}/users.json?auth=${token}`;
+    
+    const options = {
+      method: "get",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`
+      },
+      muteHttpExceptions: true
+    };
+    
+    const response = UrlFetchApp.fetch(firebaseUrl, options);
+    const statusCode = response.getResponseCode();
+    
+    if (statusCode !== 200) {
+      Logger.log(`❌ Failed to retrieve users. HTTP Status: ${statusCode}`);
+      return [];
+    }
+    
+    const usersData = JSON.parse(response.getContentText());
+    
+    if (!usersData || typeof usersData !== 'object') {
+      Logger.log("❌ No users found or invalid data structure");
+      return [];
+    }
+    
+    const trialUsersOverThirtyDays = [];
+    
+    // Check each user
+    for (const userId in usersData) {
+      const userData = usersData[userId];
+      
+      // Check if user has trial="true" and a trial-date-start
+      if (userData.trial === "true" && userData['trial-date-start']) {
+        const startDate = new Date(userData['trial-date-start']);
+        const currentDate = new Date();
+        const timeDiff = currentDate - startDate;
+        const daysDiff = Math.floor(timeDiff / 86400000);
+        
+        // If trial period is 30+ days
+        if (daysDiff >= 30) {
+          Logger.log(`🔍 Found trial user ${userId} who has been on trial for ${daysDiff} days`);
+          
+          // Add user ID and details to the list
+          trialUsersOverThirtyDays.push({
+            userId: userId,
+            email: userData.email || "Unknown",
+            name: userData.name || "Unknown",
+            trialStartDate: userData['trial-date-start'],
+            daysOnTrial: daysDiff
+          });
+        }
+      }
+    }
+    
+    Logger.log(`✅ Found ${trialUsersOverThirtyDays.length} users with trial=true for 30+ days`);
+    
+    // Log details of each user
+    trialUsersOverThirtyDays.forEach((user, index) => {
+      Logger.log(`${index + 1}. User: ${user.email} (${user.userId})`);
+      Logger.log(`   Name: ${user.name}`);
+      Logger.log(`   Trial Start Date: ${user.trialStartDate}`);
+      Logger.log(`   Days on Trial: ${user.daysOnTrial}`);
+      Logger.log(`   -----`);
+    });
+    
+    return trialUsersOverThirtyDays;
+    
+  } catch (error) {
+    Logger.log(`❌ Error finding trial users: ${error.message}`);
+    return [];
+  }
 }
