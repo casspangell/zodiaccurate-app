@@ -58,10 +58,7 @@ document.addEventListener("DOMContentLoaded", function () {
     //------------------
 
     const uuid = getUUIDFromUrl();
-    if (uuid) {
-        fetchData();
-    }
-
+    fetchData();
     //------------------
 
     let partnerCount = 1;
@@ -100,22 +97,33 @@ document.addEventListener("DOMContentLoaded", function () {
         const loadingOverlay = document.getElementById("loadingOverlay");
         loadingOverlay.style.display = "flex";
         const uuid = getUUIDFromUrl();
-        try {
-            const response = await fetch(`${FIREBASE_GET_DATA_URL}?uuid=${encodeURIComponent(uuid)}`, {
-                method: "GET",
-                headers: { "Content-Type": "application/json" },
-            });
-            const result = await response.json();
-            dbData = result;
-            console.log("User found. Fetching data.");
-            populateFormFields(result);
-            updateLocalStorageWithData(result);
 
-        } catch (error) {
-            console.error("Error fetching data:", error);
-        } finally {
-            // Hide overlay when data is loaded or in case of an error
-            loadingOverlay.style.display = "none";
+        if (uuid) {
+            try {
+                const response = await fetch(`${FIREBASE_GET_DATA_URL}?uuid=${encodeURIComponent(uuid)}`, {
+                    method: "GET",
+                    headers: { "Content-Type": "application/json" },
+                });
+                const result = await response.json();
+                dbData = result;
+                console.log("User found. Fetching data.");
+                populateFormFields(result);
+                updateLocalStorageWithData(result);
+
+            } catch (error) {
+                document.getElementById("loadingOverlay").style.display = "none";
+                console.error("Error fetching data:", error);
+            } finally {
+                // Hide overlay when data is loaded or in case of an error
+                setTimeout(() => {
+                    loadingOverlay.style.display = "none";
+                }, 3000);
+            }
+        } else {
+            console.log("no uuid found");
+            setTimeout(() => {
+                loadingOverlay.style.display = "none";
+            }, 3000);
         }
     }
 

@@ -256,17 +256,34 @@ button:hover {
 
 /* Hide default checkbox */
 input[type="checkbox"] {
+    /* Set exact dimensions with !important to prevent overrides */
+    width: 20px !important;
+    height: 20px !important;
+    /* Ensure consistent appearance */
+    min-width: 20px !important;
+    min-height: 20px !important;
+    max-width: 20px !important;
+    max-height: 20px !important;
+    /* Keep square shape */
+    border-radius: 4px;
+    /* Disable default appearance */
     appearance: none;
     -webkit-appearance: none;
     -moz-appearance: none;
-    width: 20px;
-    height: 20px;
-    border-radius: 5px; /* Rounded corners */
+    /* Style */
     background-color: white;
-    display: inline-block;
+    border: 1px solid #ccc;
     position: relative;
     cursor: pointer;
+    /* Prevent squishing */
+    flex-shrink: 0;
+    /* Smooth transitions */
     transition: all 0.2s ease-in-out;
+    /* Ensure proper box model */
+    box-sizing: border-box;
+    /* Improve touch target on mobile */
+    margin: 0;
+    padding: 0;
 }
 
 /* Style when checked */
@@ -278,16 +295,16 @@ input[type="checkbox"]:checked {
 /* Checkmark icon */
 input[type="checkbox"]::after {
     content: "";
-    display: block;
-    width: 10px;
-    height: 10px;
-    border-radius: 3px; /* Slightly rounded checkmark */
-    background-color: #5a3e85; /* Dark purple check for contrast */
     position: absolute;
+    display: block;
+    width: 10px !important;
+    height: 10px !important;
+    border-radius: 2px;
+    background-color: #5a3e85; /* Dark purple check for contrast */
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%) scale(0);
-    transition: all 0.2s ease-in-out;
+    transition: transform 0.2s ease-in-out;
 }
 
 /* Show checkmark when selected */
@@ -586,16 +603,17 @@ input[type="checkbox"]:focus {
     display: flex;
     align-items: center;
     gap: 8px;
-    font-size: clamp(0, 2vw, 1.2rem);
+    font-size: clamp(14px, 2vw, 16px);
     font-weight: normal !important;
+    margin: 4px 0;
 }
 
 
 .main-checkbox-group.multi-column {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 10px 20px;
-    flex-shrink: 0;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 10px;
+    width: 100%;
 }
 
 .main-checkbox-group.multi-column label {
@@ -746,5 +764,15 @@ input[type="checkbox"]:focus {
 
     .step p {
         display: none;
+    }
+}
+
+@media screen and (max-width: 480px) {
+    .main-checkbox-group.multi-column {
+        grid-template-columns: 1fr; /* Single column on very small screens */
+    }
+    
+    .main-checkbox-group label {
+        padding: 6px 0; /* Increase touch target size */
     }
 }

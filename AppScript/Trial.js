@@ -32,3 +32,12 @@ function setupTrialSystem(email, name, uuid) {
       return null;
     }
 }
+
+/**
+ * Function to run daily that expires trials and emails the report
+ * This will be called by the time-based trigger
+ */
+function runWeeklyTrialExpiration() {
+  const results = expireTrialUsers();
+  emailTrialExpirationReport(ADMIN_EMAIL, results);
+}

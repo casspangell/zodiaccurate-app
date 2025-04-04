@@ -192,6 +192,27 @@ function sanitizeCampaignData(campaignData) {
 }
 
 /**
+ * Creates a Firebase-safe key from a category name
+ * Uses your existing formatting utilities
+ * 
+ * @param {string} category - The category name
+ * @returns {string} - Firebase-safe key
+ */
+function formatCategoryKey(category) {
+  if (!category) return "unknown_category";
+  
+  // Use your existing formatKey function to sanitize
+  // or create a more specific format for categories
+  return category
+    .trim()
+    .toLowerCase()
+    .replace(/\//g, "_")         // Replace slashes with underscores
+    .replace(/[\.\#\$\[\]]/g, "_") // Replace other Firebase-forbidden chars
+    .replace(/\s+/g, "_")        // Replace spaces with underscores
+    .replace(/^-+|-+$/g, "");    // Remove leading or trailing hyphens
+}
+
+/**
  * Transforms object keys to lowercase with underscores, and replaces slashes in strings.
  *
  * @param {Object|Array|string} inputJson - The data to transform.

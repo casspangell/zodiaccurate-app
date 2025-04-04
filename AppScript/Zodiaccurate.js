@@ -7,17 +7,25 @@
  *
  * @returns {void}
  */
+/**
+ * Main function to run the Zodiaccurate process.
+ * - Retrieves the current hour.
+ * - Fetches UUIDs from the exec_time table for the current hour.
+ * - Only processes users with trial="true" or trial="subscribed"
+ * - Iterates over eligible users, retrieves their zodiac data, and processes nightly data.
+ *
+ * @returns {void}
+ */
 async function runZodiaccurate() {
   const currHour = getCurrentHour();
   console.log(`Running Zodiaccurate for hour: ${currHour}`);
 
   // Pull UUIDs from exec_time table for 6am
-  let users = fetchUUIDsForTimezone(5);
+  let users = fetchUUIDsForTimezone(6);
 
 //------------Run For Timezone Manually--------------//
   // const timezones = ["australia_sydney"];
   // console.log(`Running Zodiaccurate for timezone: ${timezones}`);
-
   // // Pull UUIDs from exec_time table for the designated timezone string
   // let users = getUUIDDataFromExecTimeTable(timezones);
 //------------Run For Timezone Manually--------------//
@@ -28,9 +36,9 @@ async function runZodiaccurate() {
     return;
   }
 
-  Logger.log(JSON.stringify(users, null, 2));
+  Logger.log(`Found ${Object.keys(users).length} users in the timezone.`);
 
-for (const uuid of Object.keys(users)) {
+  for (const uuid of Object.keys(users)) {
     let user = users[uuid];
     let email = user?.email || null;
     let name = user?.name || null;
@@ -38,62 +46,67 @@ for (const uuid of Object.keys(users)) {
 
     Logger.log(`🔍 Checking user: ${uuid}`);
 
-    // If email or name is missing, fetch from Firebase
-    if (!name || !email) {
-        try {
-            userData = getUserDataFromUserTableFirebase(uuid);
-            if (userData) {
-                email = userData.email || email;
-                name = userData.name || name;
-                Logger.log(`✅ Fetched user data from Firebase: ${name}, ${email}`);
-            } else {
-                Logger.log(`⚠️ User data not found in Firebase for UUID: ${uuid}`);
-                continue; // Skip user if essential data is missing
-            }
-        } catch (error) {
-            Logger.log(`❌ Error fetching user data from Firebase for UUID: ${uuid} - ${error.message}`);
-            continue;
-        }
+    // Always fetch complete user data from Firebase to check trial status
+    try {
+      userData = getUserDataFromUserTableFirebase(uuid);
+      if (userData) {
+        email = userData.email || email;
+        name = userData.name || name;
+        Logger.log(`✅ Fetched user data from Firebase: ${name}, ${email}`);
+      } else {
+        Logger.log(`⚠️ User data not found in Firebase for UUID: ${uuid}`);
+        continue; // Skip user if essential data is missing
+      }
+    } catch (error) {
+      Logger.log(`❌ Error fetching user data from Firebase for UUID: ${uuid} - ${error.message}`);
+      continue;
+    }
+    
+    // Check if user has an active trial or subscription
+    if (userData.trial === "true" || userData.trial === "subscribed") {
+      Logger.log(`✅ User ${name} (${uuid}) has active status: ${userData.trial}`);
+    } else {
+      Logger.log(`⚠️ Skipping user ${name} (${uuid}) - Trial status is ${userData.trial || "not set"}`);
+      continue; // Skip this user
     }
 
     Logger.log(`🚀 Processing user: ${name}, Email: ${email}, UUID: ${uuid}`);
 
     try {
-        // Step 1: Fetch Zodiac Data
-        let zodiacData = await getZodiacDataForToday(uuid);
+      // Step 1: Fetch Zodiac Data
+      let zodiacData = await getZodiacDataForToday(uuid);
 
-        // Step 2: If no data exists, generate today's horoscope
-        if (!zodiacData) {
-            Logger.log(`📝 No zodiac data found for UUID ${uuid}, generating new horoscope.`);
-            const horoscopeCreated = await createTodaysHoroscopeChatGPT(uuid, user);
+      // Step 2: If no data exists, generate today's horoscope
+      if (!zodiacData) {
+        Logger.log(`📝 No zodiac data found for UUID ${uuid}, generating new horoscope.`);
+        const horoscopeCreated = await createTodaysHoroscopeChatGPT(uuid, user);
 
-            if (horoscopeCreated) {
-                Logger.log(`✅ Horoscope created for UUID ${uuid}, fetching new data.`);
-                zodiacData = await getZodiacDataForToday(uuid);
-            } else {
-                Logger.log(`❌ Failed to generate horoscope for UUID ${uuid}`);
-            }
-        }
-
-        // Step 3: Run Nightly Chat (Parallel Execution with `Promise.all()`)
-        const [nightChat] = await Promise.all([
-            nightlyChatGPT(uuid, user)
-        ]);
-
-        // Step 4: If all required data exists, send email
-        if (zodiacData && nightChat) {
-            Logger.log(`📩 Sending daily email for UUID ${uuid}: Name: ${name}, Email: ${email}`);
-            sendDailyEmailWithMailerSend(name, email, zodiacData, uuid);
+        if (horoscopeCreated) {
+          Logger.log(`✅ Horoscope created for UUID ${uuid}, fetching new data.`);
+          zodiacData = await getZodiacDataForToday(uuid);
         } else {
-            Logger.log(`⚠️ Skipping email for UUID ${uuid} due to missing data`);
+          Logger.log(`❌ Failed to generate horoscope for UUID ${uuid}`);
         }
+      }
+
+      // Step 3: Run Nightly Chat (Parallel Execution with `Promise.all()`)
+      const [nightChat] = await Promise.all([
+        nightlyChatGPT(uuid, user)
+      ]);
+
+      // Step 4: If all required data exists, send email
+      if (zodiacData && nightChat) {
+        Logger.log(`📩 Sending daily email for UUID ${uuid}: Name: ${name}, Email: ${email}`);
+        sendDailyEmailWithMailerSend(name, email, zodiacData, uuid);
+      } else {
+        Logger.log(`⚠️ Skipping email for UUID ${uuid} due to missing data`);
+      }
     } catch (error) {
-        Logger.log(`❌ Error processing user ${uuid}: ${error.message}`);
+      Logger.log(`❌ Error processing user ${uuid}: ${error.message}`);
     }
-}
+  }
 
-Logger.log("✅ Zodiaccurate processing complete.");
-
+  Logger.log("✅ Zodiaccurate processing complete.");
 }
 
 

@@ -103,7 +103,6 @@ function saveUserToUserTableFirebase(uuid, jsonData) {
         Logger.log("❌ Firebase Authentication Failed.");
         return false;
     }
-    Logger.log("✅ Firebase Token Retrieved");
 
     // Construct Firebase URL
     const firebaseUrl = `${FIREBASE_URL}/users/${uuid}.json?auth=${token}`;
@@ -189,7 +188,6 @@ function saveEmailCampaignToFirebase(jsonData, uuid) {
       Logger.log("❌ Firebase Authentication Failed.");
       return false;
     }
-    Logger.log("✅ Firebase Token Retrieved");
     
     // Construct Firebase URL
     const firebaseUrl = `${FIREBASE_URL}/trial_campaign/${uuid}.json?auth=${token}`;
@@ -290,8 +288,6 @@ function getThreeDaysDataFromFirebase(uuid) {
         const daysOfTheWeekData = {};
 
         if (data) {
-            Logger.log("Data retrieved for UUID: " + uuid);
-
             const daysOfWeek = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
             const today = new Date();
             let dayIndex = today.getDay();
@@ -302,7 +298,6 @@ function getThreeDaysDataFromFirebase(uuid) {
                 const day = daysOfWeek[dayIndex];
                 if (data.hasOwnProperty(day)) {
                     daysOfTheWeekData[day] = data[day];
-                    console.log("Retrieved data for: ", daysOfTheWeekData[day]);
                     Logger.log(day + ": " + JSON.stringify(data[day]));
                 } else {
                     Logger.log(day + ": No data available.");
@@ -609,7 +604,6 @@ function getUserTimezone(uuid) {
         Logger.log("❌ Firebase Authentication Failed.");
         return null;
     }
-    Logger.log("✅ Firebase Token Retrieved");
 
     // Construct Firebase URL
     const firebaseUrl = `${FIREBASE_URL}/users/${uuid}/timezone.json?auth=${token}`;
@@ -967,70 +961,167 @@ function deleteUUIDFromTrialCampaignTable(uuid) {
   }
 }
 
-
 /**
- * Saves a sanitized horoscope entry to the Firebase zodiac table for a specific UUID and day of the week.
- *
- * @param {Object} jsonData - The horoscope data to save.
- * @param {string} uuid - The unique identifier for the user.
- * @returns {void}
+ * Saves horoscope data to Firebase using category names as keys.
+ * This function bypasses the sanitizeKeys function and directly structures the data.
+ * 
+ * @param {Array|Object} jsonData - The horoscope data from ChatGPT, array of category/content objects
+ * @param {string} uuid - The user's UUID
+ * @param {string} dayOfWeek - The day of the week to save the data for (e.g. "monday")
+ * @returns {boolean} - Whether the save was successful
  */
-function saveHoroscopeToFirebase(jsonData, uuid, tomorrow) {
-    console.log("saveHoroscopeToFirebase");
-  const daysOfWeek = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
-  const today = new Date();
-
-  // Determine the day of the week
-  const dayOfWeek = tomorrow || daysOfWeek[today.getDay()];
-
-  // Early exit if `dayOfWeek` is undefined
-  if (!dayOfWeek) {
-    Logger.log("Invalid dayOfWeek. Skipping Firebase save.");
-    return;
-  }
-
-  const sanitizedData = sanitizeKeys(jsonData);
-  const token = getFirebaseIdToken("appscript@zodiaccurate.com", FIREBASE_PASSWORD);
-  const firebaseUrl = `${FIREBASE_URL}/zodiac/${uuid}/${dayOfWeek}.json?auth=${token}`;
-
-  const options = {
-    method: "put",
-    contentType: "application/json",
-    payload: JSON.stringify(sanitizedData[0]),
-    headers: {
-        Authorization: `Bearer ${token}`
-    }
-  };
-
+function saveHoroscopeWithCategoryKeys(jsonData, uuid, dayOfWeek) {
+  console.log("saveHoroscopeWithCategoryKeys - Saving data with category keys");
+  
+  // Prepare the data object with category names as keys
+  const categoryData = {};
+  
   try {
+    // Check if jsonData is an array (multiple categories)
+    if (Array.isArray(jsonData)) {
+      console.log(`Processing ${jsonData.length} categories`);
+      
+      // Loop through each category and add it to our object
+      jsonData.forEach((item, index) => {
+        if (item && item.Category && item.Content) {
+          // Clean the category name if needed
+          const categoryKey = item.Category.trim();
+          categoryData[categoryKey] = item.Content;
+          console.log(`Added category: ${categoryKey}`);
+        } else {
+          console.warn(`Skipping item ${index} - missing Category or Content`);
+        }
+      });
+    } 
+    // Handle case where it's a single object
+    else if (jsonData && typeof jsonData === 'object' && jsonData.Category && jsonData.Content) {
+      const categoryKey = jsonData.Category.trim();
+      categoryData[categoryKey] = jsonData.Content;
+      console.log(`Added single category: ${categoryKey}`);
+    }
+    else {
+      console.error("Invalid data format provided:", jsonData);
+      return false;
+    }
+    
+    // Check if we have any categories to save
+    const categoryCount = Object.keys(categoryData).length;
+    if (categoryCount === 0) {
+      console.error("No valid categories found to save");
+      return false;
+    }
+    
+    console.log(`Prepared ${categoryCount} categories for saving`);
+    
+    // Get Firebase authentication token
+    const token = getFirebaseIdToken("appscript@zodiaccurate.com", FIREBASE_PASSWORD);
+    if (!token) {
+      console.error("Failed to get Firebase authentication token");
+      return false;
+    }
+    
+    // Firebase URL
+    const firebaseUrl = `${FIREBASE_URL}/zodiac/${uuid}/${dayOfWeek}.json?auth=${token}`;
+    
+    // Save to Firebase
+    const options = {
+      method: "put",
+      contentType: "application/json",
+      payload: JSON.stringify(categoryData),
+      headers: {
+        Authorization: `Bearer ${token}`
+      },
+      muteHttpExceptions: true
+    };
+    
+    // Execute the request
     const response = UrlFetchApp.fetch(firebaseUrl, options);
-    Logger.log(`Horoscope saved to Firebase at ${firebaseUrl}`);
-  } catch (e) {
-    Logger.log(`Error saving horoscope to Firebase: ${e.message}`);
+    const statusCode = response.getResponseCode();
+    
+    if (statusCode >= 200 && statusCode < 300) {
+      console.log(`✅ Successfully saved ${categoryCount} categories to Firebase with category keys`);
+      return true;
+    } else {
+      console.error(`❌ Firebase error: HTTP ${statusCode} - ${response.getContentText()}`);
+      return false;
+    }
+  } catch (error) {
+    console.error("Error saving horoscope with category keys:", error.message);
+    if (error.stack) {
+      console.error("Stack trace:", error.stack);
+    }
+    return false;
   }
 }
 
-function saveHoroscopeToSpecificDateFirebase(jsonData, uuid, today) {
-    console.log("saveHoroscopeToFirebase");
-
-  const sanitizedData = sanitizeKeys(jsonData);
-  const token = getFirebaseIdToken("appscript@zodiaccurate.com", FIREBASE_PASSWORD);
-  const firebaseUrl = `${FIREBASE_URL}/zodiac/${uuid}/${today}.json?auth=${token}`;
-
-  const options = {
-    method: "put",
-    contentType: "application/json",
-    payload: JSON.stringify(sanitizedData[0]),
-    headers: {
-        Authorization: `Bearer ${token}`
-    }
-  };
-
+/**
+ * Saves horoscope data to Firebase using category names as keys.
+ * Uses your existing sanitizeJsonKeys function for key formatting.
+ * 
+ * @param {Array|Object} jsonData - The horoscope data from ChatGPT
+ * @param {string} uuid - The user's UUID
+ * @param {string} dayOfWeek - The day of the week (e.g., "monday")
+ * @returns {boolean} - Whether the save was successful
+ */
+function saveHoroscopeToFirebase(jsonData, uuid, dayOfWeek) {
+  console.log("saveHoroscopeToSpecificDateFirebase - Using category names as keys");
+  
   try {
+    // Format the data with category names as keys
+    const categoryData = {};
+    
+    // Check if data is an array (multiple categories)
+    if (Array.isArray(jsonData)) {
+      console.log(`Processing ${jsonData.length} categories`);
+      
+      jsonData.forEach((item, index) => {
+        if (item && item.Category && item.Content) {
+          // Create a safe key from the category
+          const safeKey = formatCategoryKey(item.Category);
+          
+          // Store both original category name and content
+          categoryData[safeKey] = {
+            Category: item.Category,
+            Content: item.Content
+          };
+          
+          console.log(`Added category: ${item.Category} (key: ${safeKey})`);
+        } else {
+          console.warn(`Invalid category at index ${index}`);
+        }
+      });
+    } 
+    // Handle single object case
+    else if (jsonData && typeof jsonData === 'object' && jsonData.Category && jsonData.Content) {
+      const safeKey = formatCategoryKey(jsonData.Category);
+      categoryData[safeKey] = {
+        Category: jsonData.Category,
+        Content: jsonData.Content
+      };
+      console.log(`Added single category: ${jsonData.Category} (key: ${safeKey})`);
+    }
+    
+    // Get Firebase authentication token
+    const token = getFirebaseIdToken("appscript@zodiaccurate.com", FIREBASE_PASSWORD);
+    const firebaseUrl = `${FIREBASE_URL}/zodiac/${uuid}/${dayOfWeek}.json?auth=${token}`;
+    
+    // Prepare options for Firebase
+    const options = {
+      method: "put",
+      contentType: "application/json",
+      payload: JSON.stringify(categoryData),
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    };
+    
+    // Save to Firebase
     const response = UrlFetchApp.fetch(firebaseUrl, options);
-    Logger.log(`Horoscope saved to Firebase at ${firebaseUrl}`);
+    Logger.log(`Horoscope saved to Firebase with ${Object.keys(categoryData).length} categories`);
+    return true;
   } catch (e) {
     Logger.log(`Error saving horoscope to Firebase: ${e.message}`);
+    return false;
   }
 }
 
@@ -1207,5 +1298,131 @@ function getTrialUsersOverThirtyDays() {
   } catch (error) {
     Logger.log(`❌ Error finding trial users: ${error.message}`);
     return [];
+  }
+}
+
+/**
+ * Updates trial status from "true" to "expired" for users who have exceeded the trial period
+ * Can be run on a schedule (e.g., daily) to keep trial statuses up to date
+ * 
+ * @param {number} trialDays - Number of days a trial should last (default: 10)
+ * @returns {Object} - Summary of processed users and results
+ */
+function expireTrialUsers(trialDays = 10) {
+  Logger.log(`🔍 Finding users with trial=true who have exceeded ${trialDays} days`);
+  
+  try {
+    // Get authentication token
+    const token = getFirebaseIdToken("appscript@zodiaccurate.com", FIREBASE_PASSWORD);
+    if (!token) {
+      Logger.log("❌ Firebase Authentication Failed.");
+      return { success: false, error: "Authentication failed" };
+    }
+    
+    // Fetch all users
+    const firebaseUrl = `${FIREBASE_URL}/users.json?auth=${token}`;
+    const options = {
+      method: "get",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`
+      },
+      muteHttpExceptions: true
+    };
+    
+    const response = UrlFetchApp.fetch(firebaseUrl, options);
+    const statusCode = response.getResponseCode();
+    
+    if (statusCode !== 200) {
+      Logger.log(`❌ Failed to retrieve users. HTTP Status: ${statusCode}`);
+      return { success: false, error: `HTTP Error ${statusCode}` };
+    }
+    
+    const usersData = JSON.parse(response.getContentText());
+    
+    if (!usersData || typeof usersData !== 'object') {
+      Logger.log("❌ No users found or invalid data structure");
+      return { success: false, error: "No valid users found" };
+    }
+    
+    // Tracking variables
+    const results = {
+      total: 0,
+      expiredCount: 0,
+      errors: 0,
+      expiredUsers: []
+    };
+    
+    // Process each user
+    for (const userId in usersData) {
+      const userData = usersData[userId];
+      results.total++;
+      
+      // Check if user has trial="true" and a trial-date-start
+      if (userData.trial === "true" && userData['trial-date-start']) {
+        const startDate = new Date(userData['trial-date-start']);
+        const currentDate = new Date();
+        const timeDiff = currentDate - startDate;
+        const daysDiff = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
+        
+        // If trial period has been exceeded
+        if (daysDiff > trialDays) {
+          Logger.log(`Found user ${userId} on day ${daysDiff} of trial (exceeds ${trialDays}-day limit)`);
+          
+          // Update trial status to "expired"
+          const updateUrl = `${FIREBASE_URL}/users/${userId}.json?auth=${token}`;
+          const updateData = {
+            trial: "expired",
+            trialExpiredDate: new Date().toISOString()
+          };
+          
+          const updateOptions = {
+            method: "patch",
+            contentType: "application/json",
+            payload: JSON.stringify(updateData),
+            headers: {
+              Authorization: `Bearer ${token}`
+            },
+            muteHttpExceptions: true
+          };
+          
+          try {
+            const updateResponse = UrlFetchApp.fetch(updateUrl, updateOptions);
+            const updateStatus = updateResponse.getResponseCode();
+            
+            if (updateStatus >= 200 && updateStatus < 300) {
+              Logger.log(`✅ Updated trial status to "expired" for user ${userId}`);
+              results.expiredCount++;
+              results.expiredUsers.push({
+                userId: userId,
+                email: userData.email || "Unknown",
+                name: userData.name || "Unknown",
+                trialDays: daysDiff
+              });
+            } else {
+              Logger.log(`❌ Failed to update user ${userId}. Status: ${updateStatus}`);
+              results.errors++;
+            }
+          } catch (updateError) {
+            Logger.log(`❌ Error updating user ${userId}: ${updateError.message}`);
+            results.errors++;
+          }
+        }
+      }
+    }
+    
+    // Log summary
+    Logger.log(`📊 Processed ${results.total} users. Expired ${results.expiredCount} trials. Errors: ${results.errors}`);
+    return {
+      success: true,
+      processed: results.total,
+      expired: results.expiredCount,
+      errors: results.errors,
+      expiredUsers: results.expiredUsers
+    };
+    
+  } catch (error) {
+    Logger.log(`❌ Error processing trial users: ${error.message}`);
+    return { success: false, error: error.message };
   }
 }

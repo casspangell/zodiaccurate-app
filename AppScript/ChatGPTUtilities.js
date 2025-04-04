@@ -1,12 +1,17 @@
 function testChatPrompt() {
-    const uuid = "be5dc835-5459-43fb-b09e-988d144cf514";
+    const uuid = "d8d8b814-2d3a-425e-8ad0-a89463d37dff";
     const instructions = getChatInstructions(TEST_USER_DATA, uuid);
 
+    // Get the response from ChatGPT
     const zodiaccurateData = getChatGPTResponse(instructions, TEST_USER_DATA, uuid);
-
+    
+    // Continue with the rest of your function
     const { name, email } = TEST_USER_DATA;
     sendDailyEmailWithMailerSend(name, email, zodiaccurateData, uuid);
-    saveHoroscopeToSpecificDateFirebase(zodiaccurateData, uuid, "monday");
+    saveHoroscopeToFirebase(zodiaccurateData, uuid, "monday");
+    
+    // Return the data so you can use it if needed
+    return zodiaccurateData;
 }
 
 function getChatInstructions(jsonSinglePersonData, uuid) {
@@ -22,7 +27,6 @@ function getChatInstructions(jsonSinglePersonData, uuid) {
     // const rGuidance = getRelationshipGuidance();
     // const psyElements = psychicElements();
     // const createInstructions = creativityInstructions(DATE_STRING, seed);
-    const prompt = getChatPrompt();
     // const creativeParams = getCreativityParams();
 
     // console.log(`Using dynamic parameters: temp=${creativeParams.dynamicTemperature}, top_p=${creativeParams.dynamicTopP}, freq=${creativeParams.frequencyPenalty}, pres=${creativeParams.presencePenalty}`);
@@ -37,7 +41,7 @@ function getChatInstructions(jsonSinglePersonData, uuid) {
     // console.log("PSYCHIC ", psyElements);
     // console.log("VARIATION STYLES ", variationStyles);
     // console.log("CREATIVIY INSTRUCTIONS", createInstructions);
-    console.log("PROMPT ", prompt);
+    // console.log("PROMPT ", prompt);
 
   return {
     uuid: uuid,
@@ -58,14 +62,15 @@ function getChatInstructions(jsonSinglePersonData, uuid) {
 
 
 function getChatGPTResponse(instructions, jsonSinglePersonData, uuid) {
-
+    console.log("Getting ChatGPT Response...");
+    
     const systemPrompt = getChatPrompt();
     const params = instructions.creativeParams;
     const instructionsString = JSON.stringify(instructions);
 
-    console.log("PERSON DATA ", jsonSinglePersonData);
-    console.log("INSTRUCTIONS ", instructions);
-    console.log("PROMPT ", systemPrompt);
+    // console.log("PERSON DATA ", jsonSinglePersonData);
+    // console.log("INSTRUCTIONS ", instructions);
+    // console.log("PROMPT ", systemPrompt);
 
     try {
         const payload = {
