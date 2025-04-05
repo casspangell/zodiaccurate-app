@@ -19,6 +19,8 @@ const EDIT_RESPONSE_URL_PRIME = "https://docs.google.com/forms/d/e/1FAIpQLSexpPm
 const FIREBASE_PASSWORD = PropertiesService.getScriptProperties().getProperty("FIREBASE_PASSWORD");
 const GOOGLE_SPREADSHEET_ID = "1clfDpgLCHA0bvRjlWmvAX9yeXMqlX58KQaKHe4A2lUw";
 const ADMIN_EMAIL = "dahnworldhealer@yahoo.com";
+const SIGNUP_LINK = "https://billing.stripe.com/p/login/8wM03Y1ic3ROau4000";
+const SURVEY_LINK = "https://docs.google.com/forms/d/e/1FAIpQLSfQTQ5WNQUgPs9oqmqm4gvcld2DSPy_-GaX66_Oxe5_6FzYxQ/viewform?usp=header"
 
 const PAUL_TEST = "2_ABaOnue4XHFL-u5CyI2lyUdFbb9klXCXzfTQ6aCVgX7uW3klsaxK_bTAYk7qRLUdshRh6mQ";
 const CASS_TEST = "2_ABaOnuds5b7BPiDNl6ZUlev-eOWXNFLKBWrhPnT_Rdlji9mEhiuCX68uFMFZ8YdhMJ2pq9o";
