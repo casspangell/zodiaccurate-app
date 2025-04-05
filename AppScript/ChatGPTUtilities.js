@@ -125,24 +125,14 @@ function getChatEmailCampaignInstructions(name, uuid, jsonSinglePersonData, emai
     `Here is user data: ${JSON.stringify(jsonSinglePersonData)}, Name = ${name}, Campaign_Date = ${campaignDate}, Email = ${email}. Our company is Zodiaccurate. If you wish to use this name, place it as the Zodiaccurate Team or Zodiaccurate.
 Your task is to create a 4-day personalized email campaign for this person, incorporating astrological insights to help the user decide to subscribe to our services on Days 3, 5, 7, and 9 into their trial program. Add a timestamp of today's date. Do not add [Dear User] or [From Zodiaccurate]. The email needs to bait the user into subscribing for the app. Use predictions on how using this unique astrology app will enhance their overall life, wellness, and wellbeing. Incorporate what you would be used in an astrology prediction into their life to enhance their metaphysical outlook.
 
-Focus on these sections and generate a CSV file containing the following columns and data:
-- Subject_1
-- Email_1
-- Subject_2
-- Email_2
-- Subject_3
-- Email_3
-- Subject_4
-- Email_4
-- Campaign_Date
-- Name
-- Email
-
 Expand the main body of each email by including:
 - Personalized details such as the user's name, family member names, occupation, or specific data from their profile.
 - Relatable examples and stories tied directly to their personal goals, stressors, or experiences during the trial period (e.g., their role as a spiritual healer or their goal of work-life balance).
 - Astrological insights relevant to their trial period, aligned with their birth data.
 - Emotionally compelling calls to action that emphasize how subscribing will address their unique needs and goals.
+
+Here is an example output:
+"\`\`\`csv\n\"Subject_1\",\"Email_1\",\"Subject_2\",\"Email_2\",\"Subject_3\",\"Email_3\",\"Subject_4\",\"Email_4\",\"Campaign_Date\",\"Name\",\"Email\"\n\"Username, Explore Your Inner World with Zodiaccurate's Guidance\",\"Greetings Username, During this period of the moon moving through your fourth house, we at the Zodiaccurate Team notice the whispers of your emotions and solitude. Allow our astrological insights to light your path as you navigate your feelings. Discover tranquility, lean into your creativity, and deepen your self-awareness and resilience. Remember, peace begins from within, and every step you take on this journey with Zodiaccurate is a leap towards understanding yourself on a deeper level. Reach out for support confidently as the waves of cosmic energy usher in profound insights. Consider subscribing to our services and allowing us to be your compass through this mesmerizing journey. Yours, Zodiaccurate Team\",\"Username, Ignite Your Career Path with Zodiaccurate's Insights\",\"Greetings Username, With Mercury marching through your tenth house, now is the time to gear up and focus on your skillset. Even amid unemployment, Zodiaccurate's astrological advice is here to aid. Networking might seem daunting, but remember, every step forward is progress. Let our enlightened guidance open doors to opportunities with ex-colleagues. Stay open-minded, eager to learn, and let this phase be about groundwork for future success. Opening yourself up to these cosmic vibrations by subscribing to our services could be the key to unlock your potential. Yours, Zodiaccurate Team\",\"Username, Revitalize Your Health with Zodiaccurate's Insights\",\"Greetings Username, The Sun's influence over your sixth house is more than a mere celestial event; it's a wake-up call to pay attention to your physical well-being. Explore Zodiaccurate's recommended wellness goals and let us guide you through adjustments tailored to your needs. Remember that major improvements can sprout from small, consistent efforts. Listen to your body's whispers before they become screams. Partner with us on this health-centered journey by subscribing to our services for personalized guidance. Yours, Zodiaccurate Team\",\"Username, Enrich Your Spiritual Growth with Zodiaccurate's Insights\",\"Greetings Username, With Neptune's presence in your twelfth house, let us venture together into deeper spiritual exploration. Allow Zodiaccurate insights to be your calm amidst the chaos of self-discovery and introspection. Pay attention to dreams, meditate, pray, and focus on refining your sense of purpose with us. Remember, in stillness, we find our true selves. Leverage the powerful catalyst of astrological guidance by subscribing to our services for a deeper understanding of your spiritual dimensions. Yours, Zodiaccurate Team\",\"04/05/2025\",\"Username\",\"casspangell@gmail.com\"\n\`\`\`"
     `;
 
     return prompt.trim();
