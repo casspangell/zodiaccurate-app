@@ -19,7 +19,7 @@ const db = getDatabase(app);
 // Allow only https://zodiaccurate.app (or use "*" for all origins)
 const corsHandler = cors({ origin: "https://zodiaccurate.app" });
 
-const appScriptUrl = "https://script.google.com/macros/s/AKfycbwDBJ5C6ns8go-cbqfJUo7yIuwDubHPsg47tqI4uQVmx6hyrrLHZrzBGVfrYK4nYjEs/exec";
+const appScriptUrl = "https://script.google.com/macros/s/AKfycbzh0a1nat74SzK2l9KAKDQBFhRUWBhVwnXTt7rN_9Ptq3ZTOFUGbUMrvTMDQ7AMZq8Hdg/exec";
 
 // Retrieve secret from Google Cloud Secret Manager
 async function getSecret(secretName: string): Promise<string> {
@@ -46,181 +46,482 @@ async function getStripeApiKey() {
 
 // Webhook Handler
 export const webhookHandler = onRequest(
-
-  { rawBody: true } as any, // Cast to bypass type issues
-
+  { rawBody: true } as any,
   async (request, response) => {
+    // Enhanced logging for troubleshooting
+    logger.info("Webhook Received", {
+      method: request.method,
+      headers: request.headers,
+      rawBodyLength: request.rawBody?.length
+    });
 
-  try {
-    const stripeSecret = await getSecret("stripe_secret");
-    logger.info(`Fetched Secret: ${stripeSecret}`);
-    const stripeApiKey = await getStripeApiKey();
-
-    logger.info("Headers received:", request.headers);
-    logger.info("Raw body received:", request.rawBody);
-
-    // Initialize Stripe instance
-    if (!stripeInstance) {
-      stripeInstance = new stripe.Stripe(stripeApiKey, {
-        apiVersion: "2024-06-20" as any, // Bypass type-checking for the apiVersion
-      });
-    }
-
-    // Verify Stripe webhook signature
-    const sig = request.headers["stripe-signature"];
-    logger.info("Stripe-Signature Header:", request.headers["stripe-signature"]);
-
-    if (!sig) {
-      logger.error("Headers received without stripe-signature:", request.headers);
-      response.status(400).send("Webhook Error: Missing stripe-signature header");
-      return;
-    }
-
-    console.log("Raw body received (as string):", request.rawBody?.toString("utf8"));
-
-    let event;
     try {
-      event = stripeInstance.webhooks.constructEvent(
-        request.rawBody,
-        sig,
-        stripeSecret
-      );
+      const stripeSecret = await getSecret("stripe_secret");
+      const stripeApiKey = await getStripeApiKey();
 
-      logger.info("Webhook verified successfully", { id: event.id, type: event.type });
-    } catch (err: any) {
-      const errorMessage = err instanceof Error ? err.message : "Unknown error";
-      logger.error("Webhook verification failed:", errorMessage);
-      response.status(400).send(`Webhook Error: ${errorMessage}`);
-      return;
-    }
+      // Initialize Stripe instance
+      if (!stripeInstance) {
+        stripeInstance = new stripe.Stripe(stripeApiKey, {
+          apiVersion: "2024-06-20" as any,
+        });
+      }
 
+      // Verify Stripe webhook signature
+      const sig = request.headers["stripe-signature"];
+      if (!sig) {
+        logger.error("Missing stripe-signature header", { headers: request.headers });
+        response.status(400).send("Webhook Error: Missing stripe-signature header");
+        return;
+      }
 
-    logger.info("Event Type:", event.type);
-
-    // Handle Stripe events
-    switch (event.type) {
-      // Inside your webhook handler where you process the subscription events
-case "customer.subscription.created":
-case "checkout.session.completed":
-  let customerId;
-  let sessionObject;
-  
-  if (event.type === "checkout.session.completed") {
-    sessionObject = event.data.object as any; // Use 'any' to bypass strict typing
-    customerId = sessionObject.customer as string;
-    
-    // For checkout sessions, you can often get the email directly
-    const checkoutEmail = sessionObject.customer_details?.email;
-    if (checkoutEmail) {
-      logger.info(`Email found directly in checkout session: ${checkoutEmail}`);
-    }
-  } else {
-    sessionObject = event.data.object as any; // Use 'any' to bypass strict typing
-    customerId = sessionObject.customer as string;
-  }
-
-  if (!customerId) {
-    logger.error("No customer ID found in the event.");
-    response.status(400).send("Error: No customer ID in event.");
-    return;
-  }
-
-  logger.info(`Fetching customer details for customer ID: ${customerId}`);
-
-  try {
-    // Fetch customer details from Stripe
-    const customer = await stripeInstance.customers.retrieve(customerId) as any;
-
-    const name = customer.name || "Seeker";
-    const email = customer.email || (event.type === "checkout.session.completed" ? 
-                 sessionObject.customer_details?.email : "Unknown Email");
-    
-    logger.info("name: ", name, " email: ", email, " source: ", "stripeWebhook");
-    logger.info("Fetched Customer Details:", { name, email });
-
-    if (email) {
+      let event;
       try {
-        // Get a reference to the users node
-        const usersRef = db.ref('users');
-        
-        // Query all users to find one with matching email
-        const snapshot = await usersRef.once('value');
-        let userFound = false;
-        
-        // Iterate through all users to find the one with matching email
-        snapshot.forEach((userSnapshot) => {
-          const userId = userSnapshot.key;
-          const userData = userSnapshot.val();
+        event = stripeInstance.webhooks.constructEvent(
+          request.rawBody,
+          sig,
+          stripeSecret
+        );
+      } catch (err: any) {
+        const errorMessage = err instanceof Error ? err.message : "Unknown verification error";
+        logger.error("Webhook verification failed", { 
+          error: errorMessage,
+          rawBody: request.rawBody?.toString('utf8')
+        });
+        response.status(400).send(`Webhook Error: ${errorMessage}`);
+        return;
+      }
+
+      // Enhanced logging for the specific event
+      logger.info("Processed Webhook Event", {
+        eventId: event.id,
+        type: event.type,
+        timestamp: new Date(event.created * 1000).toISOString()
+      });
+
+      // Rest of the existing event handling logic remains the same
+      switch (event.type) {
+        case "checkout.session.completed":
+          // Existing logic for subscription creation
+          let customerId;
+          let sessionObject;
           
-          // Check if this user has the matching email
-          if (userData.email && userData.email === email) {
-            userFound = true;
+            sessionObject = event.data.object as any;
+            customerId = sessionObject.customer as string;
             
-            // Update the trial status to 'subscribed'
-            db.ref(`users/${userId}/trial`).set("subscribed")
-              .then(() => {
-                logger.info(`Updated user ${userId} status from trial to subscribed`);
-              })
-              .catch((error) => {
-                logger.error(`Error updating user status: ${error.message}`);
+            const checkoutEmail = sessionObject.customer_details?.email;
+            if (checkoutEmail) {
+              logger.info(`Email found directly in checkout session: ${checkoutEmail}`);
+            }
+
+            if (!customerId) {
+              logger.error("No customer ID found in the event.");
+              response.status(400).send("Error: No customer ID in event.");
+              return;
+            }
+
+        logger.info(`Fetching customer details for customer ID: ${customerId}`);
+
+        try {
+          // Fetch customer details from Stripe
+          const customer = await stripeInstance.customers.retrieve(customerId) as any;
+
+          const name = customer.name || "Seeker";
+          const email = customer.email || (event.type === "checkout.session.completed" ? 
+                        sessionObject.customer_details?.email : "Unknown Email");
+          
+          logger.info("name: ", name, " email: ", email, " source: ", "stripeWebhook");
+          logger.info("Fetched Customer Details:", { name, email });
+
+          if (email) {
+            try {
+              // Get a reference to the users node
+              const usersRef = db.ref('users');
+              
+              // Query all users to find one with matching email
+              const snapshot = await usersRef.once('value');
+              let userFound = false;
+              
+              // Iterate through all users to find the one with matching email
+              snapshot.forEach((userSnapshot) => {
+                const userId = userSnapshot.key;
+                const userData = userSnapshot.val();
+                
+                // Check if this user has the matching email
+                if (userData.email && userData.email === email) {
+                  userFound = true;
+                  
+                  // Update the trial status to 'subscribed'
+                  db.ref(`users/${userId}/trial`).set("subscribed")
+                    .then(() => {
+                      logger.info(`Updated user ${userId} status from trial to subscribed`);
+                    })
+                    .catch((error) => {
+                      logger.error(`Error updating user status: ${error.message}`);
+                    });
+                    
+                  // Optionally add subscription details
+                  db.ref(`users/${userId}/subscriptionId`).set(
+                    event.type === "checkout.session.completed" ? 
+                    sessionObject.id : sessionObject.subscription
+                  );
+                  
+                  db.ref(`users/${userId}/subscriptionDate`).set(new Date().toISOString());
+                  
+                  return true; // Stop iteration after finding the user
+                }
+                
+                return false; // Continue iteration if email doesn't match
               });
               
-            // Optionally add subscription details
-            db.ref(`users/${userId}/subscriptionId`).set(
-              event.type === "customer.subscription.created" ? 
-              sessionObject.id : sessionObject.subscription
-            );
+              if (!userFound) {
+                logger.warn(`User with email ${email} not found in database`);
+              }
+            } catch (error: any) {
+              logger.error(`Error searching for user: ${error.message}`);
+            }
+
+            // Send data to Apps Script
+            const payload = { 
+              name, 
+              email, 
+              source: "stripeWebhook",
+              event: event.type,
+              subscriptionId: event.type === "checkout.session.completed" ? 
+                            sessionObject.id : sessionObject.subscription
+            };
             
-            db.ref(`users/${userId}/subscriptionDate`).set(new Date().toISOString());
-            
-            return true; // Stop iteration after finding the user
+            logger.info("Data sent to Apps Script:", payload);
+
+            const appScriptResponse = await axios.post(appScriptUrl, payload, {
+              headers: { "Content-Type": "application/json" },
+            });
+
+            logger.info("Apps Script response:", appScriptResponse.data);
+          } else {
+            logger.warn("Customer email not found:", { customerId, name });
           }
-          
-          return false; // Continue iteration if email doesn't match
+        } catch (err: any) {
+          logger.error("Error processing subscription event:", err.message);
+        }
+        break;
+
+      // Handle subscription canceled/deleted
+      case "customer.subscription.deleted":
+        const deletedSubscription = event.data.object as any;
+        const customerIdDeleted = deletedSubscription.customer as string;
+        
+        logger.info(`Subscription deleted for customer ID: ${customerIdDeleted}`, {
+          subscriptionId: deletedSubscription.id,
+          cancelAt: deletedSubscription.cancel_at
         });
         
-        if (!userFound) {
-          logger.warn(`User with email ${email} not found in database`);
+        try {
+          // Fetch customer details from Stripe
+          const customer = await stripeInstance.customers.retrieve(customerIdDeleted) as any;
+          const email = customer.email;
+          
+          if (email) {
+            // Update user status in database
+            const usersRef = db.ref('users');
+            const snapshot = await usersRef.once('value');
+            let userFound = false;
+            
+            snapshot.forEach((userSnapshot) => {
+              const userId = userSnapshot.key;
+              const userData = userSnapshot.val();
+              
+              if (userData.email && userData.email === email) {
+                userFound = true;
+                
+                // Set subscription status to 'canceled'
+                db.ref(`users/${userId}/trial`).set("canceled")
+                  .then(() => {
+                    logger.info(`Updated user ${userId} status to canceled`);
+                  })
+                  .catch((error) => {
+                    logger.error(`Error updating user status: ${error.message}`);
+                  });
+                
+                // Update cancellation date
+                db.ref(`users/${userId}/cancellationDate`).set(new Date().toISOString());
+                
+                return true; // Stop iteration
+              }
+              
+              return false; // Continue iteration
+            });
+            
+            if (!userFound) {
+              logger.warn(`User with email ${email} not found in database for cancellation`);
+            }
+            
+            // Send cancellation data to Apps Script
+            const payload = { 
+              email, 
+              name: customer.name || "Seeker",
+              source: "stripeWebhook",
+              event: event.type,
+              subscriptionId: deletedSubscription.id
+            };
+            
+            logger.info("Cancellation data sent to Apps Script:", payload);
+            
+            const appScriptResponse = await axios.post(appScriptUrl, payload, {
+              headers: { "Content-Type": "application/json" },
+            });
+            
+            logger.info("Apps Script cancellation response:", appScriptResponse.data);
+          }
+        } catch (err: any) {
+          logger.error("Error processing subscription cancellation:", err.message);
         }
-      } catch (error: any) {
-        logger.error(`Error searching for user: ${error.message}`);
-      }
+        break;
 
-      // Send data to Apps Script
-      const payload = { 
-        name, 
-        email, 
-        source: "stripeWebhook",
-        event: event.type,
-        subscriptionId: event.type === "customer.subscription.created" ? 
-                       sessionObject.id : sessionObject.subscription
-      };
-      
-      logger.info("Data sent to Apps Script:", payload);
+      // Handle subscription updated (including pending cancellations)
+      case "customer.subscription.updated":
+        const updatedSubscription = event.data.object as any;
+        const customerIdUpdated = updatedSubscription.customer as string;
+        
+        logger.info(`Subscription updated for customer ID: ${customerIdUpdated}`, {
+          subscriptionId: updatedSubscription.id,
+          status: updatedSubscription.status,
+          cancelAtPeriodEnd: updatedSubscription.cancel_at_period_end
+        });
+        
+        try {
+          // Fetch customer details from Stripe
+          const customer = await stripeInstance.customers.retrieve(customerIdUpdated) as any;
+          const email = customer.email;
+          
+          if (email) {
+            // Update user status in database
+            const usersRef = db.ref('users');
+            const snapshot = await usersRef.once('value');
+            let userFound = false;
+            
+            snapshot.forEach((userSnapshot) => {
+              const userId = userSnapshot.key;
+              const userData = userSnapshot.val();
+              
+              if (userData.email && userData.email === email) {
+                userFound = true;
+                
+                // Handle pending cancellation (cancel_at_period_end = true)
+                if (updatedSubscription.cancel_at_period_end) {
+                  db.ref(`users/${userId}/pendingCancellation`).set(true);
+                  db.ref(`users/${userId}/cancelAt`).set(
+                    updatedSubscription.cancel_at ? 
+                    new Date(updatedSubscription.cancel_at * 1000).toISOString() : 
+                    new Date(updatedSubscription.current_period_end * 1000).toISOString()
+                  );
+                  logger.info(`User ${userId} marked for cancellation at period end`);
+                } else {
+                  // If previously pending cancellation and now not, they may have resubscribed
+                  db.ref(`users/${userId}/pendingCancellation`).set(false);
+                  db.ref(`users/${userId}/cancelAt`).remove();
+                  
+                  // Update subscription status based on Stripe status
+                  if (updatedSubscription.status === "active") {
+                    db.ref(`users/${userId}/trial`).set("subscribed");
+                  } else if (updatedSubscription.status === "past_due") {
+                    db.ref(`users/${userId}/trial`).set("past_due");
+                  } else if (updatedSubscription.status === "unpaid") {
+                    db.ref(`users/${userId}/trial`).set("unpaid");
+                  }
+                }
+                
+                return true; // Stop iteration
+              }
+              
+              return false; // Continue iteration
+            });
+            
+            if (!userFound) {
+              logger.warn(`User with email ${email} not found in database for update`);
+            }
+            
+            // Send update data to Apps Script
+            const payload = { 
+              email, 
+              name: customer.name || "Seeker",
+              source: "stripeWebhook",
+              event: event.type,
+              subscriptionId: updatedSubscription.id,
+              status: updatedSubscription.status,
+              cancelAtPeriodEnd: updatedSubscription.cancel_at_period_end
+            };
+            
+            logger.info("Update data sent to Apps Script:", payload);
+            
+            const appScriptResponse = await axios.post(appScriptUrl, payload, {
+              headers: { "Content-Type": "application/json" },
+            });
+            
+            logger.info("Apps Script update response:", appScriptResponse.data);
+          }
+        } catch (err: any) {
+          logger.error("Error processing subscription update:", err.message);
+        }
+        break;
 
-      const appScriptResponse = await axios.post(appScriptUrl, payload, {
-        headers: { "Content-Type": "application/json" },
-      });
+      // Handle payment failures
+      case "invoice.payment_failed":
+        const failedInvoice = event.data.object as any;
+        const customerIdFailed = failedInvoice.customer as string;
+        
+        logger.info(`Payment failed for customer ID: ${customerIdFailed}`, {
+          invoiceId: failedInvoice.id,
+          attemptCount: failedInvoice.attempt_count,
+          nextPaymentAttempt: failedInvoice.next_payment_attempt
+        });
+        
+        try {
+          // Fetch customer details from Stripe
+          const customer = await stripeInstance.customers.retrieve(customerIdFailed) as any;
+          const email = customer.email;
+          
+          if (email) {
+            // Update user payment status in database
+            const usersRef = db.ref('users');
+            const snapshot = await usersRef.once('value');
+            let userFound = false;
+            
+            snapshot.forEach((userSnapshot) => {
+              const userId = userSnapshot.key;
+              const userData = userSnapshot.val();
+              
+              if (userData.email && userData.email === email) {
+                userFound = true;
+                
+                // Set payment status
+                db.ref(`users/${userId}/paymentFailed`).set(true);
+                db.ref(`users/${userId}/paymentFailedAt`).set(new Date().toISOString());
+                db.ref(`users/${userId}/paymentAttempts`).set(failedInvoice.attempt_count);
+                
+                // If it's a final attempt, mark subscription as problematic
+                if (failedInvoice.next_payment_attempt === null) {
+                  db.ref(`users/${userId}/trial`).set("payment_issue");
+                }
+                
+                return true; // Stop iteration
+              }
+              
+              return false; // Continue iteration
+            });
+            
+            if (!userFound) {
+              logger.warn(`User with email ${email} not found in database for payment failure`);
+            }
+            
+            // Send payment failure data to Apps Script
+            const payload = { 
+              email, 
+              name: customer.name || "Seeker",
+              source: "stripeWebhook",
+              event: event.type,
+              invoiceId: failedInvoice.id,
+              attemptCount: failedInvoice.attempt_count
+            };
+            
+            logger.info("Payment failure data sent to Apps Script:", payload);
+            
+            const appScriptResponse = await axios.post(appScriptUrl, payload, {
+              headers: { "Content-Type": "application/json" },
+            });
+            
+            logger.info("Apps Script payment failure response:", appScriptResponse.data);
+          }
+        } catch (err: any) {
+          logger.error("Error processing payment failure:", err.message);
+        }
+        break;
 
-      logger.info("Apps Script response:", appScriptResponse.data);
-    } else {
-      logger.warn("Customer email not found:", { customerId, name });
+      // Handle successful payments
+      case "invoice.payment_succeeded":
+        const successfulInvoice = event.data.object as any;
+        const customerIdSucceeded = successfulInvoice.customer as string;
+        
+        logger.info(`Payment succeeded for customer ID: ${customerIdSucceeded}`, {
+          invoiceId: successfulInvoice.id,
+          amountPaid: successfulInvoice.amount_paid
+        });
+        
+        try {
+          // Fetch customer details from Stripe
+          const customer = await stripeInstance.customers.retrieve(customerIdSucceeded) as any;
+          const email = customer.email;
+          
+          if (email) {
+            // Update user payment status in database
+            const usersRef = db.ref('users');
+            const snapshot = await usersRef.once('value');
+            let userFound = false;
+            
+            snapshot.forEach((userSnapshot) => {
+              const userId = userSnapshot.key;
+              const userData = userSnapshot.val();
+              
+              if (userData.email && userData.email === email) {
+                userFound = true;
+                
+                // Clear any payment failure flags
+                db.ref(`users/${userId}/paymentFailed`).set(false);
+                db.ref(`users/${userId}/paymentFailedAt`).remove();
+                db.ref(`users/${userId}/paymentAttempts`).remove();
+                
+                // Update last payment date
+                db.ref(`users/${userId}/lastPaymentDate`).set(new Date().toISOString());
+                
+                // If previously had payment issues, restore to subscribed
+                if (userData.trial === "payment_issue") {
+                  db.ref(`users/${userId}/trial`).set("subscribed");
+                }
+                
+                return true; // Stop iteration
+              }
+              
+              return false; // Continue iteration
+            });
+            
+            if (!userFound) {
+              logger.warn(`User with email ${email} not found in database for payment success`);
+            }
+            
+            // Optionally send payment success data to Apps Script
+            const payload = { 
+              email, 
+              name: customer.name || "Seeker",
+              source: "stripeWebhook",
+              event: event.type,
+              invoiceId: successfulInvoice.id
+            };
+            
+            logger.info("Payment success data sent to Apps Script:", payload);
+            
+            const appScriptResponse = await axios.post(appScriptUrl, payload, {
+              headers: { "Content-Type": "application/json" },
+            });
+            
+            logger.info("Apps Script payment success response:", appScriptResponse.data);
+          }
+        } catch (err: any) {
+          logger.error("Error processing payment success:", err.message);
+        }
+        break;
+
+      default:
+        logger.info(`Unhandled event type: ${event.type}`);
     }
-  } catch (err: any) {
-    logger.error("Error processing subscription event:", err.message);
-  }
-
-  break;
-
-        default:
-          logger.info(`Unhandled event type: ${event.type}`);
-      }
 
       // Respond to Stripe
       response.status(200).send("Webhook received");
     } catch (error: any) {
       const errorMessage = error instanceof Error ? error.message : "Unknown error";
-      logger.error("Error processing webhook:", errorMessage);
+      logger.error("Comprehensive Webhook Error", {
+        message: errorMessage,
+        stack: error.stack,
+        requestHeaders: request.headers
+      });
       response.status(500).send("Internal Server Error");
     }
   }

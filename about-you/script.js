@@ -461,7 +461,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
                     if (["married", "committed", "separated_fix"].includes(status)) {
                         goToSection(3);
-                    } else if (["future_partner", "divorced", "separated_differences"].includes(status)) {
+                    } else if (["future_partner", "divorced", "separated_differences", "widowed"].includes(status)) {
                         goToSection(4);
                     } else {
                         goToSection(10);

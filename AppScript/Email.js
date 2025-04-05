@@ -140,8 +140,10 @@ async function sendDailyEmailWithMailerSend(clientName, email, zodiaccurate, uui
   
   // Convert the data into an array of category objects, regardless of input format
   if (Array.isArray(zodiaccurate)) {
+    console.log("is array");
     zodiaccurateArray = zodiaccurate;
   } else if (zodiaccurate && typeof zodiaccurate === 'object') {
+    console.log("is object");
     // Handle case where it's a single object with Category/Content
     if (zodiaccurate.Category && zodiaccurate.Content) {
       zodiaccurateArray = [zodiaccurate];
@@ -164,6 +166,7 @@ async function sendDailyEmailWithMailerSend(clientName, email, zodiaccurate, uui
       });
     }
   } else {
+    console.log("Missing or invalid zodiaccurate data for daily email.");
     throw new Error("Missing or invalid zodiaccurate data for daily email.");
   }
   
@@ -179,7 +182,7 @@ async function sendDailyEmailWithMailerSend(clientName, email, zodiaccurate, uui
   try {
     // Add each category to the email content
     zodiaccurateArray.forEach((section, index) => {
-      console.log(`Processing section ${index}:`, section);
+      console.log("SECTION ", section);
       
       if (!section || typeof section !== 'object') {
         console.warn(`Invalid section at index ${index}:`, section);
@@ -692,8 +695,21 @@ function setUpEmailCampaign(jsonSinglePersonData, uuid, name, email) {
 
     try {
         // Generate ChatGPT prompt
-        const prompt = getChatEmailCampaignInstructions(uuid, jsonSinglePersonData, email);
+        const prompt = getChatEmailCampaignInstructions(name, uuid, jsonSinglePersonData, email);
+        console.log("PROMPT ", prompt);
         const emailCampaignData = getChatGPTEmailCampaignResponse(prompt, uuid);
+        console.log("RESPONSE ", emailCampaignData);
+
+        // Right after getting the ChatGPT response
+        console.log("Raw ChatGPT Response:", JSON.stringify(response));
+
+        // When calling parseResponseToJson
+        const parsedData = parseResponseToJson(response);
+        console.log("Parsed Data Type:", typeof parsedData);
+        console.log("Parsed Data:", JSON.stringify(parsedData));
+
+        console.log("UUID:", uuid);
+        console.log("Data to Save:", JSON.stringify(parsedData));
         saveEmailCampaignToFirebase(emailCampaignData, uuid);
         console.log("Trial email campaign setup successfully.");
     } catch (error) {

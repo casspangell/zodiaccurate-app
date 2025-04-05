@@ -75,6 +75,12 @@ function onWebFormSubmitHandler(e) {
         userSaveResult = saveUserToUserTableFirebase(uuid, userData);
         saveResult = pushEntryToFirebase(e.formData, uuid);
 
+        email = email.toLowerCase();
+        if (email=="paul@wellspringoflight.com" || email=="asoulhealer@gmail.com" || email=="zenchairman@gmail.com" || email=="greatestflourishing@gmail.com" || email=="zenmusiccreations@gmail.com" || email=="dahnworldhealer@yahoo.com" || email=="casspangell@gmail.com") {
+            Logger.log("Testing email found");
+            exportFormDataToSpreadsheet(uuid, userData, e.formData);
+        }
+
         if (saveResult && userSaveResult) {
             Logger.log("✅ New User Saved in Firebase.");
             welcomeChatGPT(e.formData, uuid);            

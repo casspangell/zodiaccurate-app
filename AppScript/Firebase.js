@@ -970,89 +970,89 @@ function deleteUUIDFromTrialCampaignTable(uuid) {
  * @param {string} dayOfWeek - The day of the week to save the data for (e.g. "monday")
  * @returns {boolean} - Whether the save was successful
  */
-function saveHoroscopeWithCategoryKeys(jsonData, uuid, dayOfWeek) {
-  console.log("saveHoroscopeWithCategoryKeys - Saving data with category keys");
+// function saveHoroscopeWithCategoryKeys(jsonData, uuid, dayOfWeek) {
+//   console.log("saveHoroscopeWithCategoryKeys - Saving data with category keys");
   
-  // Prepare the data object with category names as keys
-  const categoryData = {};
+//   // Prepare the data object with category names as keys
+//   const categoryData = {};
   
-  try {
-    // Check if jsonData is an array (multiple categories)
-    if (Array.isArray(jsonData)) {
-      console.log(`Processing ${jsonData.length} categories`);
+//   try {
+//     // Check if jsonData is an array (multiple categories)
+//     if (Array.isArray(jsonData)) {
+//       console.log(`Processing ${jsonData.length} categories`);
       
-      // Loop through each category and add it to our object
-      jsonData.forEach((item, index) => {
-        if (item && item.Category && item.Content) {
-          // Clean the category name if needed
-          const categoryKey = item.Category.trim();
-          categoryData[categoryKey] = item.Content;
-          console.log(`Added category: ${categoryKey}`);
-        } else {
-          console.warn(`Skipping item ${index} - missing Category or Content`);
-        }
-      });
-    } 
-    // Handle case where it's a single object
-    else if (jsonData && typeof jsonData === 'object' && jsonData.Category && jsonData.Content) {
-      const categoryKey = jsonData.Category.trim();
-      categoryData[categoryKey] = jsonData.Content;
-      console.log(`Added single category: ${categoryKey}`);
-    }
-    else {
-      console.error("Invalid data format provided:", jsonData);
-      return false;
-    }
+//       // Loop through each category and add it to our object
+//       jsonData.forEach((item, index) => {
+//         if (item && item.Category && item.Content) {
+//           // Clean the category name if needed
+//           const categoryKey = item.Category.trim();
+//           categoryData[categoryKey] = item.Content;
+//           console.log(`Added category: ${categoryKey}`);
+//         } else {
+//           console.warn(`Skipping item ${index} - missing Category or Content`);
+//         }
+//       });
+//     } 
+//     // Handle case where it's a single object
+//     else if (jsonData && typeof jsonData === 'object' && jsonData.Category && jsonData.Content) {
+//       const categoryKey = jsonData.Category.trim();
+//       categoryData[categoryKey] = jsonData.Content;
+//       console.log(`Added single category: ${categoryKey}`);
+//     }
+//     else {
+//       console.error("Invalid data format provided:", jsonData);
+//       return false;
+//     }
     
-    // Check if we have any categories to save
-    const categoryCount = Object.keys(categoryData).length;
-    if (categoryCount === 0) {
-      console.error("No valid categories found to save");
-      return false;
-    }
+//     // Check if we have any categories to save
+//     const categoryCount = Object.keys(categoryData).length;
+//     if (categoryCount === 0) {
+//       console.error("No valid categories found to save");
+//       return false;
+//     }
     
-    console.log(`Prepared ${categoryCount} categories for saving`);
+//     console.log(`Prepared ${categoryCount} categories for saving`);
     
-    // Get Firebase authentication token
-    const token = getFirebaseIdToken("appscript@zodiaccurate.com", FIREBASE_PASSWORD);
-    if (!token) {
-      console.error("Failed to get Firebase authentication token");
-      return false;
-    }
+//     // Get Firebase authentication token
+//     const token = getFirebaseIdToken("appscript@zodiaccurate.com", FIREBASE_PASSWORD);
+//     if (!token) {
+//       console.error("Failed to get Firebase authentication token");
+//       return false;
+//     }
     
-    // Firebase URL
-    const firebaseUrl = `${FIREBASE_URL}/zodiac/${uuid}/${dayOfWeek}.json?auth=${token}`;
+//     // Firebase URL
+//     const firebaseUrl = `${FIREBASE_URL}/zodiac/${uuid}/${dayOfWeek}.json?auth=${token}`;
     
-    // Save to Firebase
-    const options = {
-      method: "put",
-      contentType: "application/json",
-      payload: JSON.stringify(categoryData),
-      headers: {
-        Authorization: `Bearer ${token}`
-      },
-      muteHttpExceptions: true
-    };
+//     // Save to Firebase
+//     const options = {
+//       method: "put",
+//       contentType: "application/json",
+//       payload: JSON.stringify(categoryData),
+//       headers: {
+//         Authorization: `Bearer ${token}`
+//       },
+//       muteHttpExceptions: true
+//     };
     
-    // Execute the request
-    const response = UrlFetchApp.fetch(firebaseUrl, options);
-    const statusCode = response.getResponseCode();
+//     // Execute the request
+//     const response = UrlFetchApp.fetch(firebaseUrl, options);
+//     const statusCode = response.getResponseCode();
     
-    if (statusCode >= 200 && statusCode < 300) {
-      console.log(`✅ Successfully saved ${categoryCount} categories to Firebase with category keys`);
-      return true;
-    } else {
-      console.error(`❌ Firebase error: HTTP ${statusCode} - ${response.getContentText()}`);
-      return false;
-    }
-  } catch (error) {
-    console.error("Error saving horoscope with category keys:", error.message);
-    if (error.stack) {
-      console.error("Stack trace:", error.stack);
-    }
-    return false;
-  }
-}
+//     if (statusCode >= 200 && statusCode < 300) {
+//       console.log(`✅ Successfully saved ${categoryCount} categories to Firebase with category keys`);
+//       return true;
+//     } else {
+//       console.error(`❌ Firebase error: HTTP ${statusCode} - ${response.getContentText()}`);
+//       return false;
+//     }
+//   } catch (error) {
+//     console.error("Error saving horoscope with category keys:", error.message);
+//     if (error.stack) {
+//       console.error("Stack trace:", error.stack);
+//     }
+//     return false;
+//   }
+// }
 
 /**
  * Saves horoscope data to Firebase using category names as keys.
@@ -1260,7 +1260,7 @@ function getTrialUsersOverThirtyDays() {
       const userData = usersData[userId];
       
       // Check if user has trial="true" and a trial-date-start
-      if (userData.trial === "true" && userData['trial-date-start']) {
+      if (userData.trial === "true" || userData.trial === "expired" && userData['trial-date-start']) {
         const startDate = new Date(userData['trial-date-start']);
         const currentDate = new Date();
         const timeDiff = currentDate - startDate;
@@ -1424,5 +1424,76 @@ function expireTrialUsers(trialDays = 10) {
   } catch (error) {
     Logger.log(`❌ Error processing trial users: ${error.message}`);
     return { success: false, error: error.message };
+  }
+}
+
+/**
+ * Retrieves all users from Firebase to export to spreadsheet
+ * This function fetches all users and their subscription status
+ * 
+ * @returns {Array} Array of user objects with relevant data for export
+ */
+function getAllUsersForExport() {
+  Logger.log("🔍 Fetching all users from Firebase for export");
+  
+  try {
+    // Get Firebase authentication token
+    const token = getFirebaseIdToken("appscript@zodiaccurate.com", FIREBASE_PASSWORD);
+    if (!token) {
+      Logger.log("❌ Firebase Authentication Failed. No token received.");
+      return [];
+    }
+    
+    // Fetch all users
+    const firebaseUrl = `${FIREBASE_URL}/users.json?auth=${token}`;
+    
+    const options = {
+      method: "get",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`
+      },
+      muteHttpExceptions: true
+    };
+    
+    const response = UrlFetchApp.fetch(firebaseUrl, options);
+    const statusCode = response.getResponseCode();
+    
+    if (statusCode !== 200) {
+      Logger.log(`❌ Failed to retrieve users. HTTP Status: ${statusCode}`);
+      return [];
+    }
+    
+    const usersData = JSON.parse(response.getContentText());
+    
+    if (!usersData || typeof usersData !== 'object') {
+      Logger.log("❌ No users found or invalid data structure");
+      return [];
+    }
+    
+    // Transform Firebase users data into an array
+    const users = [];
+    for (const userId in usersData) {
+      const user = usersData[userId];
+      users.push({
+        userId: userId,
+        email: user.email || "",
+        name: user.name || "",
+        trialStartDate: user['trial-date-start'] || user.subscriptionDate || "",
+        trial: user.trial || "unknown",
+        pendingCancellation: user.pendingCancellation || false,
+        source: user.source || "Unknown",
+        subscriptionId: user.subscriptionId || "",
+        lastPaymentDate: user.lastPaymentDate || "",
+        cancellationDate: user.cancellationDate || ""
+      });
+    }
+    
+    Logger.log(`✅ Successfully fetched ${users.length} users from Firebase`);
+    return users;
+    
+  } catch (error) {
+    Logger.log(`❌ Error fetching users from Firebase: ${error.message}`);
+    return [];
   }
 }

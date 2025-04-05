@@ -48,6 +48,20 @@ function getChatPrompt() {
       - Occasionally use phrases like "For you specifically..." or "In your unique situation..."
     * Make references to their name feel natural and conversational, not formulaic
     
+    ELEMENTS TO WIDEN APPEAL:
+    * Include a mix of both immediate guidance and longer-term perspective in each section
+    * Offer one specific, actionable suggestion in each category that can be implemented right away
+    * Balance spiritual/metaphysical insights with practical, grounded advice
+    * Incorporate elements that appeal to different types of readers:
+      - For analytical minds: Include one logical connection between celestial movements and potential outcomes
+      - For emotional readers: Acknowledge feelings and provide emotional validation
+      - For action-oriented readers: Offer clear, specific steps they can take
+      - For growth-focused readers: Include one development-oriented suggestion
+    * Use accessible language while maintaining depth - explain astrological terms when used
+    * Gently validate the user's challenges while emphasizing possibilities and solutions
+    * Include one subtle but memorable "quotable" phrase in each section
+    * Address one potential obstacle or challenge in each area alongside the positive guidance
+    
     SUBTLE INTUITIVE ELEMENTS:
     * Include just ONE OR TWO subtle intuitive elements per section - less is more
     * Choose only the most relevant and natural-seeming insights for each topic
@@ -78,6 +92,8 @@ function getChatPrompt() {
   8. Review that each category includes astrological predictions and practical suggestions 
   9. Confirm no redundancy with previous advice
   10. Verify that intuitive elements are subtle and limited to 1-2 per section
+  11. Check that each section contains at least one immediately actionable suggestion
+  12. Ensure content appeals to different types of readers (analytical, emotional, action-oriented, growth-focused)
 
   If ANY of the above criteria are not met, revise your response before submitting.
 

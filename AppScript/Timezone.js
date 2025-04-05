@@ -14,7 +14,6 @@ function getTimeZoneFromLocation(location, uuid) {
         Logger.log("❌ Firebase Authentication Failed.");
         return null;
     }
-    // Logger.log("✅ Firebase Token Retrieved");
 
     try {
         const geocoder = Maps.newGeocoder();
