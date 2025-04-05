@@ -904,12 +904,10 @@ function getUUIDDataFromExecTimeTable(timezones) {
 }
 
 
-
 function getUUIDDataFromTrialCampaignTable() {
     console.log(`getUUIDDataFromTrialCampaignTable`);
     const token = getFirebaseIdToken("appscript@zodiaccurate.com", FIREBASE_PASSWORD);
     const firebaseUrl = `${FIREBASE_URL}/trial_campaign/.json?auth=${token}`;
-
     const options = {
         method: "get",
         headers: {
@@ -918,18 +916,26 @@ function getUUIDDataFromTrialCampaignTable() {
         },
         muteHttpExceptions: true // Avoid throwing errors for non-200 responses
     };
-
     try {
         const response = UrlFetchApp.fetch(firebaseUrl, options);
         console.log(response);
         const uuidData = JSON.parse(response.getContentText());
         console.log(uuidData);
-        Logger.log(`UUIDs with data: ${Object.keys(uuidData)}`);
-        return uuidData;
 
+        // Filter out users with trial status "subscribed"
+        const filteredUuidData = {};
+        for (const uuid in uuidData) {
+            const userData = getUserDataFromUserTableFirebase(uuid);
+            if (userData && userData.trial !== "subscribed") {
+                filteredUuidData[uuid] = uuidData[uuid];
+            }
+        }
+
+        Logger.log(`UUIDs with data (excluding subscribed users): ${Object.keys(filteredUuidData)}`);
+        return filteredUuidData;
     } catch (error) {
         Logger.log(`Error retrieving data for timezone ${error.message}`);
-        return []; // Return an empty array on error
+        return {}; // Return an empty object on error
     }
 }
 
