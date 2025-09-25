@@ -1,68 +1,52 @@
 /**
- * Retrieves the timezone from a given location and saves it to Firebase.
+ * Retrieves timezones from Firebase and filters them based on the target hour.
  *
- * @param {string} location - The location to determine the timezone for.
- * @param {string} uuid - The unique identifier for the user.
- * @returns {string|null} - The formatted timezone string or null if an error occurs.
+ * @param {number} targetHour - The target hour (0-23) to match timezones against.
+ * @returns {string[]} - An array of matching timezones where the local hour matches the target hour.
  */
-function getTimeZoneFromLocation(location, uuid) {
-    Logger.log(`🌍 Getting timezone from location: ${location} for UUID: ${uuid}`);
+function getTimezonesAtTime(targetHour) {
+    Logger.log(`Fetching timezones from Firebase to filter by target hour: ${targetHour}`);
 
-    // Authenticate & retrieve token
-    const token = getFirebaseIdToken("appscript@zodiaccurate.com", FIREBASE_PASSWORD);
-    if (!token) {
-        Logger.log("❌ Firebase Authentication Failed.");
-        return null;
+    const timezones = getTimezonesArrayListFromFirebase(); // Retrieve the timezone list
+    if (!Array.isArray(timezones) || timezones.length === 0) {
+        Logger.log("No valid timezones found in Firebase.");
+        return [];
     }
 
-    try {
-        const geocoder = Maps.newGeocoder();
-        const response = geocoder.geocode(location);
-        
-        // Log full geocoder response
-        Logger.log(`🛰️ Geocoder API Response: ${JSON.stringify(response, null, 2)}`);
+    // Convert stored format to proper IANA format using the existing normalizeTimezone function
+    const validTimezones = timezones.map(tz => normalizeTimezone(tz));
+    Logger.log(`Processing ${validTimezones.length} timezones in IANA format`);
 
-        if (response.status !== 'OK' || !response.results.length) {
-            Logger.log(`❌ Geocoding failed for location '${location}' - Status: ${response.status}`);
-            return "america_chicago";
+    // Ensure proper format for target hour
+    const formattedTargetHour = String(targetHour).padStart(2, "0");
+
+    // Filter timezones where the local hour matches the target hour
+    const matchingTimezones = [];
+    
+    for (let i = 0; i < validTimezones.length; i++) {
+        const timezone = validTimezones[i];
+        try {
+            const now = new Date();
+            const localTime = new Intl.DateTimeFormat("en-US", {
+                timeZone: timezone,
+                hour: "2-digit",
+                hour12: false
+            }).format(now);
+
+            if (localTime === formattedTargetHour) {
+                // Use the original Firebase format timezone
+                matchingTimezones.push(timezones[i]);
+                Logger.log(`✅ Timezone ${timezone} matched target hour ${targetHour}`);
+            }
+        } catch (error) {
+            Logger.log(`❌ Error processing timezone ${timezone}: ${error.message}`);
+            // Continue with the next timezone
         }
-
-        const result = response.results[0];
-        const lat = result.geometry.location.lat;
-        const lng = result.geometry.location.lng;
-        Logger.log(`📍 Geocoded Coordinates: Latitude=${lat}, Longitude=${lng}`);
-
-        // Fetch timezone data
-        const apiKey = GOOGLE_MAPS_API_KEY;
-        const timestamp = Math.floor(Date.now() / 1000);
-        const timezoneUrl = `https://maps.googleapis.com/maps/api/timezone/json?location=${lat},${lng}&timestamp=${timestamp}&key=${apiKey}`;
-        Logger.log(`🕒 Fetching Timezone API: ${timezoneUrl}`);
-
-        const timezoneResponse = UrlFetchApp.fetch(timezoneUrl);
-        const timezoneData = JSON.parse(timezoneResponse.getContentText());
-
-        // Log full timezone response
-        Logger.log(`⏳ Timezone API Response: ${JSON.stringify(timezoneData, null, 2)}`);
-
-        if (timezoneData.status !== 'OK') {
-            Logger.log(`❌ Timezone fetch failed for coordinates (${lat}, ${lng}) - Status: ${timezoneData.status}`);
-            return null;
-        }
-
-        let timezoneId = timezoneData.timeZoneId; // Example: "America/New_York"
-        timezoneId = transformKeysToLowerCaseWithUnderscores(timezoneId);
-        Logger.log(`✅ Retrieved Timezone ID: ${timezoneId}`);
-
-        // Save timezone to Firebase
-        saveTimezoneToTimezoneArrayList(timezoneId);
-
-        return timezoneId;
-    } catch (error) {
-        Logger.log(`❌ Error in getTimeZoneFromLocation: ${error.message}`);
-        return null;
     }
+
+    Logger.log(`Timezones where it is currently ${targetHour}:00 → ${JSON.stringify(matchingTimezones)}`);
+    return matchingTimezones;
 }
-
 
 
 /**
@@ -80,14 +64,16 @@ function getTimezonesAtTime(targetHour) {
         return [];
     }
 
-    // Convert stored format (underscores) back to valid IANA format (slashes)
-    const validTimezones = timezones.map(tz => tz.replace(/_/g, "/"));
+    // Convert stored format to proper IANA format using our new function
+    const validTimezones = timezones.map(tz => transformTimezoneToIANAFormat(tz));
+    Logger.log(`Processing ${validTimezones.length} timezones in IANA format`);
 
     // Ensure proper format for target hour
     const formattedTargetHour = String(targetHour).padStart(2, "0");
 
     // Filter timezones where the local hour matches the target hour
-    const matchingTimezones = validTimezones.filter((timezone) => {
+    const matchingTimezones = [];
+    for (const timezone of validTimezones) {
         try {
             const now = new Date();
             const localTime = new Intl.DateTimeFormat("en-US", {
@@ -96,22 +82,23 @@ function getTimezonesAtTime(targetHour) {
                 hour12: false
             }).format(now);
 
-            return localTime === formattedTargetHour;
+            if (localTime === formattedTargetHour) {
+                // Find the original Firebase format for this timezone
+                const index = validTimezones.indexOf(timezone);
+                if (index !== -1) {
+                    matchingTimezones.push(timezones[index]);
+                    Logger.log(`✅ Timezone ${timezone} matched target hour ${targetHour}`);
+                }
+            }
         } catch (error) {
-            Logger.log(`Error processing timezone ${timezone}: ${error.message}`);
-            return false;
+            Logger.log(`❌ Error processing timezone ${timezone}: ${error.message}`);
+            // Continue with the next timezone
         }
-    });
+    }
 
-    // Convert matching timezones back to Firebase format (underscores)
-    const formattedTimezones = matchingTimezones.map(tz => tz.replace(/\//g, "_"));
-
-    Logger.log(`Timezones where it is currently ${targetHour}:00 → ${JSON.stringify(formattedTimezones)}`);
-    return formattedTimezones;
+    Logger.log(`Timezones where it is currently ${targetHour}:00 → ${JSON.stringify(matchingTimezones)}`);
+    return matchingTimezones;
 }
-
-
-
 
 /**
  * Fetches UUIDs and their associated user data for the specified timezones.

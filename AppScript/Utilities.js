@@ -366,15 +366,15 @@ function formatDateForUser(uuid) {
 
   // Retrieve the user's timezone from Firebase
   let timeZoneId = getUserTimezone(uuid);
-
   if (!timeZoneId) {
     throw new Error("Could not retrieve timezone for user with UUID: " + uuid);
   }
 
-  // Replace underscores with slashes to ensure compatibility with Intl.DateTimeFormat
-  timeZoneId = timeZoneId.replace(/_/g, "/");
+//kilory
+  // Normalize timezone string
+  timeZoneId = normalizeTimezone(timeZoneId)
 
-  console.log("Formatted User's timezone: ", timeZoneId);
+  // console.log("Formatted User's timezone: ", timeZoneId);
 
   // Map of typical date formats for English-speaking regions
   const regionFormats = {
@@ -408,6 +408,53 @@ function formatDateForUser(uuid) {
 
   return formattedDate;
 }
+
+/**
+ * Transforms a Firebase-stored timezone back to IANA format.
+ * E.g., "america_los_angeles" -> "America/Los_Angeles"
+ *
+ * @param {string} firebaseTimezone - The Firebase-stored timezone
+ * @returns {string} - The IANA timezone ID
+ */
+function transformTimezoneToIANAFormat(firebaseTimezone) {
+    if (!firebaseTimezone) return null;
+    
+    // Split by underscore
+    const parts = firebaseTimezone.split('_');
+    
+    // Capitalize first letter of each part
+    const formattedParts = parts.map(part => 
+        part.charAt(0).toUpperCase() + part.slice(1).toLowerCase()
+    );
+    
+    // Join with slash for first separator, then underscores for subsequent parts
+    // e.g., ["America", "Los", "Angeles"] -> "America/Los_Angeles"
+    if (formattedParts.length >= 2) {
+        const region = formattedParts[0];
+        const locationParts = formattedParts.slice(1);
+        
+        // Check if there are multiple location parts that need to be joined with underscores
+        if (locationParts.length > 1) {
+            // For locations with multi-part names like "Los Angeles"
+            const locationWithUnderscores = locationParts.join('_');
+            return `${region}/${locationWithUnderscores}`;
+        } else {
+            // For simple locations like "Chicago"
+            return `${region}/${locationParts[0]}`;
+        }
+    }
+    
+    // Handle edge cases
+    return formattedParts.join('/');
+}
+
+// function normalizeTimezone(timeZoneId) {
+//     return timeZoneId
+//         .split('_')
+//         .map(segment => segment.charAt(0).toUpperCase() + segment.slice(1).toLowerCase())
+//         .join('_')
+//         .replace('_', '/');
+// }
 
 function getTomorrowDay() {
   const today = new Date();

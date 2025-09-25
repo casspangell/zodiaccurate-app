@@ -697,19 +697,10 @@ function setUpEmailCampaign(jsonSinglePersonData, uuid, name, email) {
         // Generate ChatGPT prompt
         const prompt = getChatEmailCampaignInstructions(name, uuid, jsonSinglePersonData, email);
         console.log("PROMPT ", prompt);
+        
         const emailCampaignData = getChatGPTEmailCampaignResponse(prompt, uuid);
         console.log("RESPONSE ", emailCampaignData);
-
-        // Right after getting the ChatGPT response
-        console.log("Raw ChatGPT Response:", JSON.stringify(response));
-
-        // When calling parseResponseToJson
-        const parsedData = parseResponseToJson(response);
-        console.log("Parsed Data Type:", typeof parsedData);
-        console.log("Parsed Data:", JSON.stringify(parsedData));
-
-        console.log("UUID:", uuid);
-        console.log("Data to Save:", JSON.stringify(parsedData));
+        
         saveEmailCampaignToFirebase(emailCampaignData, uuid);
         console.log("Trial email campaign setup successfully.");
     } catch (error) {

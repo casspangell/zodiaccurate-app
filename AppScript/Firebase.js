@@ -631,13 +631,23 @@ function getUserTimezone(uuid) {
         }
 
         // Parse response
-        const timezone = JSON.parse(responseBody);
+        let timezone = JSON.parse(responseBody);
         if (!timezone || typeof timezone !== "string") {
             Logger.log(`⚠️ No valid timezone found for UUID: ${uuid}`);
             return null;
         }
 
-        Logger.log(`✅ User's timezone retrieved: ${timezone}`);
+        // Add timezone normalization
+        if (timezone) {
+            // Normalize timezone string
+            timezone = timezone
+                .replace(/\//g, '_')  // Replace any slashes with underscores
+                .split('_')            // Split into parts
+                .map(part => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase()) // Capitalize each part
+                .join('_');            // Rejoin with underscores
+        }
+
+        Logger.log(`✅ Normalized timezone: ${timezone}`);
         return timezone;
     } catch (error) {
         Logger.log(`❌ Error retrieving timezone for UUID ${uuid}: ${error.message}`);
