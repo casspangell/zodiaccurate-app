@@ -30,11 +30,16 @@
 
     <div class="container">
         <h1>ZodiAccurate Form</h1>
+        <div class="video-container">
+          <video width="640" height="360" controls poster="../videos/surveryfinal_poster.png">
+            <source src="../videos/SurveyFinal.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+          </video>
+        </div>
         <!-- Sections -->
         <form id="multiStepForm">
             <!-- Intro Section -->
             <div class="section active">
-                <h2>Intro</h2>
                 <p class="description">
                     IMPORTANT: Please fill out the entire form.
                     We follow all global GDPR privacy policies. Your information is private and only used by the software to create your daily report.
@@ -65,9 +70,9 @@
                 <input type="text" id="birth_date" name="birth_date" required placeholder="Example: March 22, 1990">
                 <p id="birth_date-error" class="error-message" style="color: #ff4d4d; font-size: 0.9em; display: none;"></p>
 
-                <label for="birth_time">Birth Time *</label>
+                <label for="birth_time">Birth Time</label>
                 <p class="description">Enter your birth time (Example: 1:30 PM). If unknown, make your best guess.</p>
-                <input type="text" id="birth_time" name="birth_time" required placeholder="Example: 7:45 AM">
+                <input type="text" id="birth_time" name="birth_time" placeholder="Example: 7:45 AM">
                 <p id="birth_time-error" class="error-message" style="color: #ff4d4d; font-size: 0.9em; display: none;"></p>
 
                 

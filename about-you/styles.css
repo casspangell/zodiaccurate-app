@@ -31,6 +31,26 @@ body {
   text-align: center;
 }
 
+/* Video Container */
+.video-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  max-width: 800px;
+  margin: 20px auto;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+  background-color: #1a0739;
+}
+
+.video-container video {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
 
 /* Container */
 .container {

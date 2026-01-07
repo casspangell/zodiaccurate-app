@@ -1,0 +1,8 @@
+{
+    "require": {
+        "prokerala/astrology-sdk": "^1.0",
+        "nyholm/psr7": "^1.8",
+        "guzzlehttp/guzzle": "^7.10",
+        "symfony/cache": "^7.3"
+    }
+}

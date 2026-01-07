@@ -38,7 +38,7 @@ Ensure you're logged into `clasp` with proper credentials. The credentials are s
 However, for local development, authenticate `clasp` manually:
 
 ```bash
-clasp login --creds path/to/credentials.json
+clasp login
 ```
 
 ### 4. Pull Existing Google Apps Script Code
@@ -115,6 +115,9 @@ If you make changes directly in the Google Apps Script Editor, you can pull thos
 The Firebase project ID for this project is `zodiaccurate-e9aaf`. Project Console: [Firebase Console](https://console.firebase.google.com/project/zodiaccurate-e9aaf/overview).
 
 ### Steps to Update Firebase Functions
+
+```npm install -g firebase-tools```
+```firebase functions:list```
 
 1. Make adjustments to your Firebase function code as needed.
 2. Run the build command to prepare the changes:

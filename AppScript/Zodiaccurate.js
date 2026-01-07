@@ -11,7 +11,7 @@ async function runZodiaccurate() {
   const currHour = getCurrentHour();
   console.log(`Running Zodiaccurate for hour: ${currHour}`);
   // Pull UUIDs from exec_time table for 6am
-  let users = fetchUUIDsForTimezone(6);
+  let users = fetchUUIDsForTimezone(13);
 //------------Run For Timezone Manually--------------//
   // const timezones = ["australia_sydney"];
   // console.log(`Running Zodiaccurate for timezone: ${timezones}`);

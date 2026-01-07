@@ -1,6 +1,6 @@
 function removeUUIDFromFirebase(uuid) {
     if (!uuid) {
-        uuid = "b16aa6fc-3738-4038-99b7-b84979ebb762"; // Default test value
+        uuid = "e7fcdfb8-e231-4332-a2d4-d38f9d50a7ec"; // Default test value
     }
 
     const token = getFirebaseIdToken("appscript@zodiaccurate.com", FIREBASE_PASSWORD);
