@@ -553,7 +553,7 @@ console.log("Email: ", email, " Name: ", name, " Subject: ", subject);
 }
 
 function testEmail(){
-  sendEmailConfirmationWithMailerSend("Cass", "casspangell@gmail.com");
+  sendEmailConfirmationWithMailerSend("Cass", "dahnworldhealer@yahoo.com");
 }
 
 async function sendEmailConfirmationWithMailerSend(name, email) {
@@ -1350,7 +1350,7 @@ function debugDailyEmail() {
   // Call the email function
   const result = sendDailyEmailWithMailerSend(
     "Test User", 
-    "casspangell@gmail.com", // Replace with your email
+    "dahnworldhealer@yahoo.com", // Replace with your email
     testData,
     "d8d8b814-2d3a-425e-8ad0-a89463d37dff"
   );

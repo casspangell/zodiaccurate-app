@@ -1,5 +1,5 @@
 function testCheckForTrial() {
-  setupTrialSystem("casspangell@gmail.com", "cass");
+  setupTrialSystem("dahnworldhealer@yahoo.com", "cass");
 }
 
 function setupTrialSystem(email, name, uuid) {

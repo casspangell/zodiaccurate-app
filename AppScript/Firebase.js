@@ -727,7 +727,7 @@ function getUserDataFromUserTableFirebase(uuid) {
 }
 
 function test()  {
-    getUserDataFromTrialUserTableFirebase("casspangell@gmail.com");
+    getUserDataFromTrialUserTableFirebase("dahnworldhealer@yahoo.com");
 }
 
 function saveTrialUserToFirebase(email) {

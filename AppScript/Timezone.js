@@ -101,6 +101,77 @@ function getTimezonesAtTime(targetHour) {
 }
 
 /**
+ * Retrieves the timezone ID for a given location using Google Maps APIs.
+ * Uses Geocoding API to convert location to coordinates, then Timezone API to get the timezone.
+ *
+ * @param {string} location - The location string (e.g., "denver, co" or "Australia Brisbane").
+ * @param {string} uuid - The user's UUID (for logging purposes).
+ * @returns {string|null} - The IANA timezone ID (e.g., "America/Denver"), or null if an error occurs.
+ */
+function getTimeZoneFromLocation(location, uuid) {
+    Logger.log(`🌍 Getting timezone for location: ${location} (UUID: ${uuid})`);
+    
+    try {
+        // Step 1: Use Geocoding API to convert location to coordinates
+        const geocodeUrl = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(location)}&key=${GOOGLE_MAPS_API_KEY}`;
+        
+        const geocodeResponse = UrlFetchApp.fetch(geocodeUrl, { muteHttpExceptions: true });
+        const geocodeData = JSON.parse(geocodeResponse.getContentText());
+        
+        if (geocodeData.status !== "OK" || !geocodeData.results || geocodeData.results.length === 0) {
+            Logger.log(`❌ Geocoding failed for location: ${location}. Status: ${geocodeData.status}`);
+            return null;
+        }
+        
+        // Extract latitude and longitude
+        const lat = geocodeData.results[0].geometry.location.lat;
+        const lng = geocodeData.results[0].geometry.location.lng;
+        Logger.log(`📍 Coordinates found: ${lat}, ${lng}`);
+        
+        // Step 2: Use Timezone API to get timezone for coordinates
+        const timestamp = Math.floor(Date.now() / 1000); // Current Unix timestamp
+        const timezoneUrl = `https://maps.googleapis.com/maps/api/timezone/json?location=${lat},${lng}&timestamp=${timestamp}&key=${GOOGLE_MAPS_API_KEY}`;
+        
+        const timezoneResponse = UrlFetchApp.fetch(timezoneUrl, { muteHttpExceptions: true });
+        const timezoneData = JSON.parse(timezoneResponse.getContentText());
+        
+        if (timezoneData.status !== "OK" || !timezoneData.timeZoneId) {
+            Logger.log(`❌ Timezone lookup failed. Status: ${timezoneData.status}`);
+            return null;
+        }
+        
+        const timezoneId = timezoneData.timeZoneId;
+        Logger.log(`✅ Timezone found: ${timezoneId}`);
+        
+        return timezoneId;
+        
+    } catch (error) {
+        Logger.log(`❌ Error getting timezone from location: ${error.message}`);
+        Logger.log(error.stack);
+        return null;
+    }
+}
+
+/**
+ * Normalizes a timezone string to IANA format.
+ * Handles both Firebase format (america_los_angeles) and IANA format (America/Los_Angeles).
+ *
+ * @param {string} timezone - The timezone string to normalize.
+ * @returns {string} - The normalized IANA timezone ID.
+ */
+function normalizeTimezone(timezone) {
+    if (!timezone) return null;
+    
+    // If it already has a slash, assume it's IANA format
+    if (timezone.includes('/')) {
+        return timezone;
+    }
+    
+    // Otherwise, convert from Firebase format to IANA format
+    return transformTimezoneToIANAFormat(timezone);
+}
+
+/**
  * Fetches UUIDs and their associated user data for the specified timezones.
  * - Retrieves timezones from integer time.
  * - Fetches UUIDs from the exec_time table for those timezones.

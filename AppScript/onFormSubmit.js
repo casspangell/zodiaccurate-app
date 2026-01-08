@@ -76,7 +76,7 @@ function onWebFormSubmitHandler(e) {
         saveResult = pushEntryToFirebase(e.formData, uuid);
 
         email = email.toLowerCase();
-        if (email=="paul@wellspringoflight.com" || email=="asoulhealer@gmail.com" || email=="zenchairman@gmail.com" || email=="greatestflourishing@gmail.com" || email=="zenmusiccreations@gmail.com" || email=="dahnworldhealer@yahoo.com" || email=="casspangell@gmail.com") {
+        if (email=="paul@wellspringoflight.com" || email=="asoulhealer@gmail.com" || email=="zenchairman@gmail.com" || email=="greatestflourishing@gmail.com" || email=="zenmusiccreations@gmail.com" || email=="dahnworldhealer@yahoo.com") {
             Logger.log("Testing email found");
             exportFormDataToSpreadsheet(uuid, userData, e.formData);
         }
